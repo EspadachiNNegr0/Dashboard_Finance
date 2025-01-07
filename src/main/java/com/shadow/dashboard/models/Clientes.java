@@ -1,6 +1,8 @@
 package com.shadow.dashboard.models;
 
 import jakarta.persistence.*;
+
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -72,5 +74,17 @@ public class Clientes {
 
     public void setHistory(Set<History> history) {
         this.history = history;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Clientes clientes = (Clientes) o;
+        return Objects.equals(id, clientes.id) && Objects.equals(cpf, clientes.cpf);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, cpf);
     }
 }

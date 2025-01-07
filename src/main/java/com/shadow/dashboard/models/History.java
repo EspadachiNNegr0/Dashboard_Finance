@@ -3,6 +3,7 @@ package com.shadow.dashboard.models;
 import jakarta.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Entity
@@ -11,6 +12,7 @@ public class History {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(nullable = true)
     private Long id;
 
     @Column(nullable = false)
@@ -37,6 +39,8 @@ public class History {
     @Temporal(TemporalType.DATE)
     @Column(nullable = false)
     private Date created;
+
+    private int parcelamento;
 
     // Getters e setters
     public Long getId() {
@@ -93,5 +97,21 @@ public class History {
 
     public void setCreated(Date created) {
         this.created = created;
+    }
+
+    public Socios getSocios() {
+        return socios;
+    }
+
+    public void setSocios(Socios socios) {
+        this.socios = socios;
+    }
+
+    public int getParcelamento() {
+        return parcelamento;
+    }
+
+    public void setParcelamento(int parcelamento) {
+        this.parcelamento = parcelamento;
     }
 }

@@ -6,7 +6,8 @@
 
     <!-- Importação da fonte de ícones do Material Symbols -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp"/>
-    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
     <!-- My CSS -->
     <link rel="stylesheet" href="/css/index.css">
 
@@ -85,12 +86,51 @@
         </form>
         <input type="checkbox" id="switch-mode" hidden>
         <label for="switch-mode" class="switch-mode"></label>
-        <a href="#" class="notification">
-				<span class="material-symbols-sharp">
-					notifications
-					</span>
-            <span class="num">8</span>
-        </a>
+        <div id="open-modal">
+            <button class="notification">
+                <span class="material-symbols-sharp">notifications</span>
+                <span class="num">8</span>
+            </button>
+        </div>
+
+        <div id="fade" class="hide"></div>
+        <div id="modal" class="hide">
+            <div class="modal-header">
+                <h2>Notifications</h2>
+                <button id="close-modal"><span class="material-symbols-sharp">
+                    close
+                </span></button>
+            </div>
+            <div class="modal-body">
+                <tbody>
+                <tr>
+                    <td>Tiger Nixon</td>
+                    <td>System Architect</td>
+                    <td>Edinburgh</td>
+                    <td>61</td>
+                    <td>2011-04-25</td>
+                    <td>$320,800</td>
+                </tr>
+                <tr>
+                    <td>Tiger Nixon</td>
+                    <td>System Architect</td>
+                    <td>Edinburgh</td>
+                    <td>61</td>
+                    <td>2011-04-25</td>
+                    <td>$320,800</td>
+                </tr>
+                <tr>
+                    <td>Tiger Nixon</td>
+                    <td>System Architect</td>
+                    <td>Edinburgh</td>
+                    <td>61</td>
+                    <td>2011-04-25</td>
+                    <td>$320,800</td>
+                </tr>
+                </tbody>
+            </div>
+        </div>
+
         <div class="profile" onclick="toggleSubMenu()">
             <div class="profile-photo">
                 <img src="img/Admin.jpg" alt="" />
@@ -131,126 +171,70 @@
                     </li>
                 </ul>
             </div>
-            <!-- <a href="#" class="btn-download">
-                <i class='bx bxs-cloud-download' ></i>
-                <span class="text">Download PDF</span>
-            </a> -->
         </div>
-
-        <!-- <ul class="box-info">
-            <li>
-                <i class='bx bxs-calendar-check' ></i>
-                <span class="text">
-                    <h3>1020</h3>
-                    <p>New Order</p>
-                </span>
-            </li>
-            <li>
-                <i class='bx bxs-group' ></i>
-                <span class="text">
-                    <h3>2834</h3>
-                    <p>Visitors</p>
-                </span>
-            </li>
-            <li>
-                <i class='bx bxs-dollar-circle' ></i>
-                <span class="text">
-                    <h3>$2543</h3>
-                    <p>Total Sales</p>
-                </span>
-            </li>
-        </ul> -->
 
         <div class="table-data">
             <div class="order">
                 <div class="head">
                     <h3>Recent Orders</h3>
-                    <i class='bx bx-search' ></i>
+
+                    <button class="add">Add Emprestimo</button>
                     <i class='bx bx-filter' ></i>
                 </div>
-                <table>
+                <table id="example" class="table table-striped" style="width:100%">
                     <thead>
                     <tr>
-                        <th>User</th>
-                        <th>Date Order</th>
+                        <th>Name</th>
                         <th>Price</th>
+                        <th>Porcent</th>
+                        <th>PriceTotal</th>
+                        <th>Parcelamento</th>
+                        <th>Start date</th>
+                        <th>End date</th>
                         <th>Status</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
+                    <tr th:each="cliente : ${clientes}">
+                        <td th:text="${cliente.nome}"></td>
                         <td>
-                            <img src="img/people.png">
-                            <p>John Doe</p>
+                            <span th:each="historia : ${cliente.history}" th:text="${historia.price} + ' '"></span>
                         </td>
-                        <td>01-10-2021</td>
-                        <td><span class="status completed">Completed</span></td>
-                    </tr>
-                    <tr>
                         <td>
-                            <img src="img/people.png">
-                            <p>John Doe</p>
+                            <span th:each="historia : ${cliente.history}" th:text="${historia.percentage} + ' '"></span>%
                         </td>
-                        <td>01-10-2021</td>
-                        <td><span class="status pending">Pending</span></td>
-                    </tr>
-                    <tr>
                         <td>
-                            <img src="img/people.png">
-                            <p>John Doe</p>
+                            $<span th:text="${priceTotals[cliente.id]}"></span>
                         </td>
-                        <td>01-10-2021</td>
-                        <td><span class="status process">Process</span></td>
-                    </tr>
-                    <tr>
                         <td>
-                            <img src="img/people.png">
-                            <p>John Doe</p>
+                            <span th:each="historia : ${cliente.history}" th:text="${historia.parcelamento} + ' '"></span>
                         </td>
-                        <td>01-10-2021</td>
-                        <td><span class="status pending">Pending</span></td>
-                    </tr>
-                    <tr>
                         <td>
-                            <img src="img/people.png">
-                            <p>John Doe</p>
+                            <span th:each="historia : ${cliente.history}" th:text="${dataformatada[historia.id]} + ' '"></span>
                         </td>
-                        <td>01-10-2021</td>
-                        <td><span class="status completed">Completed</span></td>
+                        <td>
+                            <span th:each="historia : ${cliente.history}" th:text="${dataDePagamentoMap[historia.id]}"></span>
+                        </td>
+                        <td>
+                            <span th:each="historia : ${cliente.history}" th:text="${historia.status} + ' '"></span>
+                        </td>
                     </tr>
+
                     </tbody>
+                    <tfoot>
+                    <tr>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Porcent</th>
+                        <th>PriceTotal</th>
+                        <th>Parcelamento</th>
+                        <th>Start date</th>
+                        <th>End date</th>
+                        <th>Status</th>
+                    </tr>
+                    </tfoot>
                 </table>
             </div>
-            <!-- <div class="todo">
-                <div class="head">
-                    <h3>Todos</h3>
-                    <i class='bx bx-plus' ></i>
-                    <i class='bx bx-filter' ></i>
-                </div>
-                <ul class="todo-list">
-
-                    <li class="completed">
-                        <p>Todo List</p>
-                        <i class='bx bx-dots-vertical-rounded' ></i>
-                    </li>
-                    <li class="completed">
-                        <p>Todo List</p>
-                        <i class='bx bx-dots-vertical-rounded' ></i>
-                    </li>
-                    <li class="not-completed">
-                        <p>Todo List</p>
-                        <i class='bx bx-dots-vertical-rounded' ></i>
-                    </li>
-                    <li class="completed">
-                        <p>Todo List</p>
-                        <i class='bx bx-dots-vertical-rounded' ></i>
-                    </li>
-                    <li class="not-completed">
-                        <p>Todo List</p>
-                        <i class='bx bx-dots-vertical-rounded' ></i>
-                    </li>
-                </ul>
-            </div> -->
         </div>
     </main>
     <!-- MAIN -->

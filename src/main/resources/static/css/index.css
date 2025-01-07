@@ -68,9 +68,6 @@ body {
     overflow-x: hidden;
     scrollbar-width: none;
 }
-#sidebar::--webkit-scrollbar {
-    display: none;
-}
 #sidebar.hide {
     width: 60px;
 }
@@ -401,7 +398,7 @@ body {
 .sub-menu form span {
     margin-right: 10px;
     font-size: 18px; /* Tamanho do ícone */
-    color: var(--color-primary, var(--color-whiter)); /* Cor do ícone */
+    color: var(--lights); /* Cor do ícone */
 }
 
 /* =============================  */
@@ -694,12 +691,13 @@ body {
 
 #open-modal button {
     border: none;
-    background-color: var(--color-white);
+    background-color: var(--light);
+    color: var(--dark);
     cursor: pointer;
 }
 
 #open-modal button:hover{
-    background-color: var(--color-whiter);
+    color: var(--dark);
     opacity: 1;
 }
 
@@ -711,6 +709,21 @@ body {
     top: 0;
 }
 
+.table-data .add {
+    padding: 10px;
+    background-color: var(--blue);
+    margin-right: 20px;
+    color: var(--dark);
+    border: none;
+    border-radius: 1000px;
+    cursor: pointer;
+    opacity: .9;
+    font-size: 1rem;
+}
+
+.table-data .add:hover{
+    opacity: 1;
+}
 
 @media screen and (max-width: 768px) {
     #sidebar {
@@ -741,7 +754,6 @@ body {
         width: auto;
         height: auto;
         background: transparent;
-        border-radius: none;
         color: var(--dark);
     }
 

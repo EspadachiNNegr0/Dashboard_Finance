@@ -37,4 +37,19 @@ public class ClientService {
         }
         return 0.0;
     }
+
+    // Método para calcular o preço total de uma venda (somando um preço de cada história)
+    public double calcularPriceTotal(Clientes cliente) {
+
+        if (calculatejuros(cliente) != 0.0) {
+            double valorJuros = calculatejuros(cliente);
+
+            double valortotal = 0.0;
+            for (History historia : cliente.getHistory()) {
+                valortotal += historia.getPrice();
+            }
+            return valortotal + valorJuros;
+        }
+        return 0.0;
+    }
 }

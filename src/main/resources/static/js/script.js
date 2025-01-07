@@ -123,3 +123,19 @@ const toggleModal = () => {
     el.addEventListener("click", () => toggleModal());
 });
 
+document.addEventListener('DOMContentLoaded', () => {
+    const icon = document.querySelector('.searchT .icon');
+    const search = document.querySelector('.searchT');
+
+    if (icon && search) {
+        icon.onclick = function () {
+            console.log("Botão foi clicado!"); // Mensagem de teste no console
+            search.classList.toggle('active');
+            console.log("Classe 'active':", search.classList.contains('active')); // Verifica se a classe foi adicionada ou removida
+        };
+    } else {
+        console.error("Elementos '.searchT' ou '.icon' não encontrados no DOM!");
+    }
+});
+
+
