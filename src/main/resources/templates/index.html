@@ -41,28 +41,8 @@
         </li>
         <li>
             <a href="#">
-                <i class='bx bxs-message-dots' ></i>
-                <span class="text">Message</span>
-            </a>
-        </li>
-        <li>
-            <a href="#">
                 <i class='bx bxs-group' ></i>
                 <span class="text">Team</span>
-            </a>
-        </li>
-    </ul>
-    <ul class="side-menu">
-        <li>
-            <a href="#">
-                <i class='bx bxs-cog' ></i>
-                <span class="text">Settings</span>
-            </a>
-        </li>
-        <li>
-            <a href="#" class="logout">
-                <i class='bx bxs-log-out-circle' ></i>
-                <span class="text">Logout</span>
             </a>
         </li>
     </ul>
@@ -84,7 +64,6 @@
         </form>
         <input type="checkbox" id="switch-mode" hidden>
         <label for="switch-mode" class="switch-mode"></label>
-
         <div id="open-modal">
             <button class="notification">
                 <span class="material-symbols-sharp">notifications</span>
@@ -100,14 +79,14 @@
                     close
                 </span></button>
             </div>
-            <div class="modal-body">
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                    Fuga quo maiores aspernatur quibusdam ex reprehenderit,
-                    suscipit eligendi ratione ipsum minima veniam iure harum laborum accusantium nulla
-                    quasi? At, doloremque aliquam!</p>
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptates unde harum non!
-                    Recusandae mollitia adipisci dignissimos libero suscipit, temporibus aut ullam
-                    doloribus dicta, error blanditiis distinctio nostrum nobis, voluptate laborum!</p>
+            <div class="notify-item">
+                <div class="notify_img">
+                    <img src="/img/Admin.jpg" alt="" style="width: 50px;">
+                </div>
+                <div class="notify-info">
+                    <p><span th:each="cliente : ${clientes}" th:text="${cliente.nome} + ' '"></span> commented on your <span>Timeline Share</span></p>
+                    <span class="notify-time">10 minutes ago</span>
+                </div>
             </div>
         </div>
 
@@ -127,9 +106,9 @@
                     <span class="material-symbols-sharp">person</span>
                     Meu Perfil
                 </a>
-                <a href="/settings">
-                    <span class="material-symbols-sharp">settings</span>
-                    Configurações
+                <a href="/logout">
+                    <span class="material-symbols-sharp">logout</span>
+                    Sair
                 </a>
             </div>
         </div>
@@ -151,10 +130,6 @@
                     </li>
                 </ul>
             </div>
-            <!--            <a href="#" class="btn-download">-->
-            <!--                <i class='bx bxs-cloud-download' ></i>-->
-            <!--                <span class="text">Download PDF</span>-->
-            <!--            </a>-->
         </div>
 
         <ul class="box-info">
@@ -186,48 +161,53 @@
             <div class="order">
                 <div class="head">
                     <h3>Recent Orders</h3>
-                    <i class='bx bx-search' ></i>
+
+                    <button class="add" aria-label="Adicionar empréstimo">Add Emprestimo</button>
+
                     <i class='bx bx-filter' ></i>
                 </div>
-                <table>
+                <table id="example" class="table table-striped" style="width:100%">
                     <thead>
                     <tr>
-                        <th>User</th>
-                        <th>Date Order</th>
-                        <th>juros</th>
-                        <th>Price</th>
+                        <th>Name</th>
+                        <th>PriceTotal</th>
+                        <th>Start date</th>
                         <th>Status</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="cliente : ${clientes}">
-                        <td th:text="${cliente.nome}"></td> <!-- Exibe o nome do cliente -->
+                        <td th:text="${cliente.nome}"></td>
                         <td>
-                            <span th:each="historia : ${cliente.history}" th:text="${historia.created} + ' '"></span> <!-- Exibe os preços concatenados -->
+                            $<span th:text="${priceTotals[cliente.id]}"></span>
                         </td>
                         <td>
-                            $<span th:text="${juros}"></span>
+                            <span th:each="historia : ${cliente.history}" th:text="${dataformatada[historia.id]} + ' '"></span>
                         </td>
                         <td>
-                            <span th:each="historia : ${cliente.history}" th:text="${historia.price} + ' '"></span> <!-- Exibe os preços concatenados -->
-                        </td>
-                        <td>
-                            <span th:each="historia : ${cliente.history}" th:text="${historia.status} + ' '"></span> <!-- Exibe os preços concatenados -->
+                            <span th:each="historia : ${cliente.history}" th:text="${historia.status} + ' '"></span>
                         </td>
                     </tr>
-
                     </tbody>
+                    <tfoot>
+                    <tr>
+                        <th>Name</th>
+                        <th>PriceTotal</th>
+                        <th>Start date</th>
+                        <th>Status</th>
+                    </tr>
+                    </tfoot>
                 </table>
             </div>
             <div class="todo">
                 <div class="head">
                     <h3>Todos</h3>
-                    <i class='bx bx-plus' ></i>
+                    <i class='bx bx-plus'></i>
                     <i class='bx bx-filter' ></i>
                 </div>
                 <ul class="todo-list">
 
-                    <!-- <li class="completed">
+                     <li class="completed">
                         <p>Todo List</p>
                         <i class='bx bx-dots-vertical-rounded' ></i>
                     </li>
@@ -246,7 +226,7 @@
                     <li class="not-completed">
                         <p>Todo List</p>
                         <i class='bx bx-dots-vertical-rounded' ></i>
-                    </li> -->
+                    </li>
                 </ul>
             </div>
         </div>

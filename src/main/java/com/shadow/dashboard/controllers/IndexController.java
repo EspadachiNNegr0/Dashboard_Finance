@@ -84,7 +84,7 @@ public class IndexController {
 
     }
 
-    @GetMapping("/index")
+    @GetMapping("/")
     public ModelAndView index() {
         ModelAndView mv = new ModelAndView("index");
         List<Clientes> clientes = clientRepository.findAll();
@@ -102,11 +102,35 @@ public class IndexController {
             priceTotals.put(cliente.getId(), priceTotal);  // Adicionando ao mapa
         }
 
+        Map<Long, Object> dataformatada = new HashMap<>();
+        for (History historia : historias) {
+            String dataforma = historyService.formatadorData(historia);
+            dataformatada.put(historia.getId(), dataforma);
+        }
+
+        // Criando um mapa para armazenar a data de pagamento de cada History
+        // Passando as datas de pagamento já formatadas
+        Map<Long, String> dataDePagamentoMapFormatada = new HashMap<>();
+        for (History historia : historias) {
+            String dataDePagamento = historyService.calculadorDeMeses(historia);  // Agora retorna uma string
+            dataDePagamentoMapFormatada.put(historia.getId(), dataDePagamento);  // Armazenando no mapa
+        }
+
+        System.out.println("Clientes: " + clientes);
+        System.out.println("Price Totals: " + priceTotals);
+        System.out.println("Data de Pagamento Map: " + dataDePagamentoMapFormatada);
+
+
         // Passando os dados para a visão
         mv.addObject("priceTotals", priceTotals);
+        mv.addObject("dataformatada", dataformatada);
         mv.addObject("clientes", clientes);
         mv.addObject("historias", historias);
+        mv.addObject("dataDePagamentoMap", dataDePagamentoMapFormatada); // Passando as datas formatadas
+        // Adicionando as datas de pagamento
 
         return mv;
+
+
     }
 }

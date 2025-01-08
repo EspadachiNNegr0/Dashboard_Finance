@@ -101,33 +101,14 @@
                     close
                 </span></button>
             </div>
-            <div class="modal-body">
-                <tbody>
-                <tr>
-                    <td>Tiger Nixon</td>
-                    <td>System Architect</td>
-                    <td>Edinburgh</td>
-                    <td>61</td>
-                    <td>2011-04-25</td>
-                    <td>$320,800</td>
-                </tr>
-                <tr>
-                    <td>Tiger Nixon</td>
-                    <td>System Architect</td>
-                    <td>Edinburgh</td>
-                    <td>61</td>
-                    <td>2011-04-25</td>
-                    <td>$320,800</td>
-                </tr>
-                <tr>
-                    <td>Tiger Nixon</td>
-                    <td>System Architect</td>
-                    <td>Edinburgh</td>
-                    <td>61</td>
-                    <td>2011-04-25</td>
-                    <td>$320,800</td>
-                </tr>
-                </tbody>
+            <div class="notify-item">
+                <div class="notify_img">
+                    <img src="/img/Admin.jpg" alt="" style="width: 50px;">
+                </div>
+                <div class="notify-info">
+                    <p><span th:each="cliente : ${clientes}" th:text="${cliente.nome} + ' '"></span> commented on your <span>Timeline Share</span></p>
+                    <span class="notify-time">10 minutes ago</span>
+                </div>
             </div>
         </div>
 
@@ -147,9 +128,9 @@
                     <span class="material-symbols-sharp">person</span>
                     Meu Perfil
                 </a>
-                <a href="/settings">
-                    <span class="material-symbols-sharp">settings</span>
-                    Configurações
+                <a href="/logout">
+                    <span class="material-symbols-sharp">logout</span>
+                    Sair
                 </a>
             </div>
         </div>
@@ -178,7 +159,8 @@
                 <div class="head">
                     <h3>Recent Orders</h3>
 
-                    <button class="add">Add Emprestimo</button>
+                    <button class="add" aria-label="Adicionar empréstimo">Add Emprestimo</button>
+
                     <i class='bx bx-filter' ></i>
                 </div>
                 <table id="example" class="table table-striped" style="width:100%">

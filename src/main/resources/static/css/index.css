@@ -667,6 +667,9 @@ body {
 
 .modal-header{
     display: flex;
+    top: 100px;
+    margin: 140px;
+    margin-top: -2px;
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid #ccc;
@@ -724,6 +727,45 @@ body {
 .table-data .add:hover{
     opacity: 1;
 }
+
+/* Estilo para o item de notificação */
+.notify-item {
+    display: flex; /* Alinha a imagem e o texto lado a lado */
+    align-items: center; /* Centraliza verticalmente */
+    gap: 15px; /* Espaçamento horizontal entre a imagem e o texto */
+    margin-bottom: 10px; /* Espaçamento entre notificações */
+    padding: 10px; /* Espaçamento interno do contêiner */
+    border-bottom: 1px solid #ddd; /* Linha separadora entre notificações (opcional) */
+}
+
+/* Estilo para a imagem da notificação */
+.notify_img img {
+    border-radius: 50%; /* Torna a imagem circular */
+    width: 50px; /* Largura da imagem */
+    height: 50px; /* Altura da imagem */
+}
+
+/* Estilo para o texto da notificação */
+.notify-info {
+    flex: 1; /* Ocupa o restante do espaço disponível */
+}
+
+.notify-info p {
+    margin: 0; /* Remove margens externas */
+    font-size: 14px; /* Tamanho da fonte */
+    color: var(--dark); /* Cor do texto */
+}
+
+.notify-info span {
+    color: var(--blue);
+}
+
+.notify-info .notify-time {
+    font-size: 12px; /* Tamanho menor para o tempo */
+    color: #888; /* Cor secundária */
+}
+
+
 
 @media screen and (max-width: 768px) {
     #sidebar {
