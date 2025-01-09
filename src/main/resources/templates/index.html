@@ -76,7 +76,6 @@
             <div class="modal-header">
                 <h2>Notifications</h2>
                 <button id="close-modal"><span class="material-symbols-sharp">
-
                 </span></button>
             </div>
             <div class="notify-item">
@@ -169,57 +168,79 @@
                                 <header>Registro de Empréstimo</header>
                             </div>
                             <div class="modal-body">
-                                <form action="#">
+                                <form action="/" method="POST">
                                     <div class="details-emprestimo">
                                         <span class="title">Detalhes do Empréstimo</span>
                                         <div class="fields">
                                             <!-- Nome do Cliente -->
                                             <div class="input-field">
                                                 <label>Nome do Cliente</label>
-                                                <input type="text" placeholder="Digite o nome do cliente">
+                                                <select name="cliente.id" required>
+                                                    <option value="" disabled selected>Escolha o Cliente</option>
+                                                    <option th:each="cliente : ${clientes}"
+                                                            th:value="${cliente.id}"
+                                                            th:text="${cliente.nome}"></option>
+                                                </select>
                                             </div>
-                                            <!-- CPF -->
-                                            <div class="input-field">
-                                                <label>CPF</label>
-                                                <input type="text" placeholder="Digite o CPF">
-                                            </div>
-                                            <!-- Meio de Contato -->
-                                            <div class="input-field">
-                                                <label>Meio de Contato</label>
-                                                <input type="text" placeholder="Digite o meio de contato">
-                                            </div>
+
                                             <!-- Valor do Empréstimo -->
                                             <div class="input-field">
                                                 <label>Valor do Empréstimo</label>
-                                                <input type="number" placeholder="Digite o valor do empréstimo">
+                                                <input type="number" name="price" placeholder="Digite o valor do empréstimo" required>
                                             </div>
+
                                             <!-- Porcentagem -->
                                             <div class="input-field">
                                                 <label>Porcentagem (%)</label>
-                                                <input type="number" step="0.01" placeholder="Digite a porcentagem de juros">
+                                                <input type="number" name="percentage" step="0.01" placeholder="Digite a porcentagem de juros" required>
                                             </div>
+
                                             <!-- Parcelamento -->
                                             <div class="input-field">
                                                 <label>Parcelamento (meses)</label>
-                                                <input type="number" placeholder="Digite o número de parcelas">
+                                                <input type="number" name="parcelamento" placeholder="Digite o número de parcelas" required>
                                             </div>
+
+                                            <!-- Banco -->
                                             <div class="input-field">
                                                 <label>Banco</label>
-                                                <input type="text" placeholder="Digite qual o banco">
+                                                <select name="banco.id" required>
+                                                    <option value="" disabled selected>Escolha um Banco</option>
+                                                    <option th:each="banco : ${bancos}"
+                                                            th:value="${banco.id}"
+                                                            th:text="${banco.nome}"></option>
+                                                </select>
                                             </div>
+
+                                            <!-- Socio -->
                                             <div class="input-field">
-                                                <label>Funcionario</label>
-                                                <input type="text" placeholder="Digite quem fez o Emprestimo">
+                                                <label>Socio</label>
+                                                <select name="socios.id" required> <!-- Alterado de banco.id para socios.id -->
+                                                    <option value="" disabled selected>Escolha quem emprestou</option>
+                                                    <option th:each="socio : ${socios}"
+                                                            th:value="${socio.id}"
+                                                            th:text="${socio.name}"></option>
+                                                </select>
                                             </div>
+
+
                                             <!-- Data -->
                                             <div class="input-field">
                                                 <label>Data</label>
-                                                <input type="date">
+                                                <input type="date" name="created" required>
                                             </div>
+
+                                            <!-- Descrição -->
+                                            <div class="input-field">
+                                                <label>Descrição</label>
+                                                <input type="text" name="description" placeholder="Coloque uma Descrição" required>
+                                            </div>
+
                                             <button type="submit">Salvar</button>
                                         </div>
                                     </div>
                                 </form>
+
                             </div>
                         </div>
                     </div>
@@ -229,39 +250,37 @@
 
                     <i class='bx bx-filter' ></i>
                 </div>
-                <table id="example" class="table table-striped" style="width:100%">
+                <table style="width:100%">
                     <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>PriceTotal</th>
-                        <th>Start date</th>
-                        <th>Status</th>
+                    <th>Nome</th>
+                    <th>Valor Mensal</th>
+                    <th>Inicio Emprestimo</th>
+                    <th>Status</th>
+                    <tr th:each="historia : ${historias}">
+                        <td th:text="${historia.cliente.nome}"></td>
+                        <td th:text="${priceTotals[historia.id]}"></td>
+                        <td th:text="${dataformatada[historia.id]}"></td>
+                        <td th:text="${historia.status}"></td>
+                        <td>
+                            <button class="openModalDescrip">
+                                <span class="material-symbols-sharp">file_open</span>
+                            </button>
+                        </td>
                     </tr>
                     </thead>
-                    <tbody>
-                    <tr th:each="cliente : ${clientes}">
-                        <td th:text="${cliente.nome}"></td>
-                        <td>
-                            $<span th:text="${priceTotals[cliente.id]}"></span>
-                        </td>
-                        <td>
-                            <span th:each="historia : ${cliente.history}" th:text="${dataformatada[historia.id]} + ' '"></span>
-                        </td>
-                        <td>
-                            <span th:each="historia : ${cliente.history}" th:text="${historia.status} + ' '"></span>
-                        </td>
-                    </tr>
                     </tbody>
                     <tfoot>
                     <tr>
-                        <th>Name</th>
-                        <th>PriceTotal</th>
-                        <th>Start date</th>
+                        <th>Nome</th>
+                        <th>Valor Mensal</th>
+                        <th>Inicio Emprestimo</th>
                         <th>Status</th>
                     </tr>
                     </tfoot>
                 </table>
             </div>
+
+
             <div class="todo">
                 <div class="head">
                     <h3>Todos</h3>
@@ -293,6 +312,35 @@
                 </ul>
             </div>
         </div>
+
+        <div id="modals-emprestimo" class="modal hide">
+            <div class="modal-content">
+                <div class="modal-headers">
+                    <header>Detalhes do Empréstimo</header>
+                    <button id="close-modals">
+                        <span class="material-symbols-sharp"></span>
+                    </button>
+                </div>
+                <div class="modal-body" th:each="historia : ${historias}">
+                    <p><strong>ID: </strong><span th:text="${historia.encryptedId}"></span></p>
+                    <p><strong>Nome do Cliente:</strong> <span th:text="${historia.cliente.nome}"></span></p>
+                    <p><strong>Valor:</strong>
+                        <span th:text="${priceTotals[historia.id]}"></span>
+                    </p>
+                    <p><strong>Porcentagem:</strong> <span th:text="${historia.percentage} + '%'"></span></p>
+                    <p><strong>Status:</strong> <span th:text="${historia.status}"></span></p>
+                    <p><strong>Descrição:</strong> <span th:text="${historia.description}"></span></p>
+                    <p><strong>Data:</strong> <span th:text="${#dates.format(historia.created, 'dd/MM/yyyy')}"></span></p>
+                    <p><strong>Parcelamento:</strong> <span th:text="${historia.parcelamento} + ' meses'"></span></p>
+                    <p><strong>Sócio:</strong> <span th:text="${historia.socios.name}"></span></p>
+                    <p><strong>Banco:</strong> <span th:text="${historia.banco.nome}"></span></p>
+                </div>
+            </div>
+        </div>
+
+
+
+
     </main>
     <!-- MAIN -->
 </section>
@@ -300,5 +348,7 @@
 
 
 <script src="/js/script.js"></script>
+
+
 </body>
 </html>

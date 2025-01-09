@@ -2,9 +2,8 @@ package com.shadow.dashboard.models;
 
 import jakarta.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
-
-import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 
 @Entity
 @Table(name = "Tb_History")
@@ -35,12 +34,17 @@ public class History {
     @JoinColumn(name = "cliente_id", nullable = false)  // A chave estrangeira
     private Clientes cliente; // Cliente associado a esse History
 
-    @DateTimeFormat(pattern = "dd-MM-yyyy")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Temporal(TemporalType.DATE)
     @Column(nullable = false)
     private Date created;
 
+    @ManyToOne
+    private Banco banco;
+
     private int parcelamento;
+
+    private String encryptedId;
 
     // Getters e setters
     public Long getId() {
@@ -113,5 +117,34 @@ public class History {
 
     public void setParcelamento(int parcelamento) {
         this.parcelamento = parcelamento;
+    }
+
+    public Banco getBanco() {
+        return banco;
+    }
+
+    public void setBanco(Banco banco) {
+        this.banco = banco;
+    }
+
+    // Getters e setters para o campo 'encryptedId'
+    public String getEncryptedId() {
+        return encryptedId;
+    }
+
+    public void setEncryptedId(String encryptedId) {
+        this.encryptedId = encryptedId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        History history = (History) o;
+        return Objects.equals(id, history.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }

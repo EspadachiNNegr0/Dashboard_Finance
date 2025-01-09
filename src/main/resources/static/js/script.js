@@ -157,3 +157,59 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+    const addButton = document.querySelector(".openModalDescrip");
+    const modals = document.getElementById("modals-emprestimo");
+    const closeButton = document.getElementById("close-modals");
+
+    // Função para abrir o modals
+    addButton.addEventListener("click", () => {
+        modals.classList.remove("hide");
+        modals.classList.add("show");
+    });
+
+    // Função para fechar o modals
+    closeButton.addEventListener("click", () => {
+        modals.classList.remove("show");
+        modals.classList.add("hide");
+    });
+
+    // Fechar modals clicando fora dele
+    modals.addEventListener("click", (event) => {
+        if (event.target === modals) {
+            modals.classList.remove("show");
+            modals.classList.add("hide");
+        }
+    });
+});
+
+
+document.querySelectorAll('.openModalDescrip').forEach(button => {
+    button.addEventListener('click', function () {
+        // Obtenha o modal
+        const modal = document.getElementById('modals-emprestimo');
+
+        // Preencha os campos do modal com os dados do botão
+        document.getElementById('modal-id').innerText = this.getAttribute('data-id');
+        document.getElementById('modal-cliente').innerText = this.getAttribute('data-cliente');
+        document.getElementById('modal-price').innerText = this.getAttribute('data-price');
+        document.getElementById('modal-percentage').innerText = this.getAttribute('data-percentage');
+        document.getElementById('modal-status').innerText = this.getAttribute('data-status');
+        document.getElementById('modal-description').innerText = this.getAttribute('data-description');
+        document.getElementById('modal-created').innerText = this.getAttribute('data-created');
+        document.getElementById('modal-parcelamento').innerText = this.getAttribute('data-parcelamento');
+        document.getElementById('modal-socios').innerText = this.getAttribute('data-socios');
+        document.getElementById('modal-banco').innerText = this.getAttribute('data-banco');
+
+        // Exiba o modal
+        modal.classList.remove('hide');
+    });
+});
+
+// Fechar o modal
+document.getElementById('close-modals').addEventListener('click', () => {
+    document.getElementById('modals-emprestimo').classList.add('hide');
+});
+
+
