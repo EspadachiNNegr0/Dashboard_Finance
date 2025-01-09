@@ -132,3 +132,28 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
+document.addEventListener("DOMContentLoaded", () => {
+    const addButton = document.querySelector(".add");
+    const modal = document.getElementById("modal-add-emprestimo");
+    const closeButton = document.getElementById("close-modal");
+
+    // Função para abrir o modal
+    addButton.addEventListener("click", () => {
+        modal.classList.remove("hide");
+        modal.classList.add("show");
+    });
+
+    // Função para fechar o modal
+    closeButton.addEventListener("click", () => {
+        modal.classList.remove("show");
+        modal.classList.add("hide");
+    });
+
+    // Fechar modal clicando fora dele
+    modal.addEventListener("click", (event) => {
+        if (event.target === modal) {
+            modal.classList.remove("show");
+            modal.classList.add("hide");
+        }
+    });
+});
