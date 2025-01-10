@@ -78,12 +78,12 @@
                 <button id="close-modal"><span class="material-symbols-sharp">
                 </span></button>
             </div>
-            <div class="notify-item">
+            <div class="notify-item" th:each="notification : ${notification}">
                 <div class="notify_img">
                     <img src="/img/Admin.jpg" alt="" style="width: 50px;">
                 </div>
                 <div class="notify-info">
-                    <p><span th:each="cliente : ${clientes}" th:text="${cliente.nome} + ' '"></span> commented on your <span>Timeline Share</span></p>
+                    <p><span th:text="${notification.message}"></span></p>
                     <span class="notify-time">10 minutes ago</span>
                 </div>
             </div>
