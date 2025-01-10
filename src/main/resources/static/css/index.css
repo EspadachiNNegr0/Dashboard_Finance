@@ -945,12 +945,174 @@ body {
     color: var(--dark);
 }
 
+/* Remover a decoração padrão do span */
+span.material-symbols-sharp {
+    text-decoration: none;  /* Remover qualquer sublinhado ou decoração */
+    background: none;       /* Remover qualquer fundo */
+    border: none;           /* Remover qualquer borda */
+   color: var(--dark);         /* Remover qualquer padding */
+}
+
+
 
 button {
     border: none;
     background-color: var(--light);
     color: var(--dark);
     cursor: pointer;
+}
+
+/*ESTILO DO MODAL DOS CLIENTES*/
+.modal-container-custom {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6); /* Fundo escuro translúcido */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.modal-container-custom.hide {
+    display: none;
+}
+
+.modal-body-custom {
+    display: flex;
+    background-color: #0C0C1E;
+    border-radius: 10px;
+    padding: 20px;
+    width: 90%;
+    max-width: 950px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6); /* Sombra */
+    position: relative;
+}
+
+.modal-left-side-custom {
+    width: 30%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.perfil-image-custom {
+    width: 100px;
+    height: 100px;
+    background-color: rgba(221, 221, 221, 0.2);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.img-placeholder-custom {
+    border-radius: 50%;
+    max-width: 100%;
+}
+
+.data-clients-custom {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.span-modal-custom {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+    color: white;
+}
+
+.modal-right-side-custom {
+    width: 70%;
+    padding: 20px;
+}
+
+#title-modal-historico-custom {
+    text-align: center;
+    margin-bottom: 20px;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.table-container-custom {
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+.history-table-custom {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.history-table-custom th {
+    padding: 10px;
+    text-align: left;
+    background-color: #222234;
+    color: white;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.history-table-custom td {
+    padding: 12px;
+    text-align: left;
+    color: white;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.history-table-custom tr:hover {
+    background-color: rgba(100, 100, 255, 0.1);
+}
+
+.table-container-custom::-webkit-scrollbar {
+    width: 8px;
+}
+
+.table-container-custom::-webkit-scrollbar-thumb {
+    background-color: #4ac1ff;
+    border-radius: 8px;
+}
+
+.table-container-custom::-webkit-scrollbar-track {
+    background-color: #1f1f2e;
+}
+
+.close-button-custom {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: transparent;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.close-button-custom:hover {
+    color: red;
+}
+
+.close-button-custom:focus {
+    outline: none;
+}
+
+
+.todo canvas {
+    width: 100%; /* Largura total do container */
+    max-width: 100%;
+    max-height: 300px; /* Altura fixa e proporcional */
+    margin: 0 auto;
+    background-color: #1F1F2E;
+    border-radius: 10px;
+    padding: 10px;
 }
 
 

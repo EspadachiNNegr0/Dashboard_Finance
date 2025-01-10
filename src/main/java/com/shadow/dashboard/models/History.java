@@ -2,6 +2,9 @@ package com.shadow.dashboard.models;
 
 import jakarta.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Objects;
 
@@ -147,4 +150,5 @@ public class History {
     public int hashCode() {
         return Objects.hashCode(id);
     }
+
 }

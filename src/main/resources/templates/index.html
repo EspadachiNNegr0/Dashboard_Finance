@@ -256,19 +256,21 @@
                     <th>Valor Mensal</th>
                     <th>Inicio Emprestimo</th>
                     <th>Status</th>
-                    <tr th:each="historia : ${historias}">
-                        <td th:text="${historia.cliente.nome}"></td>
+                    <tbody class="device" th:each="historia : ${historias}">
+                    <tr>
+                        <td th:text="${historia.cliente.nome}" onclick="OpenModalOnTable(event)"></td>
                         <td th:text="${priceTotals[historia.id]}"></td>
                         <td th:text="${dataformatada[historia.id]}"></td>
                         <td th:text="${historia.status}"></td>
                         <td>
-                            <button class="openModalDescrip">
+                            <a th:href="@{/histori/{id}(id=${historia.id})}" class="btn btn-info">
                                 <span class="material-symbols-sharp">file_open</span>
-                            </button>
+                            </a>
                         </td>
                     </tr>
-                    </thead>
                     </tbody>
+
+                    </thead>
                     <tfoot>
                     <tr>
                         <th>Nome</th>
@@ -280,71 +282,117 @@
                 </table>
             </div>
 
-
             <div class="todo">
                 <div class="head">
-                    <h3>Todos</h3>
+                    <h3>Valores Mensais</h3>
                     <i class='bx bx-plus'></i>
-                    <i class='bx bx-filter' ></i>
+                    <i class='bx bx-filter'></i>
                 </div>
-                <ul class="todo-list">
-
-                    <li class="completed">
-                        <p>Todo List</p>
-                        <i class='bx bx-dots-vertical-rounded' ></i>
-                    </li>
-                    <li class="completed">
-                        <p>Todo List</p>
-                        <i class='bx bx-dots-vertical-rounded' ></i>
-                    </li>
-                    <li class="not-completed">
-                        <p>Todo List</p>
-                        <i class='bx bx-dots-vertical-rounded' ></i>
-                    </li>
-                    <li class="completed">
-                        <p>Todo List</p>
-                        <i class='bx bx-dots-vertical-rounded' ></i>
-                    </li>
-                    <li class="not-completed">
-                        <p>Todo List</p>
-                        <i class='bx bx-dots-vertical-rounded' ></i>
-                    </li>
-                </ul>
+                <!-- Canvas para o gráfico -->
+                <canvas id="myChart" width="400" height="200"></canvas>
             </div>
+
         </div>
-
-        <div id="modals-emprestimo" class="modal hide">
-            <div class="modal-content">
-                <div class="modal-headers">
-                    <header>Detalhes do Empréstimo</header>
-                    <button id="close-modals">
-                        <span class="material-symbols-sharp"></span>
-                    </button>
-                </div>
-                <div class="modal-body" th:each="historia : ${historias}">
-                    <p><strong>ID: </strong><span th:text="${historia.encryptedId}"></span></p>
-                    <p><strong>Nome do Cliente:</strong> <span th:text="${historia.cliente.nome}"></span></p>
-                    <p><strong>Valor:</strong>
-                        <span th:text="${priceTotals[historia.id]}"></span>
-                    </p>
-                    <p><strong>Porcentagem:</strong> <span th:text="${historia.percentage} + '%'"></span></p>
-                    <p><strong>Status:</strong> <span th:text="${historia.status}"></span></p>
-                    <p><strong>Descrição:</strong> <span th:text="${historia.description}"></span></p>
-                    <p><strong>Data:</strong> <span th:text="${#dates.format(historia.created, 'dd/MM/yyyy')}"></span></p>
-                    <p><strong>Parcelamento:</strong> <span th:text="${historia.parcelamento} + ' meses'"></span></p>
-                    <p><strong>Sócio:</strong> <span th:text="${historia.socios.name}"></span></p>
-                    <p><strong>Banco:</strong> <span th:text="${historia.banco.nome}"></span></p>
-                </div>
-            </div>
         </div>
-
-
-
 
     </main>
     <!-- MAIN -->
+    <!-- Modal de detalhes do cliente -->
+    <div class="modal-container-custom hide">
+        <div class="modal-body-custom">
+            <div class="modal-left-side-custom">
+                <div class="perfil-image-custom">
+                    <img src="" alt="Imagem do Perfil" class="img-placeholder-custom">
+                </div>
+                <div class="data-clients-custom">
+                    <span class="span-modal-custom"><strong>Nome:</strong> <span id="modal-nome"></span></span>
+                    <span class="span-modal-custom"><strong>Idade:</strong> <span id="modal-idade"></span></span>
+                    <span class="span-modal-custom"><strong>CPF:</strong> <span id="modal-cpf"></span></span>
+                </div>
+            </div>
+            <div class="modal-right-side-custom">
+                <h2 id="title-modal-historico-custom">Histórico</h2>
+                <div class="table-container-custom">
+                    <table class="history-table-custom">
+                        <thead>
+                        <tr>
+                            <th>Valor</th>
+                            <th>Parcelas</th>
+                            <th>Data</th>
+                            <th>Porcentagem</th>
+                            <th>Código</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
+                        <tbody id="modal-historico-body">
+                        <!-- As linhas da tabela serão preenchidas dinamicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <button class="close-button-custom" onclick="closeModal()">X</button>
+        </div>
+    </div>
+
+
 </section>
 <!-- CONTENT -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let myChart = null;
+
+    function renderChart() {
+        const ctx = document.getElementById('myChart').getContext('2d');
+        if (myChart !== null) {
+            myChart.destroy();
+        }
+
+        myChart = new Chart(ctx, {
+            type: 'bar', // Tipo do gráfico
+            data: {
+                labels: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+                datasets: [{
+                    label: 'Empréstimos',
+                    data: [153, 234, 167, 250, 304, 200, 180, 220, 270, 290, 310, 400],
+                    backgroundColor: 'rgba(54, 162, 235, 0.8)', // Cor das barras
+                    borderColor: 'rgba(54, 162, 235, 1)', // Cor da borda
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: 'white'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: 'white'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'white'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    window.addEventListener('load', () => {
+        if (!myChart) {
+            renderChart();
+        }
+    });
+</script>
 
 
 <script src="/js/script.js"></script>

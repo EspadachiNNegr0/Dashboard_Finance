@@ -213,3 +213,94 @@ document.getElementById('close-modals').addEventListener('click', () => {
 });
 
 
+//JS DO MODAL
+
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('user-modal');
+    const fade = document.getElementById('fade-user-modal');
+    const closeModalBtn = document.getElementById('close-user-modal');
+    const openModalElements = document.querySelectorAll('.open-modal');
+
+    function openModal(userId) {
+        // Aqui você pode carregar os dados reais do usuário com base no ID
+        console.log(`Abrindo modal para o usuário com ID: ${userId}`);
+
+        // Exibir modal
+        modal.classList.remove('hide');
+        fade.classList.remove('hide');
+    }
+
+    function closeModal() {
+        modal.classList.add('hide');
+        fade.classList.add('hide');
+    }
+
+    openModalElements.forEach((element) => {
+        element.addEventListener('click', () => {
+            const userId = element.getAttribute('data-id'); // Pega o ID do usuário
+            openModal(userId);
+        });
+    });
+
+    closeModalBtn.addEventListener('click', closeModal);
+    fade.addEventListener('click', closeModal);
+});
+
+
+// Função que abre o modal com os dados do cliente
+function OpenModalOnTable(event) {
+    const clienteNome = event.target.textContent.trim(); // Captura o texto do elemento clicado (nome do cliente)
+
+    const cliente = {
+        nome: clienteNome,
+        idade: 34, // Exemplo fixo, pode ser substituído pelos dados reais
+        cpf: '87556643556', // Exemplo fixo
+        history: [
+            { valor: 'R$ 500,00', parcelas: '5x', data: '12/12/2024', porcentagem: 5, codigo: 'ABC123', status: 'Pendente' },
+            { valor: 'R$ 300,00', parcelas: '3x', data: '11/11/2024', porcentagem: 10, codigo: 'XYZ789', status: 'Pago' },
+        ]
+    };
+
+    openModalDetails(cliente); // Chama a função para abrir o modal com os dados capturados
+}
+
+// Função para abrir o modal de cliente
+function openModalDetails(cliente) {
+    const modalContainer = document.querySelector('.modal-container-custom');
+    modalContainer.classList.remove('hide'); // Exibe o modal
+
+    // Preenche os dados do modal com as informações do cliente
+    document.getElementById('modal-nome').innerText = cliente.nome || "Não informado";
+    document.getElementById('modal-idade').innerText = cliente.idade || "Não informado";
+    document.getElementById('modal-cpf').innerText = cliente.cpf || "Não informado";
+
+    const historicoBody = document.getElementById('modal-historico-body');
+    historicoBody.innerHTML = ''; // Limpa o histórico anterior
+
+    if (cliente.history) {
+        cliente.history.forEach(historia => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${historia.valor || "N/A"}</td>
+                <td>${historia.parcelas || "N/A"}</td>
+                <td>${historia.data || "N/A"}</td>
+                <td>${historia.porcentagem || "N/A"}%</td>
+                <td>${historia.codigo || "N/A"}</td>
+                <td>${historia.status || "N/A"}</td>
+            `;
+            historicoBody.appendChild(row);
+        });
+    }
+}
+
+// Função para fechar o modal
+function closeModalDetails() {
+    document.querySelector('.modal-container-custom').classList.add('hide'); // Esconde o modal
+}
+
+// Evento para fechar o modal ao clicar fora do conteúdo
+document.querySelector('.modal-container-custom').addEventListener('click', (e) => {
+    if (e.target.classList.contains('modal-container-custom')) {
+        closeModalDetails();
+    }
+});

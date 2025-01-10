@@ -6,10 +6,10 @@ import com.shadow.dashboard.repository.ClientRepository;
 import com.shadow.dashboard.repository.HistoryRepository;
 import com.shadow.dashboard.repository.SociosRepository;
 import com.shadow.dashboard.service.ClientService;
-import com.shadow.dashboard.service.EncryptionService;
 import com.shadow.dashboard.service.HistoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -40,9 +40,6 @@ public class IndexController {
     @Autowired
     private BancoRepository bancoRepository;
 
-    @Autowired
-    private EncryptionService encryptionService; // Serviço de criptografia
-
     @GetMapping("/")
     public ModelAndView index() throws Exception {
         ModelAndView mv = new ModelAndView("index");
@@ -64,16 +61,11 @@ public class IndexController {
             priceTotals.put(historia.getId(), priceTotal);  // Usando a ID do cliente como chave
         }
 
+
         Map<Long, Object> dataformatada = new HashMap<>();
         for (History historia : historias) {
             String dataforma = historyService.formatadorData(historia);
             dataformatada.put(historia.getId(), dataforma);
-        }
-
-
-        for (History historia : historias) {
-            String encryptedId = encryptionService.encrypt(String.valueOf(historia.getId()));
-            historia.setEncryptedId(encryptedId); // Adicionar um campo com o ID criptografado
         }
 
         // Criando um mapa para armazenar a data de pagamento de cada History
@@ -87,6 +79,7 @@ public class IndexController {
         mv.addObject("priceTotals", priceTotals);
         mv.addObject("dataformatada", dataformatada);
         mv.addObject("clientes", clientes);
+        mv.addObject("socios", socios);
         mv.addObject("historias", historias);
         mv.addObject("dataDePagamentoMap", dataDePagamentoMapFormatada); // Passando as datas formatadas
         mv.addObject("bancos", bancos);
@@ -108,4 +101,48 @@ public class IndexController {
         // Redireciona para a página inicial
         return "redirect:/";
     }
+
+    @GetMapping("/histori/{id}")
+    public String detalhesVenda(@PathVariable("id") long id, Model model) {
+
+        // Carregar listas no modelo
+        List<Clientes> clientes = clientRepository.findAll();
+        List<History> historias = historyRepository.findAll();
+        List<Banco> bancos = bancoRepository.findAll();
+        List<Socios> socios = sociosRepository.findAll();
+
+        Map<Long, Object> dataformatada = new HashMap<>();
+        for (History historia : historias) {
+            String dataforma = historyService.formatadorData(historia);
+            dataformatada.put(historia.getId(), dataforma);
+        }
+
+        // Criando um mapa para armazenar o priceTotal de cada cliente
+        Map<Long, Double> priceTotals = new HashMap<>();
+        for (History historia : historias) {
+            // Calculando o preço total de um cliente, considerando suas histórias
+            Double priceTotal = clientService.calcularPrecoTotalComJuros(historia);
+            priceTotals.put(historia.getId(), priceTotal);  // Usando a ID do cliente como chave
+        }
+
+        // Adicionar listas ao modelo
+        model.addAttribute("priceTotals", priceTotals);
+        model.addAttribute("clientes", clientes);
+        model.addAttribute("bancos", bancos);
+        model.addAttribute("socios", socios);
+        model.addAttribute("historias", historias);
+        model.addAttribute("dataformatada", dataformatada);
+
+        // Obter história específica
+        History historia = historyRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("História não encontrada com o ID: " + id));
+
+        // Adicionar história ao modelo
+        model.addAttribute("histori", historia);
+
+        // Retorna o template
+        return "detalhe/detalhes";
+    }
+
+
 }
