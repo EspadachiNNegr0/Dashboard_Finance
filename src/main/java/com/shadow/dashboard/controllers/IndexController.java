@@ -61,6 +61,12 @@ public class IndexController {
             priceTotals.put(historia.getId(), priceTotal);  // Usando a ID do cliente como chave
         }
 
+        Map<Long, Double> priceTotalSP = new HashMap<>();
+        for (History history : historias) {
+            Double priceTotal = clientService.calcularPrecoTotalComJurosSemParcelar(history);
+            priceTotalSP.put(history.getId(), priceTotal);
+        }
+
 
         Map<Long, Object> dataformatada = new HashMap<>();
         for (History historia : historias) {
@@ -77,6 +83,7 @@ public class IndexController {
 
         // Passando os dados para a visão
         mv.addObject("priceTotals", priceTotals);
+        mv.addObject("priceTotalSP", priceTotalSP);
         mv.addObject("dataformatada", dataformatada);
         mv.addObject("clientes", clientes);
         mv.addObject("socios", socios);
@@ -125,13 +132,29 @@ public class IndexController {
             priceTotals.put(historia.getId(), priceTotal);  // Usando a ID do cliente como chave
         }
 
+        Map<Long, Double> priceTotalSP = new HashMap<>();
+        for (History history : historias) {
+            Double priceTotal = clientService.calcularPrecoTotalComJurosSemParcelar(history);
+            priceTotalSP.put(history.getId(), priceTotal);
+        }
+
+        // Criando um mapa para armazenar a data de pagamento de cada History
+        Map<Long, String> dataDePagamentoMapFormatada = new HashMap<>();
+        for (History historia : historias) {
+            String dataDePagamento = historyService.calculadorDeMeses(historia);
+            dataDePagamentoMapFormatada.put(historia.getId(), dataDePagamento);
+        }
+
         // Adicionar listas ao modelo
         model.addAttribute("priceTotals", priceTotals);
+
+        model.addAttribute("priceTotalSP", priceTotalSP);
         model.addAttribute("clientes", clientes);
         model.addAttribute("bancos", bancos);
         model.addAttribute("socios", socios);
         model.addAttribute("historias", historias);
         model.addAttribute("dataformatada", dataformatada);
+        model.addAttribute("dataDePagamentoMap", dataDePagamentoMapFormatada); // Passando as datas formatadas
 
         // Obter história específica
         History historia = historyRepository.findById(id)
