@@ -1,6 +1,10 @@
 package com.shadow.dashboard.service;
 
 import com.shadow.dashboard.models.History;
+import com.shadow.dashboard.models.Notification;
+import com.shadow.dashboard.repository.HistoryRepository;
+import com.shadow.dashboard.repository.NotificationRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.xml.crypto.Data;
@@ -10,6 +14,34 @@ import java.util.Date;
 
 @Service
 public class HistoryService {
+
+    @Autowired
+    private HistoryRepository historyRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    public void saveHistoryAndCreateNotification(History history) {
+        // Salve o histórico
+        historyRepository.save(history);
+
+        // Criação da notificação
+        createNotification(history);
+    }
+
+    private void createNotification(History history) {
+        // Crie a mensagem de notificação
+        String message = "Novo histórico para o cliente " + history.getCliente().getNome() + " com status " + history.getStatus();
+
+        // Crie o objeto Notification
+        Notification notification = new Notification();
+        notification.setCliente(history.getCliente());
+        notification.setMessage(message);
+
+        // Salve a notificação no banco de dados
+        notificationRepository.save(notification);
+    }
+
 
     public String formatadorData(History history) {
         if (history != null && history.getCreated() != null) {
