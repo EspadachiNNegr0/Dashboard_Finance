@@ -99,8 +99,8 @@ public class IndexController {
         // Definir o status como 'progressing' automaticamente
         historia.setStatus(Status.PROCESSING);
 
-        // Salve a entidade no banco
-        historyRepository.save(historia);
+        // Salve a entidade no banco de dados e crie a notificação automaticamente
+        historyService.saveHistoryAndCreateNotification(historia);
 
         // Adicionar mensagem de sucesso
         redirectAttributes.addFlashAttribute("message", "Empréstimo registrado com sucesso!");
