@@ -2,7 +2,6 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <link rel="stylesheet" href="/css/detalhes.css">
-
     <title>Detalhes do Empréstimo</title>
 </head>
 <body>
@@ -11,25 +10,27 @@
         <div class="modal-headers">
             <header>Detalhes do Empréstimo</header>
             <button>
-               <a href="/">Voltar</a>
+                <a href="/">Voltar</a>
             </button>
         </div>
-        <div class="modal-body" th:each="historia : ${histori}">
+        <div class="modal-body">
             <div class="details-emprestimo">
-                 <div class="fields">
-                    <p><strong>ID: </strong><span th:text="${historia.id}"></span></p>
-                    <p><strong>Nome do Cliente:</strong> <span th:text="${historia.cliente.nome}"></span></p>
-                    <p><strong>Valor Mensal:</strong>
-                        <span th:text="${priceTotals[historia.id]}"></span>
+                <div class="fields">
+                    <p><strong>ID:</strong> <span th:text="${histori.id}"></span></p>
+                    <p><strong>Nome do Cliente:</strong> <span th:text="${histori.cliente?.nome}">Cliente não informado</span></p>
+                    <p><strong>Valor do Empréstimo:</strong> <span th:text="${histori.price}"></span></p>
+                    <p><strong>Porcentagem:</strong> <span th:text="${histori.percentage + '%'}"></span></p>
+                    <p><strong>Valor Total:</strong> <span th:text="${priceTotalSP[histori.id]}"></span></p>
+                    <p><strong>Valor Mensal:</strong> <span th:text="${priceTotals[histori.id]}"></span></p>
+                    <p><strong>Status:</strong> <span th:text="${histori.status}"></span></p>
+                    <p><strong>Descrição:</strong> <span th:text="${histori.description}"></span></p>
+                    <p><strong>Data:</strong> <span th:text="${#dates.format(histori.created, 'dd/MM/yyyy')}"></span></p>
+                    <p><strong>Parcelamento:</strong> <span th:text="${histori.parcelamento + ' meses'}"></span></p>
+                    <p><strong>Data do último pagamento:</strong>
+                        <span th:text="${dataDePagamentoMap[histori.id]}"></span>
                     </p>
-                    <p><strong>Porcentagem:</strong> <span th:text="${historia.percentage} + '%'"></span></p>
-                    <p><strong>Status:</strong> <span th:text="${historia.status}"></span></p>
-                    <p><strong>Descrição:</strong> <span th:text="${historia.description}"></span></p>
-                    <p><strong>Data:</strong> <span th:text="${#dates.format(historia.created, 'dd/MM/yyyy')}"></span></p>
-                    <p><strong>Parcelamento:</strong> <span th:text="${historia.parcelamento} + ' meses'"></span></p>
-                    <p><strong>Sócio:</strong> <span th:text="${historia.socios.name}"></span></p>
-                    <p><strong>Banco:</strong> <span th:text="${historia.banco.nome}"></span></p>
-
+                    <p><strong>Sócio:</strong> <span th:text="${histori.socios?.name}">Sócio não informado</span></p>
+                    <p><strong>Banco:</strong> <span th:text="${histori.banco?.nome}">Banco não informado</span></p>
                 </div>
             </div>
         </div>
