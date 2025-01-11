@@ -1,7 +1,9 @@
 package com.shadow.dashboard.service;
 
+import com.shadow.dashboard.models.Clientes;
 import com.shadow.dashboard.models.History;
 import com.shadow.dashboard.models.Notification;
+import com.shadow.dashboard.repository.ClientRepository;
 import com.shadow.dashboard.repository.HistoryRepository;
 import com.shadow.dashboard.repository.NotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,9 @@ public class HistoryService {
     @Autowired
     private NotificationRepository notificationRepository;
 
+    @Autowired
+    private ClientRepository clienteRepository;
+
     public void saveHistoryAndCreateNotification(History history) {
         // Salve o histórico
         historyRepository.save(history);
@@ -30,12 +35,22 @@ public class HistoryService {
     }
 
     private void createNotification(History history) {
+        // Verifique se o ID do cliente existe
+        if (history.getCliente().getId() == null) {
+            System.out.println("ID do cliente é nulo no objeto History.");
+            return;
+        }
+
+        // Buscar o cliente no banco de dados
+        Clientes cliente = clienteRepository.findById(history.getCliente().getId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado para o ID: " + history.getCliente().getId()));
+
         // Crie a mensagem de notificação
-        String message = "Novo histórico para o cliente " + history.getCliente().getNome() + " com status " + history.getStatus();
+        String message = "Novo histórico para o cliente " + cliente.getNome() + " com status " + history.getStatus();
 
         // Crie o objeto Notification
         Notification notification = new Notification();
-        notification.setCliente(history.getCliente());
+        notification.setCliente(cliente); // Relacione a notificação ao cliente
         notification.setMessage(message);
 
         // Salve a notificação no banco de dados

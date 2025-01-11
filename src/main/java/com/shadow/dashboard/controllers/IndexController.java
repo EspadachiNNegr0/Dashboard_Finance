@@ -1,10 +1,7 @@
 package com.shadow.dashboard.controllers;
 
 import com.shadow.dashboard.models.*;
-import com.shadow.dashboard.repository.BancoRepository;
-import com.shadow.dashboard.repository.ClientRepository;
-import com.shadow.dashboard.repository.HistoryRepository;
-import com.shadow.dashboard.repository.SociosRepository;
+import com.shadow.dashboard.repository.*;
 import com.shadow.dashboard.service.ClientService;
 import com.shadow.dashboard.service.HistoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +37,9 @@ public class IndexController {
     @Autowired
     private BancoRepository bancoRepository;
 
+    @Autowired
+    private NotificationRepository notificationRepository;
+
     @GetMapping("/")
     public ModelAndView index() throws Exception {
         ModelAndView mv = new ModelAndView("index");
@@ -47,6 +47,7 @@ public class IndexController {
         List<History> historias = historyRepository.findAll();
         List<Banco> bancos = bancoRepository.findAll();
         List<Socios> socios = sociosRepository.findAll();
+        List<Notification> notification = notificationRepository.findAll();
 
         // Limitar o número de clientes a 5
         if (clientes.size() > 5) {
@@ -67,6 +68,8 @@ public class IndexController {
             priceTotalSP.put(history.getId(), priceTotal);
         }
 
+        int totalNotify = notification.size();
+
 
         Map<Long, Object> dataformatada = new HashMap<>();
         for (History historia : historias) {
@@ -82,6 +85,8 @@ public class IndexController {
         }
 
         // Passando os dados para a visão
+        mv.addObject("totalNotify", totalNotify);
+        mv.addObject("notification", notification);
         mv.addObject("priceTotals", priceTotals);
         mv.addObject("priceTotalSP", priceTotalSP);
         mv.addObject("dataformatada", dataformatada);

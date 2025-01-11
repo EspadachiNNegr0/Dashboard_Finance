@@ -67,7 +67,7 @@
         <div id="open-modal">
             <button class="notification">
                 <span class="material-symbols-sharp">notifications</span>
-                <span class="num">8</span>
+                <span class="num" th:text="${totalNotify}"></span>
             </button>
         </div>
 
@@ -84,7 +84,10 @@
                 </div>
                 <div class="notify-info">
                     <p><span th:text="${notification.message}"></span></p>
-                    <span class="notify-time">10 minutes ago</span>
+                    <p>
+                        <span class="notify-time" th:text="${#temporals.format(notification.createdAt, 'mm')}"></span> minutes ago.
+                    </p>
+
                 </div>
             </div>
         </div>

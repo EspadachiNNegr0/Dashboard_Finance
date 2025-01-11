@@ -33,4 +33,15 @@ public class ClientService {
         }
         return 0.0;
     }
+
+    // Método para calcular o preço total (preço base + juros) de uma história
+    public double calcularPrecoTotalComJurosSemParcelar(History historia) {
+        if (historia != null) {
+            double valorJuros = calcularJurosSobreHistoria(historia);
+            // Preço total (base + juros), dividindo pelos parcelamentos se existirem
+            double valorPorParcelas = valorJuros + historia.getPrice();
+            return valorPorParcelas;
+        }
+        return 0.0;
+    }
 }

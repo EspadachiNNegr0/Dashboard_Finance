@@ -761,8 +761,8 @@ body {
 }
 
 .notify-info .notify-time {
-    font-size: 12px; /* Tamanho menor para o tempo */
-    color: #888; /* Cor secundária */
+    font-size: 13px; /* Tamanho menor para o tempo */
+    color: var(--dark); /* Cor secundária */
 }
 
 
@@ -950,7 +950,7 @@ span.material-symbols-sharp {
     text-decoration: none;  /* Remover qualquer sublinhado ou decoração */
     background: none;       /* Remover qualquer fundo */
     border: none;           /* Remover qualquer borda */
-   color: var(--dark);         /* Remover qualquer padding */
+    color: var(--dark);         /* Remover qualquer padding */
 }
 
 
@@ -962,7 +962,6 @@ button {
     cursor: pointer;
 }
 
-/*ESTILO DO MODAL DOS CLIENTES*/
 .modal-container-custom {
     position: fixed;
     top: 0;
