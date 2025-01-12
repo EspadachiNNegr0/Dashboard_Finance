@@ -2,6 +2,7 @@ package com.shadow.dashboard.models;
 
 import jakarta.persistence.*;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -24,9 +25,6 @@ public class Clientes {
 
     @Column(nullable = true)
     private String endereco;
-
-    @OneToMany(mappedBy = "cliente") // "cliente" é o nome do atributo na classe History
-    private Set<History> history;
 
     public Long getId() {
         return id;
@@ -66,14 +64,6 @@ public class Clientes {
 
     public void setEndereco(String endereco) {
         this.endereco = endereco;
-    }
-
-    public Set<History> getHistory() {
-        return history;
-    }
-
-    public void setHistory(Set<History> history) {
-        this.history = history;
     }
 
     @Override

@@ -3,7 +3,7 @@ package com.shadow.dashboard.controllers;
 import com.shadow.dashboard.models.*;
 import com.shadow.dashboard.repository.*;
 import com.shadow.dashboard.service.ClientService;
-import com.shadow.dashboard.service.HistoryService;
+import com.shadow.dashboard.service.HistoricoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,10 +23,10 @@ public class IndexController {
     private ClientRepository clientRepository;
 
     @Autowired
-    private HistoryRepository historyRepository;
+    private HistoricoRepository historicoRepository;
 
     @Autowired
-    private HistoryService historyService;
+    private HistoricoService historicoService;
 
     @Autowired
     private ClientService clientService;
@@ -43,69 +43,65 @@ public class IndexController {
     @GetMapping("/")
     public ModelAndView index() throws Exception {
         ModelAndView mv = new ModelAndView("index");
+
         List<Clientes> clientes = clientRepository.findAll();
-        List<History> historias = historyRepository.findAll();
+        List<Historico> historias = historicoRepository.findAll();
         List<Banco> bancos = bancoRepository.findAll();
         List<Socios> socios = sociosRepository.findAll();
-        List<Notification> notification = notificationRepository.findAll();
+        List<Notification> notifications = notificationRepository.findAll();
 
         // Limitar o número de clientes a 5
         if (clientes.size() > 5) {
             clientes = clientes.subList(0, 5);
         }
 
-        // Criando um mapa para armazenar o priceTotal de cada cliente
+        // Mapeamento para total de preços com juros
         Map<Long, Double> priceTotals = new HashMap<>();
-        for (History historia : historias) {
-            // Calculando o preço total de um cliente, considerando suas histórias
+        for (Historico historia : historias) {
             Double priceTotal = clientService.calcularPrecoTotalComJuros(historia);
             priceTotals.put(historia.getId(), priceTotal);  // Usando a ID do cliente como chave
         }
 
+        // Mapeamento para o valor total sem parcelamento
         Map<Long, Double> priceTotalSP = new HashMap<>();
-        for (History history : historias) {
-            Double priceTotal = clientService.calcularPrecoTotalComJurosSemParcelar(history);
-            priceTotalSP.put(history.getId(), priceTotal);
+        for (Historico historia : historias) {
+            Double priceTotal = clientService.calcularPrecoTotalComJurosSemParcelar(historia);
+            priceTotalSP.put(historia.getId(), priceTotal);
         }
 
-        int totalNotify = notification.size();
+        // Total de notificações
+        int totalNotify = notifications.size();
 
-
-        Map<Long, Object> dataformatada = new HashMap<>();
-        for (History historia : historias) {
-            String dataforma = historyService.formatadorData(historia);
-            dataformatada.put(historia.getId(), dataforma);
-        }
-
-        // Criando um mapa para armazenar a data de pagamento de cada History
-        Map<Long, String> dataDePagamentoMapFormatada = new HashMap<>();
-        for (History historia : historias) {
-            String dataDePagamento = historyService.calculadorDeMeses(historia);
-            dataDePagamentoMapFormatada.put(historia.getId(), dataDePagamento);
+        // Mapear datas formatadas e de pagamento
+        Map<Long, Object> dataFormatada = new HashMap<>();
+        Map<Long, String> dataDePagamentoMap = new HashMap<>();
+        for (Historico historia : historias) {
+            dataFormatada.put(historia.getId(), historicoService.formatadorData(historia));
+            dataDePagamentoMap.put(historia.getId(), historicoService.calculadorDeMeses(historia));
         }
 
         // Passando os dados para a visão
         mv.addObject("totalNotify", totalNotify);
-        mv.addObject("notification", notification);
+        mv.addObject("notifications", notifications);
         mv.addObject("priceTotals", priceTotals);
         mv.addObject("priceTotalSP", priceTotalSP);
-        mv.addObject("dataformatada", dataformatada);
+        mv.addObject("dataFormatada", dataFormatada);
         mv.addObject("clientes", clientes);
         mv.addObject("socios", socios);
         mv.addObject("historias", historias);
-        mv.addObject("dataDePagamentoMap", dataDePagamentoMapFormatada); // Passando as datas formatadas
+        mv.addObject("dataDePagamentoMap", dataDePagamentoMap);
         mv.addObject("bancos", bancos);
 
         return mv;
     }
 
     @PostMapping("/")
-    public String saveEmprestimo(@ModelAttribute History historia, RedirectAttributes redirectAttributes) {
-        // Definir o status como 'progressing' automaticamente
+    public String saveEmprestimo(@ModelAttribute Historico historia, RedirectAttributes redirectAttributes) {
+        // Definir o status como 'processing' automaticamente
         historia.setStatus(Status.PROCESSING);
 
-        // Salve a entidade no banco de dados e crie a notificação automaticamente
-        historyService.saveHistoryAndCreateNotification(historia);
+        // Salvar a entidade no banco de dados e criar a notificação
+        historicoService.saveHistoryAndCreateNotification(historia);
 
         // Adicionar mensagem de sucesso
         redirectAttributes.addFlashAttribute("message", "Empréstimo registrado com sucesso!");
@@ -116,61 +112,42 @@ public class IndexController {
 
     @GetMapping("/histori/{id}")
     public String detalhesVenda(@PathVariable("id") long id, Model model) {
+        // Buscar o histórico específico pelo ID
+        Historico histori = historicoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Histórico não encontrado para o ID: " + id));
 
-        // Carregar listas no modelo
+        // Carregar outras listas no modelo
         List<Clientes> clientes = clientRepository.findAll();
-        List<History> historias = historyRepository.findAll();
         List<Banco> bancos = bancoRepository.findAll();
         List<Socios> socios = sociosRepository.findAll();
+        List<Historico> historias = historicoRepository.findAll();
 
-        Map<Long, Object> dataformatada = new HashMap<>();
-        for (History historia : historias) {
-            String dataforma = historyService.formatadorData(historia);
-            dataformatada.put(historia.getId(), dataforma);
-        }
+        // Mapear datas formatadas
+        Map<Long, Object> dataFormatada = new HashMap<>();
+        dataFormatada.put(histori.getId(), historicoService.formatadorData(histori));
 
-        // Criando um mapa para armazenar o priceTotal de cada cliente
+        // Calcular preços totais com juros
         Map<Long, Double> priceTotals = new HashMap<>();
-        for (History historia : historias) {
-            // Calculando o preço total de um cliente, considerando suas histórias
-            Double priceTotal = clientService.calcularPrecoTotalComJuros(historia);
-            priceTotals.put(historia.getId(), priceTotal);  // Usando a ID do cliente como chave
-        }
+        priceTotals.put(histori.getId(), clientService.calcularPrecoTotalComJuros(histori));
 
+        // Calcular preço sem parcelar
         Map<Long, Double> priceTotalSP = new HashMap<>();
-        for (History history : historias) {
-            Double priceTotal = clientService.calcularPrecoTotalComJurosSemParcelar(history);
-            priceTotalSP.put(history.getId(), priceTotal);
-        }
+        priceTotalSP.put(histori.getId(), clientService.calcularPrecoTotalComJurosSemParcelar(histori));
 
-        // Criando um mapa para armazenar a data de pagamento de cada History
+        // Mapear data de pagamento
         Map<Long, String> dataDePagamentoMapFormatada = new HashMap<>();
-        for (History historia : historias) {
-            String dataDePagamento = historyService.calculadorDeMeses(historia);
-            dataDePagamentoMapFormatada.put(historia.getId(), dataDePagamento);
-        }
+        dataDePagamentoMapFormatada.put(histori.getId(), historicoService.calculadorDeMeses(histori));
 
-        // Adicionar listas ao modelo
+        // Passar dados para o modelo
+        model.addAttribute("histori", histori);
         model.addAttribute("priceTotals", priceTotals);
-
         model.addAttribute("priceTotalSP", priceTotalSP);
         model.addAttribute("clientes", clientes);
-        model.addAttribute("bancos", bancos);
         model.addAttribute("socios", socios);
-        model.addAttribute("historias", historias);
-        model.addAttribute("dataformatada", dataformatada);
-        model.addAttribute("dataDePagamentoMap", dataDePagamentoMapFormatada); // Passando as datas formatadas
+        model.addAttribute("bancos", bancos);
+        model.addAttribute("dataFormatada", dataFormatada);
+        model.addAttribute("dataDePagamentoMap", dataDePagamentoMapFormatada);
 
-        // Obter história específica
-        History historia = historyRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("História não encontrada com o ID: " + id));
-
-        // Adicionar história ao modelo
-        model.addAttribute("histori", historia);
-
-        // Retorna o template
-        return "detalhe/detalhes";
+        return "detalhe/detalhes";  // Verifique se o caminho para o template está correto
     }
-
-
 }

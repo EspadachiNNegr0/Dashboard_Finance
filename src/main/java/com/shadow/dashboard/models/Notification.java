@@ -12,8 +12,7 @@ public class Notification {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "client_id")
-    private Clientes cliente;  // Relacionamento com a classe Clientes
+    private Clientes cliente;
 
     @Column(nullable = false)
     private String message;
@@ -31,14 +30,6 @@ public class Notification {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Clientes getCliente() {
-        return cliente;
-    }
-
-    public void setCliente(Clientes cliente) {
-        this.cliente = cliente;
     }
 
     public String getMessage() {
@@ -63,5 +54,13 @@ public class Notification {
 
     public void setRead(boolean isRead) {
         this.isRead = isRead;
+    }
+
+    public Clientes getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(Clientes cliente) {
+        this.cliente = cliente;
     }
 }

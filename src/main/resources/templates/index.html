@@ -78,7 +78,7 @@
                 <button id="close-modal"><span class="material-symbols-sharp">
                 </span></button>
             </div>
-            <div class="notify-item" th:each="notification : ${notification}">
+            <div class="notify-item" th:each="notification : ${notifications}">
                 <div class="notify_img">
                     <img src="/img/Admin.jpg" alt="" style="width: 50px;">
                 </div>
@@ -177,14 +177,15 @@
                                         <div class="fields">
                                             <!-- Nome do Cliente -->
                                             <div class="input-field">
-                                                <label>Nome do Cliente</label>
-                                                <select name="cliente.id" required>
-                                                    <option value="" disabled selected>Escolha o Cliente</option>
-                                                    <option th:each="cliente : ${clientes}"
-                                                            th:value="${cliente.id}"
-                                                            th:text="${cliente.nome}"></option>
-                                                </select>
-                                            </div>
+                                            <label>Nome do Cliente</label>
+                                            <select name="cliente.id" required>
+                                                <option value="" disabled selected>Escolha o Cliente</option>
+                                                <option th:each="cliente : ${clientes}"
+                                                        th:value="${cliente.id}"
+                                                        th:text="${cliente.nome}"></option>
+                                            </select>
+                                        </div>
+
 
                                             <!-- Valor do Empréstimo -->
                                             <div class="input-field">
@@ -261,9 +262,10 @@
                     <th>Status</th>
                     <tbody class="device" th:each="historia : ${historias}">
                     <tr>
+                        <!-- Nome do Cliente, ao clicar, aciona o OpenModalOnTable -->
                         <td th:text="${historia.cliente.nome}" onclick="OpenModalOnTable(event)"></td>
                         <td th:text="${priceTotals[historia.id]}"></td>
-                        <td th:text="${dataformatada[historia.id]}"></td>
+                        <td th:text="${#dates.format(historia.created, 'dd/MM/yyyy')}"></td>
                         <td th:text="${historia.status}"></td>
                         <td>
                             <a th:href="@{/histori/{id}(id=${historia.id})}" class="btn btn-info">
@@ -272,6 +274,8 @@
                         </td>
                     </tr>
                     </tbody>
+
+
 
                     </thead>
                     <tfoot>
