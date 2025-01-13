@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Objects;
@@ -126,6 +128,8 @@ public class Historico {
     public void setBanco(Banco banco) {
         this.banco = banco;
     }
+
+
 
 
 }

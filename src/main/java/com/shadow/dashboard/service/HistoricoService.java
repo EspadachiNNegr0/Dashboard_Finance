@@ -89,4 +89,26 @@ public class HistoricoService {
     }
 
 
+    public void atualizeHistoryAndCreateNotification(Historico historico) {
+        // Salve o histórico
+        historicoRepository.save(historico);
+
+        // Criação da notificação
+        createNotificationatualizada(historico);
+    }
+
+    private void createNotificationatualizada(Historico historico) {
+        if (historico.getCliente().getId() == null) {
+            System.out.println("Cliente is null");
+        }
+        Clientes cliente = clienteRepository.findById(historico.getCliente().getId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado para o ID: " + historico.getCliente().getId()));
+
+        String msg = "Message updated with success! " + historico.getCliente().getNome();
+
+        Notification notification = new Notification();
+        notification.setCliente(cliente);
+        notification.setMessage(msg);
+        notificationRepository.save(notification);
+    }
 }
