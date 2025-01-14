@@ -17,6 +17,9 @@ public class Clientes {
     @Column(nullable = true)
     private String nome;
 
+    @Column(nullable = true)
+    private Integer idade;
+
     @Column(nullable = true, unique = true)
     private String cpf;
 
@@ -40,6 +43,14 @@ public class Clientes {
 
     public void setNome(String nome) {
         this.nome = nome;
+    }
+
+    public Integer getIdade() {
+        return idade;
+    }
+
+    public void setIdade(Integer idade) {
+        this.idade = idade;
     }
 
     public String getCpf() {

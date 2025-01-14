@@ -56,12 +56,12 @@
     <!-- NAVBAR -->
     <nav>
         <i class='bx bx-menu' ></i>
-        <form action="#">
-            <div class="form-input">
-                <input type="search" placeholder="Search...">
-                <button type="submit" class="search-btn"><i class='bx bx-search' ></i></button>
-            </div>
+        <form th:action="@{/search}" method="get">
+            <label for="keyword">Pesquisar:</label>
+            <input type="text" id="keyword" name="keyword" placeholder="Digite o nome do cliente">
+            <button type="submit">Pesquisar</button>
         </form>
+
         <input type="checkbox" id="switch-mode" hidden>
         <label for="switch-mode" class="switch-mode"></label>
         <div id="open-modal">
@@ -301,49 +301,8 @@
 
         </div>
         </div>
-
     </main>
-    <!-- MAIN -->
-    <!-- Modal de detalhes do cliente -->
-    <div class="modal-container-custom hide">
-        <div class="modal-body-custom">
-            <div class="modal-left-side-custom">
-                <div class="perfil-image-custom">
-                    <img src="" alt="Imagem do Perfil" class="img-placeholder-custom">
-                </div>
-                <div class="data-clients-custom">
-                    <span class="span-modal-custom"><strong>Nome:</strong> <span id="modal-nome"></span></span>
-                    <span class="span-modal-custom"><strong>Idade:</strong> <span id="modal-idade"></span></span>
-                    <span class="span-modal-custom"><strong>CPF:</strong> <span id="modal-cpf"></span></span>
-                </div>
-            </div>
-            <div class="modal-right-side-custom">
-                <h2 id="title-modal-historico-custom">Histórico</h2>
-                <div class="table-container-custom">
-                    <table class="history-table-custom">
-                        <thead>
-                        <tr>
-                            <th>Valor</th>
-                            <th>Parcelas</th>
-                            <th>Data</th>
-                            <th>Porcentagem</th>
-                            <th>Código</th>
-                            <th>Status</th>
-                        </tr>
-                        </thead>
-                        <tbody id="modal-historico-body">
-                        <!-- As linhas da tabela serão preenchidas dinamicamente -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <button class="close-button-custom" onclick="closeModal()">X</button>
-        </div>
-    </div>
-
-
 </section>
-<!-- CONTENT -->
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>

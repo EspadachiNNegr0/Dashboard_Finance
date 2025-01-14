@@ -13,10 +13,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 @RequestMapping("/")
@@ -57,6 +54,9 @@ public class IndexController {
         List<Socios> socios = sociosRepository.findAll();
         List<Notification> notifications = notificationRepository.findAll();
 
+        String keyword = "Eduardo";
+        List<Historico> listHistorico = historicoService.listAll(keyword);
+
         // Limitar o número de clientes a 5
         if (clientes.size() > 5) {
             clientes = clientes.subList(0, 5);
@@ -92,6 +92,7 @@ public class IndexController {
 
         // Passando os dados para a visão
         mv.addObject("totalNotify", totalNotify);
+        mv.addObject("listHistorico", listHistorico);
         mv.addObject("notifications", notifications);
         mv.addObject("priceTotals", priceTotals);
         mv.addObject("priceTotalSP", priceTotalSP);
@@ -189,8 +190,6 @@ public class IndexController {
 
         return "edit";
     }
-
-
 
     @PostMapping("/editHistorico")
     public String updateHistorico(@ModelAttribute("histori") Historico histori,

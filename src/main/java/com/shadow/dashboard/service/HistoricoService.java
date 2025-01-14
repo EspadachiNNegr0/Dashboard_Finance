@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class HistoricoService {
@@ -87,6 +88,11 @@ public class HistoricoService {
         }
         return null;  // Se algum dado estiver faltando, retorna null
     }
+
+    public List<Historico> listAll(String keyword) {
+        return historicoRepository.findAll(keyword);  // Chamando o repositório
+    }
+
 
 
     public void atualizeHistoryAndCreateNotification(Historico historico) {
