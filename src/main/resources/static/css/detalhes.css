@@ -1,0 +1,161 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Poppins:wght@400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --poppins: 'Poppins', sans-serif;
+    --lato: 'Lato', sans-serif;
+
+    --light: #F9F9F9;
+    --lights: #c6c6c6;
+    --blue: #3C91E6;
+    --light-blue: #CFE8FF;
+    --grey: #eee;
+    --dark-grey: #AAAAAA;
+    --dark: #342E37;
+    --red: #DB504A;
+    --yellow: #FFCE26;
+    --light-yellow: #FFF2C6;
+    --orange: #FD7238;
+    --light-orange: #FFE0D3;
+}
+
+html {
+    overflow-x: hidden;
+}
+
+body.dark {
+    --light: #0C0C1E;
+    --lights: #14141f;
+    --grey: #060714;
+    --dark: #FBFBFB;
+}
+
+
+.fields {
+    display: flex;
+    flex-wrap: wrap; /* Permite que os campos quebrem para a linha seguinte */
+    gap: 15px; /* Espaço entre os campos */
+}
+
+.fields button {
+    border: none;
+    font-size: 16px;
+    color: var(--dark-grey);
+    width: 70px;
+    padding: 10px;
+    height: 50px;
+    border-radius: 5px;
+    background-color: var(--blue);
+    margin-top: 20px;
+    margin-left: 120px;
+    margin-right: 70px}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+.modal .modal-headers button {
+    border: none;
+    background-color: #dee1d3;
+    padding: 10px;
+    border-radius: 10px;
+    color: black;
+    margin-left: 750px;
+}
+
+.modal .modal-headers button a {
+    text-decoration: none;  /* Remove o sublinhado do link */
+    color: inherit;         /* Faz o link herdar a cor do botão */
+    font-size: 20px;
+}
+
+
+.modal .modal-content {
+    background: var(--light);
+    max-width: 900px;
+    padding: 20px;
+    border-radius: 20px;
+    width: 100%;
+    padding: 30px;
+    margin: 0 15px;
+    background-color: var(--light);
+    box-shadow: 0 5px 10px rgba(0,0,0, 0.1);
+}
+
+.modal .modal-content .modal-headers {
+    position: relative;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 25px;
+    font-weight: 600;
+    color: var(--dark);
+}
+
+.modal .modal-content .modal-headers::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    height: 3px;
+    width: 27px;
+    border-radius: 20px;
+    background-color: var(--blue);
+}
+
+.modal .modal-header h2 {
+    margin: 0;
+}
+
+.modal .modal-header button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.modal form{
+    margin-top: 16px;
+    position: relative;
+    min-height: 490px;
+    border-radius: 20px;
+}
+
+.fields {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.fields p {
+    background-color: var(--grey);
+    border-radius: 10px;
+    padding: 5px;
+}
+
+#modals-emprestimo .modal-body p{
+    margin: 10px;
+    color: var(--dark);
+}
+
+
+button {
+    border: none;
+    background-color: var(--light);
+    color: var(--dark);
+    cursor: pointer;
+}
+
