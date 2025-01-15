@@ -90,10 +90,13 @@ public class IndexController {
             dataDePagamentoMap.put(historia.getId(), historicoService.calculadorDeMeses(historia));
         }
 
+        double somaDeEmprestimo = historicoService.somaDeTodosOsEmprestimos(historias);
+
         // Passando os dados para a visão
         mv.addObject("totalNotify", totalNotify);
         mv.addObject("listHistorico", listHistorico);
         mv.addObject("notifications", notifications);
+        mv.addObject("somaDeEmprestimo", somaDeEmprestimo);
         mv.addObject("priceTotals", priceTotals);
         mv.addObject("priceTotalSP", priceTotalSP);
         mv.addObject("dataFormatada", dataFormatada);
