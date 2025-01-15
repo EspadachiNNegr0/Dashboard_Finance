@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Resultados da Pesquisa</title>
+    <link rel="stylesheet" href="/css/index.css"> <!-- Link para o arquivo CSS -->
+</head>
+<body>
+
+<!-- Container para os resultados da pesquisa -->
+<div class="modal-container-custom" th:if="${listHistorico != null and not #lists.isEmpty(listHistorico)}">
+    <div class="modal-body-custom">
+
+        <!-- Lado esquerdo (Informações do Cliente) -->
+        <div class="modal-left-side-custom">
+<!--            <div class="perfil-image-custom">-->
+<!--                <img th:src="@{'/images/' + ${listHistorico.get(0).cliente.foto}}" alt="Foto do Cliente" class="img-placeholder-custom">-->
+<!--            </div>-->
+            <div class="data-clients-custom">
+                <span class="span-modal-custom">Nome: <span th:text="${listHistorico.get(0).cliente.nome}"></span></span>
+                <span class="span-modal-custom">Idade: <span th:text="${listHistorico.get(0).cliente.idade}"></span></span>
+                <span class="span-modal-custom">CPF: <span th:text="${listHistorico.get(0).cliente.cpf}"></span></span>
+            </div>
+        </div>
+
+        <!-- Lado direito (Histórico da Pesquisa) -->
+        <div class="modal-right-side-custom">
+            <h2 id="title-modal-historico-custom">Histórico de Pesquisa</h2>
+            <div class="table-container-custom">
+                <table class="history-table-custom">
+                    <thead>
+                    <tr>
+                        <th>Valor</th>
+                        <th>Parcelas</th>
+                        <th>Data</th>
+                        <th>Porcentagem</th>
+                        <th>Código</th>
+                        <th>Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="historia : ${listHistorico}">
+                        <td th:text="${historia.price}"></td>
+                        <td th:text="${historia.parcelamento}"></td>
+                        <td th:text="${#dates.format(historia.created, 'dd/MM/yyyy')}"></td>
+                        <td th:text="${historia.percentage}"></td>
+                        <td th:text="${historia.id}"></td>
+                        <td th:text="${historia.status}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Mensagem para nenhum resultado encontrado -->
+<div th:if="${listHistorico == null or #lists.isEmpty(listHistorico)}">
+    <p>Nenhum resultado encontrado.</p>
+    <a th:href="@{/}">Voltar</a>
+</div>
+
+</body>
+</html>
