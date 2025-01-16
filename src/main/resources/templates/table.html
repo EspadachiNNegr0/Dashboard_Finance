@@ -78,43 +78,54 @@
     <!-- NAVBAR -->
     <nav>
         <i class='bx bx-menu' ></i>
-        <form action="#">
-            <div class="form-input">
-                <input type="search" placeholder="Search...">
-                <button type="submit" class="search-btn"><i class='bx bx-search' ></i></button>
-            </div>
-        </form>
-        <input type="checkbox" id="switch-mode" hidden>
-        <label for="switch-mode" class="switch-mode"></label>
+        <div class="search">
+            <form th:action="@{/search}" method="get" >
+                <label for="keyword"></label>
+                <input type="text" id="keyword" name="keyword" placeholder="Digite o nome do cliente">
+                <button type="submit"><span class="material-symbols-sharp">
+                search
+            </span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Botão para abrir o modal de notificações -->
         <div id="open-modal">
             <button class="notification">
                 <span class="material-symbols-sharp">notifications</span>
-                <span class="num">8</span>
+                <span class="num" th:text="${totalNotify}"></span>
             </button>
         </div>
 
+        <!-- Área de fundo (Fade) -->
         <div id="fade" class="hide"></div>
+        <!-- Modal -->
         <div id="modal" class="hide">
             <div class="modal-header">
                 <h2>Notifications</h2>
-                <button id="close-modal"><span class="material-symbols-sharp">
-                    close
-                </span></button>
+                <button id="close-modal">
+                    <span class="material-symbols-sharp">close</span>
+                </button>
             </div>
-            <div class="notify-item">
+
+            <div class="notify-item" th:each="notification : ${notifications}">
                 <div class="notify_img">
                     <img src="/img/Admin.jpg" alt="" style="width: 50px;">
                 </div>
                 <div class="notify-info">
-                    <p><span th:each="cliente : ${clientes}" th:text="${cliente.nome} + ' '"></span> commented on your <span>Timeline Share</span></p>
-                    <span class="notify-time">10 minutes ago</span>
+                    <p><span th:text="${notification.message}"></span></p>
+                    <p>
+                        <span class="notify-time" th:text="${#temporals.format(notification.createdAt, 'mm')}"></span> minutes ago.
+                    </p>
                 </div>
             </div>
         </div>
 
+
+
         <div class="profile" onclick="toggleSubMenu()">
             <div class="profile-photo">
-                <img src="img/Admin.jpg" alt="" />
+                <img src="/img/Admin.jpg" alt="" />
             </div>
         </div>
         <div class="sub-menu-wrap" id="subMenu">
@@ -160,6 +171,89 @@
                     <h3>Recent Orders</h3>
 
                     <button class="add" aria-label="Adicionar empréstimo">Add Emprestimo</button>
+                    <div id="modal-add-emprestimo" class="modal hide">
+                        <div class="modal-content">
+                            <div class="modal-headers">
+                                <header>Registro de Empréstimo</header>
+                            </div>
+                            <div class="modal-body">
+                                <form action="/" method="POST">
+                                    <div class="details-emprestimo">
+                                        <span class="title">Detalhes do Empréstimo</span>
+                                        <div class="fields">
+                                            <!-- Nome do Cliente -->
+                                            <div class="input-field">
+                                                <label>Nome do Cliente</label>
+                                                <select name="cliente.id" required>
+                                                    <option value="" disabled selected>Escolha o Cliente</option>
+                                                    <option th:each="cliente : ${clientes}"
+                                                            th:value="${cliente.id}"
+                                                            th:text="${cliente.nome}"></option>
+                                                </select>
+                                            </div>
+
+
+                                            <!-- Valor do Empréstimo -->
+                                            <div class="input-field">
+                                                <label>Valor do Empréstimo</label>
+                                                <input type="number" name="price" placeholder="Digite o valor do empréstimo" required>
+                                            </div>
+
+                                            <!-- Porcentagem -->
+                                            <div class="input-field">
+                                                <label>Porcentagem (%)</label>
+                                                <input type="number" name="percentage" step="0.01" placeholder="Digite a porcentagem de juros" required>
+                                            </div>
+
+                                            <!-- Parcelamento -->
+                                            <div class="input-field">
+                                                <label>Parcelamento (meses)</label>
+                                                <input type="number" name="parcelamento" placeholder="Digite o número de parcelas" required>
+                                            </div>
+
+                                            <!-- Banco -->
+                                            <div class="input-field">
+                                                <label>Banco</label>
+                                                <select name="banco.id" required>
+                                                    <option value="" disabled selected>Escolha um Banco</option>
+                                                    <option th:each="banco : ${bancos}"
+                                                            th:value="${banco.id}"
+                                                            th:text="${banco.nome}"></option>
+                                                </select>
+                                            </div>
+
+                                            <!-- Socio -->
+                                            <div class="input-field">
+                                                <label>Socio</label>
+                                                <select name="socios.id" required> <!-- Alterado de banco.id para socios.id -->
+                                                    <option value="" disabled selected>Escolha quem emprestou</option>
+                                                    <option th:each="socio : ${socios}"
+                                                            th:value="${socio.id}"
+                                                            th:text="${socio.name}"></option>
+                                                </select>
+                                            </div>
+
+
+                                            <!-- Data -->
+                                            <div class="input-field">
+                                                <label>Data</label>
+                                                <input type="date" name="created" required>
+                                            </div>
+
+                                            <!-- Descrição -->
+                                            <div class="input-field">
+                                                <label>Descrição</label>
+                                                <input type="text" name="description" placeholder="Coloque uma Descrição" required>
+                                            </div>
+
+                                            <button type="submit">Salvar</button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
 
                     <i class='bx bx-filter' ></i>
                 </div>
@@ -177,28 +271,28 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="cliente : ${clientes}">
-                        <td th:text="${cliente.nome}"></td>
+                    <tr th:each="historico: ${historias}">
+                        <td th:text="${historico.cliente.nome}"></td>
                         <td>
-                            <span th:each="historia : ${cliente.history}" th:text="${historia.price} + ' '"></span>
+                            <span th:text="${historico.price} + ' '"></span>
                         </td>
                         <td>
-                            <span th:each="historia : ${cliente.history}" th:text="${historia.percentage} + ' '"></span>%
+                            <span th:text="${historico.percentage} + ' '"></span>%
                         </td>
                         <td>
-                            $<span th:text="${priceTotals[cliente.id]}"></span>
+                            $<span th:text="${priceTotals[historico.id]}"></span>
                         </td>
                         <td>
-                            <span th:each="historia : ${cliente.history}" th:text="${historia.parcelamento} + ' '"></span>
+                            <span th:text="${historico.parcelamento} + ' '"></span>
                         </td>
                         <td>
-                            <span th:each="historia : ${cliente.history}" th:text="${dataformatada[historia.id]} + ' '"></span>
+                            <span th:text="${dataFormatada[historico.id]} + ' '"></span>
                         </td>
                         <td>
-                            <span th:each="historia : ${cliente.history}" th:text="${dataDePagamentoMap[historia.id]}"></span>
+                            <span th:text="${dataDePagamentoMap[historico.id]}"></span>
                         </td>
                         <td>
-                            <span th:each="historia : ${cliente.history}" th:text="${historia.status} + ' '"></span>
+                            <span th:text="${historico.status} + ' '"></span>
                         </td>
                     </tr>
 
