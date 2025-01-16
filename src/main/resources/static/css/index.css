@@ -789,6 +789,22 @@ body {
     opacity: 1;
 }
 
+.table-data .addC {
+    padding: 10px;
+    background-color: var(--light-yellow);
+    margin-right: 20px;
+    color: var(--dark);
+    border: none;
+    border-radius: 1000px;
+    cursor: pointer;
+    opacity: .9;
+    font-size: 1rem;
+}
+
+.table-data .addC:hover{
+    opacity: 1;
+}
+
 /* Estilo para o item de notificação */
 .notify-item {
     display: flex; /* Alinha a imagem e o texto lado a lado */

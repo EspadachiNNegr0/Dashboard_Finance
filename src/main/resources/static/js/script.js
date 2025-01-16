@@ -69,3 +69,4 @@ document.addEventListener('click', function(event) {
         subMenu.classList.remove('show'); // Esconde o submenu
     }
 });
+

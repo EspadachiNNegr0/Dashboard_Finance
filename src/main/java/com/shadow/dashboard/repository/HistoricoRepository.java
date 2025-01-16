@@ -13,4 +13,7 @@ public interface HistoricoRepository extends JpaRepository<Historico, Long> {
     @Query("SELECT h FROM Historico h WHERE h.cliente.nome LIKE %?1%")
     public List<Historico> findAll(String keyword);
 
+    public List<Historico> findByStatus(String status);
+
+
 }

@@ -45,11 +45,18 @@ public class IndexController {
     }
 
     @GetMapping("/")
-    public ModelAndView index() throws Exception {
+    public ModelAndView index(@RequestParam(value = "status", required = false) String status) throws Exception {
         ModelAndView mv = new ModelAndView("index");
 
+        // Buscando todos os dados
         List<Clientes> clientes = clientRepository.findAll();
-        List<Historico> historias = historicoRepository.findAll();
+        List<Historico> historias;
+        if (status != null && !status.isEmpty()) {
+            // Filtra os históricos com base no status
+            historias = historicoRepository.findByStatus(status);
+        } else {
+            historias = historicoRepository.findAll();
+        }
         List<Banco> bancos = bancoRepository.findAll();
         List<Socios> socios = sociosRepository.findAll();
         List<Notification> notifications = notificationRepository.findAll();
@@ -62,33 +69,24 @@ public class IndexController {
             clientes = clientes.subList(0, 5);
         }
 
-// Agora 'createdDate' pode ser usado para manipulações, persistência ou enviado para o Thymeleaf
+        Map<Long, Double> priceTotalsPorParcelas = new HashMap<>();
+        Map<Long, Double> priceTotalSP = new HashMap<>();
+        Map<Long, Object> dataFormatada = new HashMap<>();
+        Map<Long, String> dataDePagamentoMap = new HashMap<>();
 
-
-        // Mapeamento para total de preços com juros
-        Map<Long, Double> priceTotals = new HashMap<>();
         for (Historico historia : historias) {
             Double priceTotal = clientService.calcularPrecoTotalComJuros(historia);
-            priceTotals.put(historia.getId(), priceTotal);  // Usando a ID do cliente como chave
-        }
+            priceTotalsPorParcelas.put(historia.getId(), priceTotal);
 
-        // Mapeamento para o valor total sem parcelamento
-        Map<Long, Double> priceTotalSP = new HashMap<>();
-        for (Historico historia : historias) {
-            Double priceTotal = clientService.calcularPrecoTotalComJurosSemParcelar(historia);
-            priceTotalSP.put(historia.getId(), priceTotal);
+            Double priceTotalSemParcelas = clientService.calcularPrecoTotalComJurosSemParcelar(historia);
+            priceTotalSP.put(historia.getId(), priceTotalSemParcelas);
+
+            dataFormatada.put(historia.getId(), historicoService.formatadorData(historia));
+            dataDePagamentoMap.put(historia.getId(), historicoService.calculadorDeMeses(historia));
         }
 
         // Total de notificações
         int totalNotify = notifications.size();
-
-        // Mapear datas formatadas e de pagamento
-        Map<Long, Object> dataFormatada = new HashMap<>();
-        Map<Long, String> dataDePagamentoMap = new HashMap<>();
-        for (Historico historia : historias) {
-            dataFormatada.put(historia.getId(), historicoService.formatadorData(historia));
-            dataDePagamentoMap.put(historia.getId(), historicoService.calculadorDeMeses(historia));
-        }
 
         double somaDeEmprestimo = historicoService.somaDeTodosOsEmprestimos(historias);
 
@@ -97,7 +95,7 @@ public class IndexController {
         mv.addObject("listHistorico", listHistorico);
         mv.addObject("notifications", notifications);
         mv.addObject("somaDeEmprestimo", somaDeEmprestimo);
-        mv.addObject("priceTotals", priceTotals);
+        mv.addObject("priceTotals", priceTotalsPorParcelas);
         mv.addObject("priceTotalSP", priceTotalSP);
         mv.addObject("dataFormatada", dataFormatada);
         mv.addObject("clientes", clientes);
@@ -111,13 +109,15 @@ public class IndexController {
 
     @PostMapping("/")
     public String saveEmprestimo(@ModelAttribute Historico historia, RedirectAttributes redirectAttributes) {
-        // Definir o status como 'processing' automaticamente
-        historia.setStatus(Status.PROCESSING);
+        // Verifica se o status está vazio ou é diferente de COMPLETE e FAILED
+        if (historia.getStatus() == null || (historia.getStatus() != Status.COMPLETE && historia.getStatus() != Status.FAILED)) {
+            historia.setStatus(Status.PROCESSING); // Define o status como PROCESSING (ativo)
+        }
 
-        // Salvar a entidade no banco de dados e criar a notificação
+        // Salva o histórico no banco de dados e cria a notificação
         historicoService.saveHistoryAndCreateNotification(historia);
 
-        // Adicionar mensagem de sucesso
+        // Adiciona mensagem de sucesso
         redirectAttributes.addFlashAttribute("message", "Empréstimo registrado com sucesso!");
 
         // Redireciona para a página inicial

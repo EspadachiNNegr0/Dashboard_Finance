@@ -1,65 +1,245 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Resultados da Pesquisa</title>
-    <link rel="stylesheet" href="/css/index.css"> <!-- Link para o arquivo CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Importação da fonte de ícones do Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp"/>
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+    <!-- My CSS -->
+    <link rel="stylesheet" href="/css/index.css">
+
+    <title>AdminHub</title>
 </head>
 <body>
 
-<!-- Container para os resultados da pesquisa -->
-<div class="modal-container-custom" th:if="${listHistorico != null and not #lists.isEmpty(listHistorico)}">
-    <div class="modal-body-custom">
 
-        <!-- Lado esquerdo (Informações do Cliente) -->
-        <div class="modal-left-side-custom">
-<!--            <div class="perfil-image-custom">-->
-<!--                <img th:src="@{'/images/' + ${listHistorico.get(0).cliente.foto}}" alt="Foto do Cliente" class="img-placeholder-custom">-->
-<!--            </div>-->
-            <div class="data-clients-custom">
-                <span class="span-modal-custom">Nome: <span th:text="${listHistorico.get(0).cliente.nome}"></span></span>
-                <span class="span-modal-custom">Idade: <span th:text="${listHistorico.get(0).cliente.idade}"></span></span>
-                <span class="span-modal-custom">CPF: <span th:text="${listHistorico.get(0).cliente.cpf}"></span></span>
+<!-- SIDEBAR -->
+<section id="sidebar">
+    <a href="/" class="brand">
+        <i class='bx bxs-smile'></i>
+        <span class="text">AdminHub</span>
+    </a>
+    <ul class="side-menu top">
+        <li >
+            <a href="/">
+                <i class='bx bxs-dashboard' ></i>
+                <span class="text">Dashboard</span>
+            </a>
+        </li>
+        <li class="active">
+            <a href="/Table">
+                <i class='bx bxs-shopping-bag-alt' ></i>
+                <span class="text">My Table</span>
+            </a>
+        </li>
+        <li>
+            <a href="#">
+                <i class='bx bxs-doughnut-chart' ></i>
+                <span class="text">Analytics</span>
+            </a>
+        </li>
+        <li>
+            <a href="#">
+                <i class='bx bxs-message-dots' ></i>
+                <span class="text">Message</span>
+            </a>
+        </li>
+        <li>
+            <a href="#">
+                <i class='bx bxs-group' ></i>
+                <span class="text">Team</span>
+            </a>
+        </li>
+    </ul>
+    <ul class="side-menu">
+        <li>
+            <a href="#">
+                <i class='bx bxs-cog' ></i>
+                <span class="text">Settings</span>
+            </a>
+        </li>
+        <li>
+            <a href="#" class="logout">
+                <i class='bx bxs-log-out-circle' ></i>
+                <span class="text">Logout</span>
+            </a>
+        </li>
+    </ul>
+</section>
+<!-- SIDEBAR -->
+
+
+
+<!-- CONTENT -->
+<section id="content">
+    <!-- NAVBAR -->
+    <nav>
+        <i class='bx bx-menu' ></i>
+        <div class="search">
+            <form th:action="@{/search}" method="get" >
+                <label for="keyword"></label>
+                <input type="text" id="keyword" name="keyword" placeholder="Digite o nome do cliente">
+                <button type="submit"><span class="material-symbols-sharp">
+                search
+            </span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Botão para abrir o modal de notificações -->
+        <div id="open-modal">
+            <button class="notification">
+                <span class="material-symbols-sharp">notifications</span>
+                <span class="num" th:text="${totalNotify}"></span>
+            </button>
+        </div>
+
+        <!-- Área de fundo (Fade) -->
+        <div id="fade" class="hide"></div>
+        <!-- Modal -->
+        <div id="modal" class="hide">
+            <div class="modal-header">
+                <h2>Notifications</h2>
+                <button id="close-modal">
+                    <span class="material-symbols-sharp">close</span>
+                </button>
+            </div>
+
+            <div class="notify-item" th:each="notification : ${notifications}">
+                <div class="notify_img">
+                    <img src="/img/Admin.jpg" alt="" style="width: 50px;">
+                </div>
+                <div class="notify-info">
+                    <p><span th:text="${notification.message}"></span></p>
+                    <p>
+                        <span class="notify-time" th:text="${#temporals.format(notification.createdAt, 'mm')}"></span> minutes ago.
+                    </p>
+                </div>
             </div>
         </div>
 
-        <!-- Lado direito (Histórico da Pesquisa) -->
-        <div class="modal-right-side-custom">
-            <h2 id="title-modal-historico-custom">Histórico de Pesquisa</h2>
-            <div class="table-container-custom">
-                <table class="history-table-custom">
+
+
+        <div class="profile" onclick="toggleSubMenu()">
+            <div class="profile-photo">
+                <img src="/img/Admin.jpg" alt="" />
+            </div>
+        </div>
+        <div class="sub-menu-wrap" id="subMenu">
+            <div class="sub-menu">
+                <div class="user-info">
+                    <img src="img/Admin.jpg" alt="Perfil">
+                    <h2>Shadow</h2>
+                </div>
+                <hr>
+                <a href="/profile">
+                    <span class="material-symbols-sharp">person</span>
+                    Meu Perfil
+                </a>
+                <a href="/logout">
+                    <span class="material-symbols-sharp">logout</span>
+                    Sair
+                </a>
+            </div>
+        </div>
+    </nav>
+    <!-- NAVBAR -->
+
+    <!-- MAIN -->
+    <main>
+        <div class="head-title">
+            <div class="left">
+                <h1>Dashboard</h1>
+                <ul class="breadcrumb">
+                    <li>
+                        <a href="#">Dashboard</a>
+                    </li>
+                    <li><i class='bx bx-chevron-right' ></i></li>
+                    <li>
+                        <a class="active" href="#">Table</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="table-data">
+            <div class="order">
+                <div class="head">
+                    <h3>Recent Orders</h3>
+
+                    <button class="add" aria-label="Adicionar empréstimo">Add Emprestimo</button>
+
+                    <i class='bx bx-filter' ></i>
+                </div>
+                <table id="example" class="table table-striped" style="width:100%">
                     <thead>
                     <tr>
-                        <th>Valor</th>
-                        <th>Parcelas</th>
-                        <th>Data</th>
-                        <th>Porcentagem</th>
-                        <th>Código</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Porcent</th>
+                        <th>PriceTotalPorMes</th>
+                        <th>PriceTotal</th>
+                        <th>Parcelamento</th>
+                        <th>Start date</th>
+                        <th>End date</th>
                         <th>Status</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="historia : ${listHistorico}">
-                        <td th:text="${historia.price}"></td>
-                        <td th:text="${historia.parcelamento}"></td>
-                        <td th:text="${#dates.format(historia.created, 'dd/MM/yyyy')}"></td>
-                        <td th:text="${historia.percentage}"></td>
-                        <td th:text="${historia.id}"></td>
-                        <td th:text="${historia.status}"></td>
+                    <tr th:each="historico: ${listHistorico}">
+                        <td th:text="${historico.cliente.nome}"></td>
+                        <td>
+                            <span th:text="${historico.price} + ' '"></span>
+                        </td>
+                        <td>
+                            <span th:text="${historico.percentage} + ' '"></span>%
+                        </td>
+                        <td>
+                            $<span th:text="${priceTotals[historico.id]}"></span>
+                        </td>
+                        <td>
+                            $<span th:text="${priceTotalSP[historico.id]}"></span>
+                        </td>
+                        <td>
+                            <span th:text="${historico.parcelamento} + ' '"></span>
+                        </td>
+                        <td>
+                            <span th:text="${dataFormatada[historico.id]} + ' '"></span>
+                        </td>
+                        <td>
+                            <span th:text="${dataDePagamentoMap[historico.id]}"></span>
+                        </td>
+                        <td>
+                            <span th:text="${historico.status} + ' '"></span>
+                        </td>
                     </tr>
+
                     </tbody>
+                    <tfoot>
+                    <tr>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Porcent</th>
+                        <th>PriceTotalPorMes</th>
+                        <th>PriceTotal</th>
+                        <th>Parcelamento</th>
+                        <th>Start date</th>
+                        <th>End date</th>
+                        <th>Status</th>
+                    </tr>
+                    </tfoot>
                 </table>
             </div>
         </div>
+    </main>
+    <!-- MAIN -->
+</section>
+<!-- CONTENT -->
 
-    </div>
-</div>
 
-<!-- Mensagem para nenhum resultado encontrado -->
-<div th:if="${listHistorico == null or #lists.isEmpty(listHistorico)}">
-    <p>Nenhum resultado encontrado.</p>
-    <a th:href="@{/}">Voltar</a>
-</div>
-
+<script src="/js/script.js"></script>
 </body>
 </html>
