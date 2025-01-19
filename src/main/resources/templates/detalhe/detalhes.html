@@ -12,30 +12,66 @@
             <button>
                 <a href="/">Voltar</a>
             </button>
-            <button>
-                <a th:href="@{/editHistorico/{id}(id=${histori.id})}" class="btn btn-primary">Editar</a>
-            </button>
         </div>
         <div class="modal-body">
-            <div class="details-emprestimo">
-                <div class="fields">
-                    <p><strong>ID:</strong> <span th:text="${histori.id}"></span></p>
-                    <p><strong>Nome do Cliente:</strong> <span th:text="${histori.cliente?.nome}">Cliente não informado</span></p>
-                    <p><strong>Valor do Empréstimo:</strong> <span th:text="${histori.price}"></span></p>
-                    <p><strong>Porcentagem:</strong> <span th:text="${histori.percentage + '%'}"></span></p>
-                    <p><strong>Valor Total:</strong> <span th:text="${priceTotalSP[histori.id]}"></span></p>
-                    <p><strong>Valor Mensal:</strong> <span th:text="${priceTotals[histori.id]}"></span></p>
-                    <p><strong>Status:</strong> <span th:text="${histori.status}"></span></p>
-                    <p><strong>Descrição:</strong> <span th:text="${histori.description}"></span></p>
-                    <p><strong>Data:</strong> <span th:text="${#dates.format(histori.created, 'dd/MM/yyyy')}"></span></p>
-                    <p><strong>Parcelamento:</strong> <span th:text="${histori.parcelamento + ' meses'}"></span></p>
-                    <p><strong>Data do último pagamento:</strong>
-                        <span th:text="${dataDePagamentoMap[histori.id]}"></span>
-                    </p>
-                    <p><strong>Sócio:</strong> <span th:text="${histori.socios?.name}">Sócio não informado</span></p>
-                    <p><strong>Banco:</strong> <span th:text="${histori.banco?.nome}">Banco não informado</span></p>
+            <!-- Iniciar o formulário com método POST -->
+            <form action="/editHistorico" method="POST">
+                <input type="hidden" name="_method" value="PUT" />
+                <div class="details-emprestimo">
+                    <!-- Primeira parte -->
+                    <div class="fields-group">
+                        <div class="field">
+                            <label>ID:</label>
+                            <input type="text" name="id" th:value="${histori.id}" readonly />
+                        </div>
+                        <div class="field">
+                            <label>Nome do Cliente:</label>
+                            <input type="text" name="status" th:value="${histori.cliente.nome}" readonly />
+                        </div>
+                        <div class="field">
+                            <label>Status:</label>
+                            <input type="text" name="status" th:value="${histori.status}" readonly />
+                        </div>
+                    </div>
+
+                    <!-- Segunda parte -->
+                    <div class="fields-group">
+                        <div class="field">
+                            <label>Valor do Empréstimo:</label>
+                            <input type="text" name="price" th:value="${histori.price}" readonly/>
+                        </div>
+                        <div class="field">
+                            <label>Porcentagem:</label>
+                            <input type="text" name="percentage" th:value="${histori.percentage}" readonly />
+                        </div>
+                        <div class="field">
+                            <label>Parceiro:</label>
+                            <input type="text" name="socio" th:value="${histori.socios.name}" readonly />
+                        </div>
+                    </div>
+
+                    <!-- Terceira parte -->
+                    <div class="fields-group">
+                        <div class="field">
+                            <label>Banco:</label>
+                            <input type="text" name="banco" th:value="${histori.banco.nome}" readonly />
+                        </div>
+                        <div class="field">
+                            <label>Descrição:</label>
+                            <input type="text" name="description" th:value="${histori.description}" readonly />
+                        </div>
+                        <div class="field">
+                            <label>Data:</label>
+                            <input type="text" name="created" th:value="${#dates.format(histori.created, 'dd/MM/yyyy')}" readonly />
+                        </div>
+                        <div class="field">
+                            <label>Data Final:</label>
+                            <input type="text" name="created" th:value="${dataDePagamentoMap[histori.id]}" readonly />
+                        </div>
+                    </div>
                 </div>
-            </div>
+            </form>
+
         </div>
     </div>
 </div>

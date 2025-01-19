@@ -6,11 +6,9 @@
 
     <!-- Importação da fonte de ícones do Material Symbols -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp"/>
-    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-
+    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
     <!-- My CSS -->
     <link rel="stylesheet" href="/css/index.css">
-
     <title>AdminHub</title>
 </head>
 <body>
@@ -23,28 +21,22 @@
         <span class="text">AdminHub</span>
     </a>
     <ul class="side-menu top">
-        <li >
-            <a href="/">
+        <li>
+            <a href="#">
                 <i class='bx bxs-dashboard' ></i>
                 <span class="text">Dashboard</span>
             </a>
         </li>
-        <li class="active">
+        <li>
             <a href="/Table">
                 <i class='bx bxs-shopping-bag-alt' ></i>
                 <span class="text">My Table</span>
             </a>
         </li>
-        <li>
-            <a href="#">
+        <li class="active">
+            <a href="/Analytics">
                 <i class='bx bxs-doughnut-chart' ></i>
                 <span class="text">Analytics</span>
-            </a>
-        </li>
-        <li>
-            <a href="#">
-                <i class='bx bxs-message-dots' ></i>
-                <span class="text">Message</span>
             </a>
         </li>
         <li>
@@ -141,87 +133,41 @@
                     </li>
                     <li><i class='bx bx-chevron-right' ></i></li>
                     <li>
-                        <a class="active" href="#">Table</a>
+                        <a class="active" href="#">Home</a>
                     </li>
                 </ul>
             </div>
         </div>
 
-        <div class="table-data">
-            <div class="order">
-                <div class="head">
-                    <h3>Recent Orders</h3>
+        <ul class="box-info">
+            <li>
+                <i class='bx bxs-calendar-check' ></i>
+                <span class="text">
+						<h3>1020</h3>
+						<p>New Order</p>
+					</span>
+            </li>
+            <li>
+                <i class='bx bxs-group' ></i>
+                <span class="text">
+						<h3>2834</h3>
+						<p>Visitors</p>
+					</span>
+            </li>
+            <li>
+                <i class='bx bxs-dollar-circle' ></i>
+                <span class="text">
+						<h3>$<span th:text="${somaDeEmprestimo}"></span></h3>
+						<p>Total de Emprestimos (S/J)</p>
+					</span>
+            </li>
+        </ul>
 
-                    <button class="add" aria-label="Adicionar empréstimo">Add Emprestimo</button>
-
-                    <i class='bx bx-filter' ></i>
-                </div>
-                <table id="example" class="table table-striped" style="width:100%">
-                    <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Price</th>
-                        <th>Porcent</th>
-                        <th>PriceTotalPorMes</th>
-                        <th>PriceTotal</th>
-                        <th>Parcelamento</th>
-                        <th>Start date</th>
-                        <th>End date</th>
-                        <th>Status</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="historico: ${listHistorico}">
-                        <td th:text="${historico.cliente.nome}"></td>
-                        <td>
-                            <span th:text="${historico.price} + ' '"></span>
-                        </td>
-                        <td>
-                            <span th:text="${historico.percentage} + ' '"></span>%
-                        </td>
-                        <td>
-                            $<span th:text="${priceTotals[historico.id]}"></span>
-                        </td>
-                        <td>
-                            $<span th:text="${priceTotalSP[historico.id]}"></span>
-                        </td>
-                        <td>
-                            <span th:text="${historico.parcelamento} + ' '"></span>
-                        </td>
-                        <td>
-                            <span th:text="${dataFormatada[historico.id]} + ' '"></span>
-                        </td>
-                        <td>
-                            <span th:text="${dataDePagamentoMap[historico.id]}"></span>
-                        </td>
-                        <td>
-                            <span th:text="${historico.status} + ' '"></span>
-                        </td>
-                    </tr>
-
-                    </tbody>
-                    <tfoot>
-                    <tr>
-                        <th>Name</th>
-                        <th>Price</th>
-                        <th>Porcent</th>
-                        <th>PriceTotalPorMes</th>
-                        <th>PriceTotal</th>
-                        <th>Parcelamento</th>
-                        <th>Start date</th>
-                        <th>End date</th>
-                        <th>Status</th>
-                    </tr>
-                    </tfoot>
-                </table>
-            </div>
-        </div>
     </main>
-    <!-- MAIN -->
 </section>
-<!-- CONTENT -->
-
 
 <script src="/js/script.js"></script>
+
+
 </body>
 </html>
