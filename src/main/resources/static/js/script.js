@@ -69,3 +69,79 @@ document.addEventListener('click', function(event) {
         subMenu.classList.remove('show'); // Esconde o submenu
     }
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const monthSelect = document.getElementById("month-select");
+    const tabelaContainer = document.getElementById("tabelas-container");
+    let dadosEmprestimos = JSON.parse(document.getElementById("dados-emprestimos").textContent);
+
+    function carregarTabela(mes) {
+        tabelaContainer.innerHTML = ""; // Limpa todas as tabelas antes de atualizar
+
+        for (let dia = 1; dia <= 31; dia++) {
+            let tabelaDia = document.createElement("div");
+            tabelaDia.classList.add("tabela-dia");
+            tabelaDia.innerHTML = `
+                <h3>Dia ${dia}</h3>
+                <table class="tabela-historico">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Valor Mensal</th>
+                            <th>Dia do Empréstimo</th>
+                            <th>Datas de Pagamento</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-${dia}">
+                    </tbody>
+                </table>
+            `;
+            tabelaContainer.appendChild(tabelaDia);
+        }
+        preencherDados(mes);
+    }
+
+    function preencherDados(mes) {
+        for (let dia = 1; dia <= 31; dia++) {
+            let tbody = document.getElementById(`tbody-${dia}`);
+            if (tbody) tbody.innerHTML = ""; // Limpa as linhas antes de inserir novas
+        }
+
+        dadosEmprestimos.forEach(emprestimo => {
+            const dataCriacao = new Date(emprestimo.created);
+            const dia = dataCriacao.getDate();
+            const mesEmprestimo = dataCriacao.getMonth() + 1;
+
+            if (mes === 0 || mes === mesEmprestimo) {
+                const tbody = document.getElementById(`tbody-${dia}`);
+                if (tbody) {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${emprestimo.cliente}</td>
+                        <td>${emprestimo.valorMensal}</td>
+                        <td>${emprestimo.created}</td>
+                        <td>
+                            <ul>
+                                ${emprestimo.datasPagamento
+                        .filter(data => new Date(data).getMonth() + 1 === mes || mes === 0)
+                        .map(data => `<li>${data}</li>`)
+                        .join('')}
+                            </ul>
+                        </td>
+                        <td>${emprestimo.status}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            }
+        });
+    }
+
+    monthSelect.addEventListener("change", function () {
+        const mesSelecionado = parseInt(monthSelect.value);
+        carregarTabela(mesSelecionado);
+    });
+
+    carregarTabela(0); // Carrega todos os meses por padrão
+});
+

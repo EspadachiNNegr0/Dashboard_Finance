@@ -3,12 +3,9 @@ package com.shadow.dashboard.models;
 import jakarta.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Calendar;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.Objects;
+import java.util.List;
 
 @Entity
 @Table(name = "Tb_History")
@@ -44,10 +41,27 @@ public class Historico {
     @Column(nullable = false)
     private Date created;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @Temporal(TemporalType.DATE)
+    @Column(nullable = true)
+    private Date creationF;
+
     @ManyToOne
     private Banco banco;
 
+    @Column(nullable = false)
     private int parcelamento;
+
+    @ElementCollection
+    @CollectionTable(name = "payment_dates", joinColumns = @JoinColumn(name = "history_id"))
+    @Column(name = "payment_date")
+    private List<Date> datasPagamentos = new ArrayList<>();
+
+
+    @Column(nullable = true)
+    private Double jurosPagos = 0.0;
+
+
     // Getters e setters
     public Long getId() {
         return id;
@@ -105,6 +119,14 @@ public class Historico {
         this.created = created;
     }
 
+    public Date getCreationF() {
+        return creationF;
+    }
+
+    public void setCreationF(Date creationF) {
+        this.creationF = creationF;
+    }
+
     public Socios getSocios() {
         return socios;
     }
@@ -129,7 +151,19 @@ public class Historico {
         this.banco = banco;
     }
 
+    public List<Date> getDatasPagamentos() {
+        return datasPagamentos;
+    }
 
+    public void setDatasPagamentos(List<Date> datasPagamentos) {
+        this.datasPagamentos = datasPagamentos;
+    }
 
+    public Double getJurosPagos() {
+        return jurosPagos;
+    }
 
+    public void setJurosPagos(Double jurosPagos) {
+        this.jurosPagos = jurosPagos;
+    }
 }

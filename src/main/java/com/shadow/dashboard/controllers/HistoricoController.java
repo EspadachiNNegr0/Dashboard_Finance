@@ -38,10 +38,6 @@ public class HistoricoController {
     @Autowired
     private NotificationRepository notificationRepository;
 
-    public Date convertToDate(LocalDateTime localDateTime) {
-        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
-    }
-
     @GetMapping("/search")
     public ModelAndView search(@RequestParam(value = "keyword", required = false) String keyword) {
         ModelAndView mv = new ModelAndView("search");
@@ -52,41 +48,37 @@ public class HistoricoController {
         List<Socios> socios = sociosRepository.findAll();
         List<Notification> notifications = notificationRepository.findAll();
 
-        // Mapeamento para total de preços com juros
-        Map<Long, Double> priceTotalsPorParcelas = new HashMap<>();
-        for (Historico historia : historias) {
-            Double priceTotal = clientService.calcularPrecoTotalComJuros(historia);
-            priceTotalsPorParcelas.put(historia.getId(), priceTotal);  // Usando a ID do cliente como chave
-        }
-
-        // Mapeamento para o valor total sem parcelamento
-        Map<Long, Double> priceTotalSP = new HashMap<>();
-        for (Historico historia : historias) {
-            Double priceTotal = clientService.calcularPrecoTotalComJurosSemParcelar(historia);
-            priceTotalSP.put(historia.getId(), priceTotal);
-        }
-
         // Total de notificações
         int totalNotify = notifications.size();
 
-        // Mapear datas formatadas e de pagamento
+        // Mapear dados adicionais
+        Map<Long, Double> priceTotalsPorParcelas = new HashMap<>();
+        Map<Long, Double> priceTotalSP = new HashMap<>();
         Map<Long, Object> dataFormatada = new HashMap<>();
         Map<Long, String> dataDePagamentoMap = new HashMap<>();
+
         for (Historico historia : historias) {
+            Double priceTotal = clientService.calcularPrecoTotalComJuros(historia);
+            priceTotalsPorParcelas.put(historia.getId(), priceTotal);
+
+            Double priceTotalSemParcelas = clientService.calcularPrecoTotalComJurosSemParcelar(historia);
+            priceTotalSP.put(historia.getId(), priceTotalSemParcelas);
+
             dataFormatada.put(historia.getId(), historicoService.formatadorData(historia));
             dataDePagamentoMap.put(historia.getId(), historicoService.calculadorDeMeses(historia));
         }
 
-
+        // Filtro utilizando contains
         List<Historico> listHistorico = new ArrayList<>();
         if (keyword != null && !keyword.isEmpty()) {
-            listHistorico = historicoService.listAll(keyword);  // Garanta que a lógica de pesquisa esteja funcionando
+            listHistorico = historias.stream()
+                    .filter(h -> h.getCliente().getNome().toLowerCase().contains(keyword.toLowerCase()))
+                    .toList();
         }
 
+        System.out.println("Resultados encontrados: " + listHistorico.size());
 
-        System.out.println("Resultados encontrados: " + listHistorico.size());  // Exibir quantidade de resultados
-
-
+        // Adiciona objetos ao modelo
         mv.addObject("totalNotify", totalNotify);
         mv.addObject("notifications", notifications);
         mv.addObject("priceTotals", priceTotalsPorParcelas);
@@ -98,10 +90,11 @@ public class HistoricoController {
         mv.addObject("dataDePagamentoMap", dataDePagamentoMap);
         mv.addObject("bancos", bancos);
         mv.addObject("listHistorico", listHistorico);
-        mv.addObject("keyword", keyword);  // Para mostrar o que foi pesquisado
+        mv.addObject("keyword", keyword);
 
         return mv;
     }
+
 
     @GetMapping("Table")
     public ModelAndView table() {

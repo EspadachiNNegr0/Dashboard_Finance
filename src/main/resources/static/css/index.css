@@ -773,7 +773,7 @@ body {
     top: 0;
 }
 
-.table-data .add {
+.table-data  .add{
     padding: 10px;
     background-color: var(--blue);
     margin-right: 20px;
@@ -785,7 +785,32 @@ body {
     font-size: 1rem;
 }
 
+#btn-add-emprestimo{
+    color: white;
+    font-family: Poppins;
+    font-weight: bold;
+    font-size: .9rem;
+    padding: 7px 12px;
+}
+
+
 .table-data .add:hover{
+    opacity: 1;
+}
+
+.table-data .addC {
+    padding: 10px;
+    background-color: var(--light-yellow);
+    margin-right: 20px;
+    color: var(--dark);
+    border: none;
+    border-radius: 1000px;
+    cursor: pointer;
+    opacity: .9;
+    font-size: 1rem;
+}
+
+.table-data .addC:hover{
     opacity: 1;
 }
 
@@ -1169,6 +1194,172 @@ button {
     border-radius: 10px;
     padding: 10px;
 }
+
+/* Estilo principal do contêiner todo */
+.todo {
+    margin: 20px auto;
+    max-width: 100%;
+    overflow-x: auto;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+}
+
+/* Cabeçalho do contêiner */
+.head {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    background-color: #f4f4f4;
+    border-bottom: 1px solid #ccc;
+    align-items: center;
+}
+
+.mes-navegacao {
+    display: flex;
+    align-items: center;
+}
+
+/* Botões de navegação de meses */
+.navegar {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px;
+    margin: 0 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-family: Poppins;
+}
+
+.navegar:hover {
+    background-color: #0056b3;
+}
+
+/* Tabela de Histórico */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+}
+
+thead {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+
+/*ESTILO SELEÇÃO MESEs*/
+#label-selector{
+    font-size: 24px;
+    font-weight: bold;
+    font-family: Poppins;
+}
+
+#month-select{
+    padding: 4px 14px;
+    border-radius: 2rem;
+    margin-left: 1rem;
+}
+
+.table-data {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.order {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.tabelas-mes {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 20px;
+    padding: 10px 0;
+}
+
+.tabela-historico {
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+.tabela-historico th, .tabela-historico td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+.tabela-historico thead {
+    background-color: #007bff;
+    color: white;
+}
+
+.tabela-dia {
+    flex: 0 0 auto;
+    min-width: 300px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    background: #f9f9f9;
+}
+
+.mes-navegacao {
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.mes-navegacao select {
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+h3 {
+    text-align: center;
+}
+
+
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .todo {
+        margin: 10px;
+    }
+
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+    th {
+        background-color: #f4f4f4;
+    }
+
+    td {
+        padding-left: 40%;
+    }
+
+    td:before {
+        content: attr(data-title);
+        font-weight: bold;
+        text-transform: uppercase;
+        position: absolute;
+        left: 0;
+    }
+}
+
 
 
 @media screen and (max-width: 768px) {

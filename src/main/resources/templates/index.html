@@ -16,7 +16,7 @@
 
 <!-- SIDEBAR -->
 <section id="sidebar">
-    <a href="#" class="brand">
+    <a href="/" class="brand">
         <i class='bx bxs-smile'></i>
         <span class="text">AdminHub</span>
     </a>
@@ -34,7 +34,7 @@
             </a>
         </li>
         <li>
-            <a href="#">
+            <a href="/Analytics">
                 <i class='bx bxs-doughnut-chart' ></i>
                 <span class="text">Analytics</span>
             </a>
@@ -113,10 +113,6 @@
                     <h2>Shadow</h2>
                 </div>
                 <hr>
-                <a href="/profile">
-                    <span class="material-symbols-sharp">person</span>
-                    Meu Perfil
-                </a>
                 <a href="/logout">
                     <span class="material-symbols-sharp">logout</span>
                     Sair
@@ -171,142 +167,77 @@
         <div class="table-data">
             <div class="order">
                 <div class="head">
-                    <h3>Recent Orders</h3>
 
-                    <button class="add" aria-label="Adicionar empréstimo">Add Emprestimo</button>
-                    <div id="modal-add-emprestimo" class="modal hide">
-                        <div class="modal-content">
-                            <div class="modal-headers">
-                                <header>Registro de Empréstimo</header>
-                            </div>
-                            <div class="modal-body">
-                                <form action="/" method="POST">
-                                    <div class="details-emprestimo">
-                                        <span class="title">Detalhes do Empréstimo</span>
-                                        <div class="fields">
-                                            <!-- Nome do Cliente -->
-                                            <div class="input-field">
-                                            <label>Nome do Cliente</label>
-                                            <select name="cliente.id" required>
-                                                <option value="" disabled selected>Escolha o Cliente</option>
-                                                <option th:each="cliente : ${clientes}"
-                                                        th:value="${cliente.id}"
-                                                        th:text="${cliente.nome}"></option>
-                                            </select>
-                                        </div>
+                    <!-- Navegação entre os meses -->
+                    <div class="mes-navegacao">
+                        <form method="get" action="/">
+                            <label for="month-select">Escolha o Mês: </label>
+                            <select id="month-select" name="month" onchange="this.form.submit()">
+                                <option value="0" th:selected="${selectedMonth == 0}">Todos os meses</option>
+                                <option value="1" th:selected="${selectedMonth == 1}">Janeiro</option>
+                                <option value="2" th:selected="${selectedMonth == 2}">Fevereiro</option>
+                                <option value="3" th:selected="${selectedMonth == 3}">Março</option>
+                                <option value="4" th:selected="${selectedMonth == 4}">Abril</option>
+                                <option value="5" th:selected="${selectedMonth == 5}">Maio</option>
+                                <option value="6" th:selected="${selectedMonth == 6}">Junho</option>
+                                <option value="7" th:selected="${selectedMonth == 7}">Julho</option>
+                                <option value="8" th:selected="${selectedMonth == 8}">Agosto</option>
+                                <option value="9" th:selected="${selectedMonth == 9}">Setembro</option>
+                                <option value="10" th:selected="${selectedMonth == 10}">Outubro</option>
+                                <option value="11" th:selected="${selectedMonth == 11}">Novembro</option>
+                                <option value="12" th:selected="${selectedMonth == 12}">Dezembro</option>
+                            </select>
+                        </form>
 
-
-                                            <!-- Valor do Empréstimo -->
-                                            <div class="input-field">
-                                                <label>Valor do Empréstimo</label>
-                                                <input type="number" name="price" placeholder="Digite o valor do empréstimo" required>
-                                            </div>
-
-                                            <!-- Porcentagem -->
-                                            <div class="input-field">
-                                                <label>Porcentagem (%)</label>
-                                                <input type="number" name="percentage" step="0.01" placeholder="Digite a porcentagem de juros" required>
-                                            </div>
-
-                                            <!-- Parcelamento -->
-                                            <div class="input-field">
-                                                <label>Parcelamento (meses)</label>
-                                                <input type="number" name="parcelamento" placeholder="Digite o número de parcelas" required>
-                                            </div>
-
-                                            <!-- Banco -->
-                                            <div class="input-field">
-                                                <label>Banco</label>
-                                                <select name="banco.id" required>
-                                                    <option value="" disabled selected>Escolha um Banco</option>
-                                                    <option th:each="banco : ${bancos}"
-                                                            th:value="${banco.id}"
-                                                            th:text="${banco.nome}"></option>
-                                                </select>
-                                            </div>
-
-                                            <!-- Socio -->
-                                            <div class="input-field">
-                                                <label>Socio</label>
-                                                <select name="socios.id" required> <!-- Alterado de banco.id para socios.id -->
-                                                    <option value="" disabled selected>Escolha quem emprestou</option>
-                                                    <option th:each="socio : ${socios}"
-                                                            th:value="${socio.id}"
-                                                            th:text="${socio.name}"></option>
-                                                </select>
-                                            </div>
-
-
-                                            <!-- Data -->
-                                            <div class="input-field">
-                                                <label>Data</label>
-                                                <input type="date" name="created" required>
-                                            </div>
-
-                                            <!-- Descrição -->
-                                            <div class="input-field">
-                                                <label>Descrição</label>
-                                                <input type="text" name="description" placeholder="Coloque uma Descrição" required>
-                                            </div>
-
-                                            <button type="submit">Salvar</button>
-                                        </div>
-                                    </div>
-                                </form>
-
-                            </div>
-                        </div>
                     </div>
 
 
-
-
-                    <i class='bx bx-filter' ></i>
                 </div>
-                <table style="width:100%">
-                    <thead>
-                    <th>Nome</th>
-                    <th>Valor Mensal</th>
-                    <th>Inicio Emprestimo</th>
-                    <th>Status</th>
-                    <tbody class="device" th:each="historia : ${historias}">
-                    <tr>
-                        <!-- Nome do Cliente, ao clicar, aciona o OpenModalOnTable -->
-                        <td th:text="${historia.cliente.nome}" onclick="OpenModalOnTable(event)"></td>
-                        <td th:text="${priceTotals[historia.id]}"></td>
-                        <td th:text="${#dates.format(historia.created, 'dd/MM/yyyy')}"></td>
-                        <td th:text="${historia.status}"></td>
-                        <td>
-                            <a th:href="@{/histori/{id}(id=${historia.id})}" class="btn btn-info">
-                                <span class="material-symbols-sharp">file_open</span>
-                            </a>
-                        </td>
-                    </tr>
-                    </tbody>
 
-
-
-                    </thead>
-                    <tfoot>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Valor Mensal</th>
-                        <th>Inicio Emprestimo</th>
-                        <th>Status</th>
-                    </tr>
-                    </tfoot>
-                </table>
+                <!-- Tabela de Dados dos Históricos -->
+                <!-- Tabela de Dados dos Históricos -->
+                <div class="tabelas-mes">
+                    <div th:each="dia : ${#numbers.sequence(1, 31)}">
+                    <h3 th:text="|Dia ${dia}|"></h3>
+                    <table class="tabela-historico">
+                            <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Valor Mensal</th>
+                                <th>Dia do Empréstimo</th>
+                                <th>Datas de Pagamento</th>
+                                <th>Status</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="historia : ${historias}"
+                                th:if="${#dates.format(historia.created, 'dd') == #numbers.formatInteger(dia, 2)}">
+                                <td th:text="${historia.cliente.nome}"></td>
+                                <td th:text="${priceTotals[historia.id]}"></td>
+                                <td th:text="${#dates.format(historia.created, 'dd/MM/yyyy')}"></td>
+                                <td>
+                                    <ul>
+                                        <li th:each="dataPagamento : ${datasDePagamento[historia.id]}"
+                                            th:text="${#dates.format(dataPagamento, 'dd/MM/yyyy')}"></li>
+                                    </ul>
+                                </td>
+                                <td th:text="${historia.status}"></td>
+                            </tr>
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Valor Mensal</th>
+                                <th>Dia do Empréstimo</th>
+                                <th>Datas de Pagamento</th>
+                                <th>Status</th>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
             </div>
 
-            <div class="todo">
-                <div class="head">
-                    <h3>Valores Mensais</h3>
-                    <i class='bx bx-plus'></i>
-                    <i class='bx bx-filter'></i>
-                </div>
-            </div>
-
-        </div>
         </div>
     </main>
 </section>

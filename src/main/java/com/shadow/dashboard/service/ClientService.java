@@ -43,6 +43,7 @@ public class ClientService {
      * @param historia: objeto contendo o histórico do empréstimo
      */
     public double calcularPrecoTotalComJurosSemParcelar(Historico historia) {
+
         if (historia != null) {
             double valorJuros = calcularJurosSobreHistoria(historia);
             // Preço total: Preço base + juros, sem parcelamento
@@ -50,4 +51,7 @@ public class ClientService {
         }
         return 0.0;  // Caso o objeto história seja nulo
     }
+
+
+
 }

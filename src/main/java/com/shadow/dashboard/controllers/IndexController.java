@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/")
@@ -40,16 +42,27 @@ public class IndexController {
     @Autowired
     private NotificationRepository notificationRepository;
 
-    public Date convertToDate(LocalDateTime localDateTime) {
-        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+    // Função para converter Date para LocalDate
+    private LocalDate convertToLocalDate(Date date) {
+        if (date instanceof java.sql.Date) {
+            return ((java.sql.Date) date).toLocalDate(); // 🔹 Correta conversão de SQL Date para LocalDate
+        }
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(); // 🔹 Caso seja um Date normal
     }
 
     @GetMapping("/")
-    public ModelAndView index() throws Exception {
+    public ModelAndView index(@RequestParam(value = "status", required = false) String status,
+                              @RequestParam(value = "month", required = false, defaultValue = "0") int selectedMonth) {
         ModelAndView mv = new ModelAndView("index");
 
+        // Buscando todos os dados
         List<Clientes> clientes = clientRepository.findAll();
-        List<Historico> historias = historicoRepository.findAll();
+        // Buscar todos os históricos
+        List<Historico> historias = (status != null && !status.isEmpty())
+                ? new ArrayList<>(historicoRepository.findByStatus(status)) // 🔹 Garante mutabilidade
+                : new ArrayList<>(historicoRepository.findAll()); // 🔹 Garante mutabilidade
+
+
         List<Banco> bancos = bancoRepository.findAll();
         List<Socios> socios = sociosRepository.findAll();
         List<Notification> notifications = notificationRepository.findAll();
@@ -62,42 +75,57 @@ public class IndexController {
             clientes = clientes.subList(0, 5);
         }
 
-// Agora 'createdDate' pode ser usado para manipulações, persistência ou enviado para o Thymeleaf
 
-
-        // Mapeamento para total de preços com juros
-        Map<Long, Double> priceTotals = new HashMap<>();
-        for (Historico historia : historias) {
-            Double priceTotal = clientService.calcularPrecoTotalComJuros(historia);
-            priceTotals.put(historia.getId(), priceTotal);  // Usando a ID do cliente como chave
+        // Criar um mapa para armazenar as datas de pagamento filtradas
+        Map<Long, List<Date>> mapaDatasPagamento = new HashMap<>();
+        // 🔹 Aplicando a conversão para LocalDate antes de filtrar
+        if (selectedMonth != 0) {
+            historias = historias.stream()
+                    .filter(h -> {
+                        List<Date> datasPagamento = historicoService.calculaDatasDePagamento(h);
+                        boolean temPagamentoNoMes = datasPagamento.stream()
+                                .anyMatch(data -> convertToLocalDate(data).getMonthValue() == selectedMonth);
+                        if (temPagamentoNoMes) {
+                            mapaDatasPagamento.put(h.getId(), datasPagamento); // Adiciona apenas se o empréstimo tiver pagamento no mês
+                        }
+                        return temPagamentoNoMes;
+                    })
+                    .collect(Collectors.toList());
+        } else {
+            // Se for "Todos os meses", carregar normalmente todas as datas de pagamento
+            for (Historico historico : historias) {
+                mapaDatasPagamento.put(historico.getId(), historicoService.calculaDatasDePagamento(historico));
+            }
         }
 
-        // Mapeamento para o valor total sem parcelamento
+        // Criando os mapas de dados a serem passados para a view
+        Map<Long, Double> priceTotalsPorParcelas = new HashMap<>();
         Map<Long, Double> priceTotalSP = new HashMap<>();
-        for (Historico historia : historias) {
-            Double priceTotal = clientService.calcularPrecoTotalComJurosSemParcelar(historia);
-            priceTotalSP.put(historia.getId(), priceTotal);
-        }
-
-        // Total de notificações
-        int totalNotify = notifications.size();
-
-        // Mapear datas formatadas e de pagamento
         Map<Long, Object> dataFormatada = new HashMap<>();
         Map<Long, String> dataDePagamentoMap = new HashMap<>();
+
         for (Historico historia : historias) {
+            mapaDatasPagamento.put(historia.getId(), historicoService.calculaDatasDePagamento(historia));
+            priceTotalsPorParcelas.put(historia.getId(), clientService.calcularPrecoTotalComJuros(historia));
+            priceTotalSP.put(historia.getId(), clientService.calcularPrecoTotalComJurosSemParcelar(historia));
             dataFormatada.put(historia.getId(), historicoService.formatadorData(historia));
             dataDePagamentoMap.put(historia.getId(), historicoService.calculadorDeMeses(historia));
         }
 
+        historias.sort(Comparator.comparing(Historico::getCreated).reversed());
+
+        // Total de notificações
+        int totalNotify = notifications.size();
         double somaDeEmprestimo = historicoService.somaDeTodosOsEmprestimos(historias);
 
         // Passando os dados para a visão
+        mv.addObject("datasDePagamento", mapaDatasPagamento);
+        mv.addObject("selectedMonth", selectedMonth);
         mv.addObject("totalNotify", totalNotify);
         mv.addObject("listHistorico", listHistorico);
         mv.addObject("notifications", notifications);
         mv.addObject("somaDeEmprestimo", somaDeEmprestimo);
-        mv.addObject("priceTotals", priceTotals);
+        mv.addObject("priceTotals", priceTotalsPorParcelas);
         mv.addObject("priceTotalSP", priceTotalSP);
         mv.addObject("dataFormatada", dataFormatada);
         mv.addObject("clientes", clientes);
@@ -109,15 +137,23 @@ public class IndexController {
         return mv;
     }
 
+    private int getMonthFromDate(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        return cal.get(Calendar.MONTH) + 1; // +1 porque os meses em Calendar são 0-indexados
+    }
+
     @PostMapping("/")
     public String saveEmprestimo(@ModelAttribute Historico historia, RedirectAttributes redirectAttributes) {
-        // Definir o status como 'processing' automaticamente
-        historia.setStatus(Status.PROCESSING);
+        // Verifica se o status está vazio ou é diferente de COMPLETE e FAILED
+        if (historia.getStatus() == null || (historia.getStatus() != Status.COMPLETE && historia.getStatus() != Status.FAILED)) {
+            historia.setStatus(Status.PROCESSING); // Define o status como PROCESSING (ativo)
+        }
 
-        // Salvar a entidade no banco de dados e criar a notificação
+        // Salva o histórico no banco de dados e cria a notificação
         historicoService.saveHistoryAndCreateNotification(historia);
 
-        // Adicionar mensagem de sucesso
+        // Adiciona mensagem de sucesso
         redirectAttributes.addFlashAttribute("message", "Empréstimo registrado com sucesso!");
 
         // Redireciona para a página inicial
@@ -125,16 +161,19 @@ public class IndexController {
     }
 
     @GetMapping("/histori/{id}")
-    public String detalhesVenda(@PathVariable("id") long id, Model model) {
+    public String detalhesVenda(@PathVariable("id") String id, Model model) {
+        // Converter o id para long
+        long historiId = Long.parseLong(id);
+
         // Buscar o histórico específico pelo ID
-        Historico histori = historicoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Histórico não encontrado para o ID: " + id));
+        Historico histori = historicoRepository.findById(historiId)
+                .orElseThrow(() -> new RuntimeException("Histórico não encontrado para o ID: " + historiId));
 
         // Carregar outras listas no modelo
         List<Clientes> clientes = clientRepository.findAll();
         List<Banco> bancos = bancoRepository.findAll();
         List<Socios> socios = sociosRepository.findAll();
-        List<Historico> historias = historicoRepository.findAll();
+        List<Historico> historico = historicoRepository.findAll();
 
         // Mapear datas formatadas
         Map<Long, Object> dataFormatada = new HashMap<>();
@@ -154,6 +193,7 @@ public class IndexController {
 
         // Passar dados para o modelo
         model.addAttribute("histori", histori);
+        model.addAttribute("historico", historico);
         model.addAttribute("priceTotals", priceTotals);
         model.addAttribute("priceTotalSP", priceTotalSP);
         model.addAttribute("clientes", clientes);
@@ -165,59 +205,21 @@ public class IndexController {
         return "detalhe/detalhes";  // Verifique se o caminho para o template está correto
     }
 
-    @GetMapping("/editHistorico/{id}")
-    public String editHistorico(@PathVariable("id") Long id, Model model) {
+
+    @PostMapping("/histori/{id}")
+    public String pagarJuros(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         Historico historico = historicoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Histórico não encontrado para o ID: " + id));
-
-        List<Clientes> clientes = clientRepository.findAll();
-        List<Banco> bancos = bancoRepository.findAll();
-        List<Socios> socios = sociosRepository.findAll();
-        Map<Long, Double> priceTotalSP = new HashMap<>();
-        Map<Long, Double> priceTotals = new HashMap<>();
-        Map<Long, Object> dataDePagamentoMap = new HashMap<>();
-
-        // Process the necessary data, e.g., price totals
-        priceTotalSP.put(historico.getId(), clientService.calcularPrecoTotalComJurosSemParcelar(historico));
-        priceTotals.put(historico.getId(), clientService.calcularPrecoTotalComJuros(historico));
-        // Add data for last payment date
-        dataDePagamentoMap.put(historico.getId(), historicoService.calculadorDeMeses(historico));
-
-        model.addAttribute("histori", historico);
-        model.addAttribute("priceTotalSP", priceTotalSP);
-        model.addAttribute("priceTotals", priceTotals);
-        model.addAttribute("dataDePagamentoMap", dataDePagamentoMap);
-        model.addAttribute("clientes", clientes);
-        model.addAttribute("bancos", bancos);
-        model.addAttribute("socios", socios);
-
-        return "edit";
-    }
-
-    @PostMapping("/editHistorico")
-    public String updateHistorico(@ModelAttribute("histori") Historico histori,
-                                  RedirectAttributes redirectAttributes) {
-        // Processo de atualização, conforme já descrito
-        Historico originalHistorico = historicoRepository.findById(histori.getId())
                 .orElseThrow(() -> new RuntimeException("Histórico não encontrado"));
 
-        // Preenche a data de criação com a data e hora atual, caso esteja nula
-        if (histori.getCreated() == null) {
-            histori.setCreated(convertToDate(LocalDateTime.now())); // Agora 'LocalDateTime' é convertido para 'Date'
-        }
+        historicoService.pagarApenasJuros(historico);
 
-
-
-        histori.setId(originalHistorico.getId());
-        histori.setCliente(originalHistorico.getCliente()); // Não alterar cliente
-        histori.setStatus(originalHistorico.getStatus());   // Não alterar status
-
-        // Salvar a entidade com os dados atualizados
-        historicoService.atualizeHistoryAndCreateNotification(histori);
-
-        redirectAttributes.addFlashAttribute("message", "Histórico atualizado com sucesso!");
-
+        redirectAttributes.addFlashAttribute("message", "Pagamento de juros realizado com sucesso!");
         return "redirect:/";
     }
+
+
+
+
+
 
 }
