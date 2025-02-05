@@ -141,17 +141,17 @@
 
         <ul class="box-info">
             <li>
-                <i class='bx bxs-calendar-check' ></i>
+                <i class='bx bxs-calendar-check'></i>
                 <span class="text">
-						<h3>1020</h3>
-						<p>New Order</p>
-					</span>
+                    <h3 th:text="${emprestimosAtivos}">0</h3>
+                    <p>Empréstimos Ativos</p>
+                </span>
             </li>
             <li>
                 <i class='bx bxs-group' ></i>
                 <span class="text">
-						<h3>2834</h3>
-						<p>Visitors</p>
+						<h3 th:text="${ClientesSize}"></h3>
+						<p>Clientes Cadastrados</p>
 					</span>
             </li>
             <li>
@@ -191,6 +191,7 @@
 
                     </div>
 
+                    <i class='bx bx-filter' ></i>
 
                 </div>
 
@@ -218,6 +219,7 @@
                                 <td>
                                     <ul>
                                         <li th:each="dataPagamento : ${datasDePagamento[historia.id]}"
+                                            th:if="${selectedMonth == 0 or #dates.format(dataPagamento, 'MM') == #numbers.formatInteger(selectedMonth, 2)}"
                                             th:text="${#dates.format(dataPagamento, 'dd/MM/yyyy')}"></li>
                                     </ul>
                                 </td>
@@ -239,6 +241,7 @@
             </div>
 
         </div>
+
     </main>
 </section>
 

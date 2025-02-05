@@ -5,6 +5,7 @@
     <title>Detalhes do Empréstimo</title>
 </head>
 <body>
+
 <div id="modals-emprestimo" class="modal hide">
     <div class="modal-content">
         <div class="modal-headers">
@@ -20,7 +21,6 @@
             <form action="/editHistorico" method="POST">
                 <input type="hidden" name="_method" value="PUT" />
                 <div class="details-emprestimo">
-                    <!-- Primeira parte -->
                     <div class="fields-group">
                         <div class="field">
                             <label>ID:</label>
@@ -28,14 +28,13 @@
                         </div>
                         <div class="field">
                             <label>Nome do Cliente:</label>
-                            <input type="text" name="status" th:value="${histori.cliente.nome}" readonly />
+                            <input type="text" name="cliente" th:value="${histori.cliente.nome}" readonly />
                         </div>
                         <div class="field">
                             <label>Status:</label>
                             <input type="text" name="status" th:value="${histori.status}" readonly />
                         </div>
                     </div>
-                    <!-- Segunda parte -->
                     <div class="fields-group">
                         <div class="field">
                             <label>Valor do Empréstimo:</label>
@@ -50,7 +49,6 @@
                             <input type="text" name="socio" th:value="${histori.socios.name}" readonly />
                         </div>
                     </div>
-                    <!-- Terceira parte -->
                     <div class="fields-group">
                         <div class="field">
                             <label>Banco:</label>
@@ -66,7 +64,7 @@
                         </div>
                         <div class="field">
                             <label>Data Final:</label>
-                            <input type="text" name="created" th:value="${dataDePagamentoMap[histori.id]}" readonly />
+                            <input type="text" name="finalDate" th:value="${dataDePagamentoMap[histori.id]}" readonly />
                         </div>
                     </div>
                 </div>
@@ -75,7 +73,7 @@
     </div>
 </div>
 
-<!-- Modal de opções de pagamento com classe exclusiva -->
+<!-- Modal de opções de pagamento -->
 <div id="modal-receber" class="modal-receber hide">
     <div class="modal-content">
         <div class="modal-headers">
@@ -83,14 +81,33 @@
             <button class="close" onclick="closeReceberModal()">&times;</button>
         </div>
         <div class="modal-body">
-            <form action="/histori" method="POST">
+            <form th:action="@{/histori/{id}/pagar-mensal(id=${histori.id})}" method="POST">
+                <input type="hidden" name="id" th:value="${histori.id}" />
+                <button class="option" type="submit">Pagar Mensal (Valor Completo)</button>
+            </form>
+            <form th:action="@{/histori/{id}/pagar-juros(id=${histori.id})}" method="POST">
                 <input type="hidden" name="id" th:value="${histori.id}" />
                 <button class="option" type="submit">Pagar Apenas os Juros</button>
             </form>
-
         </div>
     </div>
 </div>
+
+<h3>Pagamentos Realizados</h3>
+<table class="tabela-historico">
+    <thead>
+    <tr>
+        <th>Data do Pagamento</th>
+        <th>Valor Pago</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="log : ${pagamentos}">
+        <td th:text="${#dates.format(log.dataPagamento, 'dd/MM/yyyy HH:mm')}"></td>
+        <td th:text="${log.valorPago}"></td>
+    </tr>
+    </tbody>
+</table>
 
 <script>
     function openReceberModal() {
@@ -99,16 +116,6 @@
 
     function closeReceberModal() {
         document.getElementById('modal-receber').classList.add('hide');
-    }
-
-    function handlePayInterest() {
-        alert("Pagando apenas os juros. O valor principal será somado ao próximo pagamento.");
-        closeReceberModal();
-    }
-
-    function handlePayNormal() {
-        alert("Pagando o valor mensal. O valor será abatido normalmente.");
-        closeReceberModal();
     }
 </script>
 

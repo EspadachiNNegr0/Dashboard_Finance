@@ -1,5 +1,6 @@
 package com.shadow.dashboard.repository;
 
+import com.shadow.dashboard.models.Clientes;
 import com.shadow.dashboard.models.Historico;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,5 +21,5 @@ public interface HistoricoRepository extends JpaRepository<Historico, Long> {
 
     public List<Historico> findByStatus(String status);
 
-
+    List<Historico> findByCliente(Clientes cliente);
 }

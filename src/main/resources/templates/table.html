@@ -146,7 +146,55 @@
                 <div class="head">
                     <h3>Recent Orders</h3>
 
+                    <!-- Botão para abrir o modal de adicionar cliente -->
                     <button class="addC" aria-label="Adicionar Cliente">Add Cliente</button>
+
+                    <!-- Modal de Adicionar Cliente -->
+                    <div id="modal-add-cliente" class="modal-add-cliente hide">
+                        <div class="modal-content">
+                            <div class="modal-headers">
+                                <header>Adicionar Cliente</header>
+                                <button class="close">&times;</button>
+                            </div>
+                            <div class="modal-body">
+                                <form th:action="@{/clientes}" method="POST">
+                                    <div class="details-cliente">
+                                        <span class="title">Detalhes do Cliente</span>
+                                        <div class="fields">
+
+                                            <!-- Nome do Cliente -->
+                                            <div class="input-field">
+                                                <label>Nome</label>
+                                                <input type="text" name="nome" placeholder="Digite o nome do cliente" required>
+                                            </div>
+
+                                            <!-- CPF -->
+                                            <div class="input-field">
+                                                <label>CPF</label>
+                                                <input type="text" name="cpf" placeholder="Digite o CPF" required>
+                                            </div>
+
+                                            <!-- Contato (Telefone) -->
+                                            <div class="input-field">
+                                                <label>Contato</label>
+                                                <input type="text" name="contato" placeholder="Digite o contato do cliente" required>
+                                            </div>
+
+                                            <!-- Endereço -->
+                                            <div class="input-field">
+                                                <label>Endereço</label>
+                                                <input type="text" name="endereco" placeholder="Digite o endereço" required>
+                                            </div>
+
+                                            <!-- Botão de envio -->
+                                            <button type="submit">Salvar Cliente</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
                     <button class="add" aria-label="Adicionar empréstimo">Add Emprestimo</button>
                     <div id="modal-add-emprestimo" class="modal hide">
                         <div class="modal-content">
@@ -249,7 +297,7 @@
                     </thead>
                     <tbody>
                     <tr th:each="historico: ${historias}">
-                        <td th:text="${historico.cliente.nome}"></td>
+                        <td><a href="#" th:text="${historico.cliente.nome}"></a></td>
                         <td>
                             <span th:text="${historico.price} + ' '"></span>
                         </td>

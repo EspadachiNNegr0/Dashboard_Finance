@@ -42,6 +42,9 @@ public class IndexController {
     @Autowired
     private NotificationRepository notificationRepository;
 
+    @Autowired
+    private PagamentoLogRepository pagamentoLogRepository;
+
     // Função para converter Date para LocalDate
     private LocalDate convertToLocalDate(Date date) {
         if (date instanceof java.sql.Date) {
@@ -74,6 +77,13 @@ public class IndexController {
         if (clientes.size() > 5) {
             clientes = clientes.subList(0, 5);
         }
+
+        long emprestimosAtivos = historias.stream()
+                .filter(historia -> !"complete".equalsIgnoreCase(String.valueOf(historia.getStatus())))
+                .count();
+
+        Long ClientesSize = clientes.stream()
+                .count();
 
 
         // Criar um mapa para armazenar as datas de pagamento filtradas
@@ -119,6 +129,8 @@ public class IndexController {
         double somaDeEmprestimo = historicoService.somaDeTodosOsEmprestimos(historias);
 
         // Passando os dados para a visão
+        mv.addObject("ClientesSize", ClientesSize);
+        mv.addObject("emprestimosAtivos", emprestimosAtivos);
         mv.addObject("datasDePagamento", mapaDatasPagamento);
         mv.addObject("selectedMonth", selectedMonth);
         mv.addObject("totalNotify", totalNotify);
@@ -205,21 +217,61 @@ public class IndexController {
         return "detalhe/detalhes";  // Verifique se o caminho para o template está correto
     }
 
-
-    @PostMapping("/histori/{id}")
+    @PostMapping("/histori/{id}/pagar-juros")
     public String pagarJuros(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        // Buscar o empréstimo pelo ID
         Historico historico = historicoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Histórico não encontrado"));
 
-        historicoService.pagarApenasJuros(historico);
+        // Calcular o valor dos juros
+        double valorJuros = historico.getPrice() * (historico.getPercentage() / 100.0);
 
-        redirectAttributes.addFlashAttribute("message", "Pagamento de juros realizado com sucesso!");
-        return "redirect:/";
+        // Criar e salvar o log de pagamento
+        PagamentoLog log = new PagamentoLog();
+        log.setHistorico(historico);
+        log.setValorPago(valorJuros);
+        log.setDataPagamento(LocalDateTime.now()); // ✅ Agora funciona corretamente!
+
+        pagamentoLogRepository.save(log); // 🔹 Salvando corretamente no banco
+
+        // Mensagem de confirmação
+        redirectAttributes.addFlashAttribute("message", "Pagamento de juros registrado com sucesso! Valor: R$ " + valorJuros);
+        return "redirect:/histori/" + id;
     }
 
+    @PostMapping("/histori/{id}/pagar-mensal")
+    public String pagarMensal(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        // Buscar o empréstimo pelo ID
+        Historico historico = historicoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Histórico não encontrado"));
 
+        // Verificar se o empréstimo ainda tem saldo a pagar
+        if (historico.getPrice() <= 0) {
+            redirectAttributes.addFlashAttribute("error", "Este empréstimo já foi quitado.");
+            return "redirect:/histori/" + id;
+        }
 
+        // Calcular o valor mensal com juros
+        double juros = (historico.getPrice() * (historico.getPercentage() / 100.0));
+        double valorMensal = (historico.getPrice() / historico.getParcelamento()) + juros;
 
+        // Atualizar o saldo do empréstimo subtraindo apenas a parcela mensal
+        historico.setPrice(historico.getPrice() - valorMensal);
 
+        // Se o saldo restante for 0 ou menor, definir o status como "COMPLETO"
+        if (historico.getPrice() <= 0) {
+            historico.setStatus(Status.COMPLETE);
+        }
+
+        historicoRepository.save(historico);
+
+        // Registrar o pagamento no log
+        PagamentoLog log = new PagamentoLog(historico, valorMensal);
+        pagamentoLogRepository.save(log);
+
+        // Mensagem de confirmação
+        redirectAttributes.addFlashAttribute("message", "Pagamento de R$ " + valorMensal + " realizado com sucesso!");
+        return "redirect:/histori/" + id;
+    }
 
 }

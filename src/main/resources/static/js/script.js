@@ -1,7 +1,7 @@
 // Espera a página carregar para associar os eventos aos elementos
 document.addEventListener("DOMContentLoaded", function () {
 
-    // Modal de Adicionar Emprestimo
+    // ================= MODAL DE ADICIONAR EMPRESTIMO =================
     const addButton = document.querySelector(".add");
     const modalAdd = document.getElementById("modal-add-emprestimo");
     const closeAddModalButton = document.getElementById("close-modal");
@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
         modalAdd.classList.add("hide");
     });
 
-    // Fechar modal clicando fora dele (Adicione essa condição só no caso de você querer)
+    // Fechar modal clicando fora dele
     modalAdd.addEventListener("click", (event) => {
         if (event.target === modalAdd) {
             modalAdd.classList.remove("show");
@@ -26,8 +26,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // -------------------------------------------
-    // Modal de Notificação
+    // ================= MODAL DE NOTIFICAÇÕES =================
     const openModalButton = document.querySelector("#open-modal .notification");
     const modalNotification = document.getElementById("modal");
     const fade = document.querySelector("#fade");
@@ -35,7 +34,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Função para abrir o modal de notificações
     openModalButton.addEventListener("click", () => {
-        console.log("Botão de notificações clicado!");
         modalNotification.classList.remove("hide");
         fade.classList.remove("hide");
     });
@@ -51,26 +49,33 @@ document.addEventListener("DOMContentLoaded", function () {
         modalNotification.classList.add("hide");
         fade.classList.add("hide");
     });
-});
 
+    // ================= MODAL DE ADICIONAR CLIENTE =================
+    const addClienteButton = document.querySelector(".addC"); // Botão que abre o modal
+    const modalCliente = document.getElementById("modal-add-cliente"); // O próprio modal
+    const closeClienteButton = modalCliente.querySelector(".close"); // Botão de fechar
 
-function toggleSubMenu() {
-    const subMenu = document.getElementById('subMenu'); // Pegando a referência do submenu
-    subMenu.classList.toggle('show'); // Alterna entre visível e invisível
-}
+    // Função para abrir o modal de adicionar cliente
+    addClienteButton.addEventListener("click", () => {
+        modalCliente.classList.remove("hide");
+        modalCliente.classList.add("show");
+    });
 
-// Caso deseje fechar o submenu ao clicar fora dele, adicione a lógica:
-document.addEventListener('click', function(event) {
-    const profile = document.querySelector('.profile'); // Div que contém o botão de clique
-    const subMenu = document.getElementById('subMenu');
+    // Função para fechar o modal de adicionar cliente
+    closeClienteButton.addEventListener("click", () => {
+        modalCliente.classList.remove("show");
+        modalCliente.classList.add("hide");
+    });
 
-    // Se o clique ocorrer fora do submenu e do perfil, feche o submenu
-    if (!profile.contains(event.target) && !subMenu.contains(event.target)) {
-        subMenu.classList.remove('show'); // Esconde o submenu
-    }
-});
+    // Fechar modal clicando fora dele
+    modalCliente.addEventListener("click", (event) => {
+        if (event.target === modalCliente) {
+            modalCliente.classList.remove("show");
+            modalCliente.classList.add("hide");
+        }
+    });
 
-document.addEventListener("DOMContentLoaded", function () {
+    // ================= FILTRAR EMPRESTIMOS POR MÊS =================
     const monthSelect = document.getElementById("month-select");
     const tabelaContainer = document.getElementById("tabelas-container");
     let dadosEmprestimos = JSON.parse(document.getElementById("dados-emprestimos").textContent);
@@ -93,8 +98,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             <th>Status</th>
                         </tr>
                     </thead>
-                    <tbody id="tbody-${dia}">
-                    </tbody>
+                    <tbody id="tbody-${dia}"></tbody>
                 </table>
             `;
             tabelaContainer.appendChild(tabelaDia);
@@ -144,4 +148,35 @@ document.addEventListener("DOMContentLoaded", function () {
 
     carregarTabela(0); // Carrega todos os meses por padrão
 });
+
+
+
+// ================= TOGGLE DO MENU DO PERFIL =================
+document.addEventListener("DOMContentLoaded", function () {
+
+    // ==================== TOGGLE DO MENU DO PERFIL ====================
+    const profile = document.querySelector(".profile");  // O botão do perfil
+    const subMenu = document.getElementById("subMenu"); // O submenu
+
+    // Função para abrir e fechar o submenu
+    function toggleSubMenu(event) {
+        event.stopPropagation(); // Impede que o clique se propague
+        subMenu.classList.toggle("show"); // Alterna entre visível e invisível
+    }
+
+    // Evento para abrir o submenu ao clicar no perfil
+    profile.addEventListener("click", toggleSubMenu);
+
+    // Fechar o submenu ao clicar fora dele
+    document.addEventListener("click", function (event) {
+        if (!profile.contains(event.target) && !subMenu.contains(event.target)) {
+            subMenu.classList.remove("show"); // Esconde o submenu
+        }
+    });
+
+});
+
+
+
+
 
