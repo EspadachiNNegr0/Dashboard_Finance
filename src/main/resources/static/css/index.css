@@ -364,7 +364,6 @@ body {
 }
 
 
-/* Submenu */
 .sub-menu-wrap {
     position: absolute;
     top: 60px;
@@ -372,17 +371,18 @@ body {
     background: var(--light);
     border-radius: 8px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    opacity: 1;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+    visibility: hidden; /* 🔹 Esconde por padrão */
+    opacity: 0; /* 🔹 Torna invisível */
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
     z-index: 100;
 }
 
 .sub-menu-wrap.show {
-    opacity: 1;
-    visibility: visible;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: translateY(0);
 }
-
 
 .sub-menu {
     padding: 15px;
@@ -1473,6 +1473,235 @@ h3 {
 
 .hide {
     display: none;
+}
+
+/* Estilo do Modal */
+.modal-filtro {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.3s;
+    font-family: Poppins;
+}
+
+.modal-filtro.show {
+    visibility: visible;
+    opacity: 1;
+}
+
+.modal-filtro-content {
+    background: #fff;
+    padding: 20px 30px;
+    border-radius: 8px;
+    width: 400px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    font-family: Poppins;
+    font-weight: bold;
+}
+
+/* Estilo do cabeçalho */
+.modal-filtro-content h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #333;
+    font-weight: bold;
+    font-family: Poppins;
+    text-align: left;
+}
+
+/* Estilo dos grupos de entrada */
+.input-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.input-group input::placeholder{
+    font-size: .7rem;
+}
+
+/* Estilo para o intervalo de valores */
+.valor-range {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.valor-range input {
+    width: calc(50% - 5px);
+}
+
+/* Botão de envio */
+#btn-modal-filtro {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 55px;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#btn-modal-filtro:hover {
+    background: #0056b3;
+}
+
+
+/* Botão de fechar */
+#btnFecharModal {/* Alinhamento à direita */
+    background: none;
+    border: none;
+    font-size: .9rem;
+    color: #333;
+    cursor: pointer;
+    transition: color 0.3s;
+    font-family: Poppins;
+    font-weight: bold;
+}
+
+.closeButton{
+    text-align: end;
+}
+
+.modal-close:hover {
+    color: #007bff;
+}
+
+/* Estilização das tabelas */
+.tabela-historico {
+    border-collapse: separate; /* Permite bordas arredondadas */
+    border-spacing: 0; /* Remove espaçamento entre células */
+    width: 100%;
+    border-radius: 8px; /* Bordas arredondadas */
+    overflow: hidden; /* Garante que o arredondamento funcione */
+}
+
+/* Cabeçalhos da tabela */
+.tabela-historico th {
+    background-color: #bdbcbc; /* Cor de fundo original */
+    color: white; /* Texto branco */
+    padding: 12px 15px;
+    font-weight: bold;
+    text-align: left;
+    border: none; /* Remove as divisórias entre células */
+}
+
+/* Células da tabela */
+.tabela-historico td {
+    padding: 12px 15px;
+    background-color: white; /* Cor de fundo original */
+    border: none;
+    color: black;
+}
+
+/* Linhas alternadas para maior legibilidade */
+.tabela-historico tr:nth-child(even) td {
+    background-color: #f9f9f9; /* Fundo alternado */
+}
+
+/* Ajuste no título do dia */
+.tabelas-mes h3 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+    color: #333; /* Cor do texto */
+    font-weight: bold;
+}
+
+#label-selector{
+    font-size: 24px;
+    font-weight: bold;
+    font-family: Poppins;
+}
+
+#month-select{
+    padding: 4px 14px;
+    border-radius: 2rem;
+    margin-left: 1rem;
+}
+
+.table-data {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.order {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.tabelas-mes {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 20px;
+    padding: 10px 0;
+}
+
+.tabela-historico {
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+.tabela-historico th, .tabela-historico td {
+    border: none;
+    padding: 10px;
+    text-align: center;
+}
+
+
+
+.tabela-historico thead {
+    background-color: #007bff;
+    color: white;
+}
+
+.tabela-dia {
+    flex: 0 0 auto;
+    min-width: 300px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    background: #f9f9f9;
+}
+
+.mes-navegacao {
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.mes-navegacao select {
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+h3 {
+    text-align: center;
 }
 
 

@@ -6,15 +6,11 @@ import com.shadow.dashboard.service.ClientService;
 import com.shadow.dashboard.service.HistoricoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -33,43 +29,97 @@ public class HistoricoController {
     private ClientService clientService;
 
     @Autowired
+    private SociosRepository sociosRepository;
+
+    @Autowired
+    private BancoRepository bancoRepository;
+
+    @Autowired
     private NotificationRepository notificationRepository;
 
-    @GetMapping("/Table") // ✅ Agora a rota será reconhecida corretamente
+    @Autowired
+    private ParcelasRepository parcelasRepository; // Adicionado para evitar erro
+
+    @GetMapping("/Table")
     public ModelAndView table() {
         ModelAndView mv = new ModelAndView("table");
 
         List<Clientes> clientes = clientRepository.findAll();
         List<Historico> historias = historicoRepository.findAll();
         List<Notification> notifications = notificationRepository.findAll();
+        List<Socios> socios = sociosRepository.findAll();
+        List<Banco> bancos = bancoRepository.findAll();
 
         // Total de notificações
         int totalNotify = notifications.size();
 
-        // Mapear preços e datas
+        // Evitar NullPointerException verificando cliente antes de acessar getNome()
         Map<Long, Double> priceTotalsPorParcelas = historias.stream()
-                .collect(Collectors.toMap(Historico::getId, clientService::calcularPrecoTotalComJuros));
-
-        Map<Long, Double> priceTotalSP = historias.stream()
-                .collect(Collectors.toMap(Historico::getId, clientService::calcularPrecoTotalComJurosSemParcelar));
-
-        Map<Long, Object> dataFormatada = historias.stream()
-                .collect(Collectors.toMap(Historico::getId, historicoService::formatadorData));
-
-        Map<Long, String> dataDePagamentoMap = historias.stream()
-                .collect(Collectors.toMap(Historico::getId, historicoService::calculadorDeMeses));
+                .collect(Collectors.toMap(
+                        Historico::getId,
+                        h -> clientService.calcularPrecoTotalComJuros(h),
+                        (a, b) -> b
+                ));
 
         // Passando os dados para a visão
+        mv.addObject("totalNotify", totalNotify);
+        mv.addObject("notifications", notifications);
+        mv.addObject("clientes", clientes);
+        mv.addObject("historias", historias);
+        mv.addObject("socios", socios);
+        mv.addObject("bancos", bancos);
+
+        return mv;
+    }
+
+    @GetMapping("/search")
+    public ModelAndView search(@RequestParam(value = "keyword", required = false) String keyword) {
+        ModelAndView mv = new ModelAndView("search");
+
+        List<Clientes> clientes = clientRepository.findAll();
+        List<Historico> historias = historicoRepository.findAll();
+        List<Banco> bancos = bancoRepository.findAll();
+        List<Socios> socios = sociosRepository.findAll();
+        List<Notification> notifications = notificationRepository.findAll();
+
+        // Total de notificações
+        int totalNotify = notifications.size();
+
+        // Inicializa mapas para evitar erro ao acessar valores nulos
+        Map<Long, Double> priceTotalsPorParcelas = new HashMap<>();
+        Map<Long, Double> priceTotalSP = new HashMap<>();
+        Map<Long, String> dataFormatada = new HashMap<>();
+        Map<Long, String> dataDePagamentoMap = new HashMap<>();
+
+        for (Historico historia : historias) {
+            priceTotalsPorParcelas.put(historia.getId(), clientService.calcularPrecoTotalComJuros(historia));
+            priceTotalSP.put(historia.getId(), clientService.calcularPrecoTotalComJurosSemParcelar(historia));
+        }
+
+        // Filtro utilizando contains e evitando null
+        List<Historico> listHistorico = new ArrayList<>();
+        if (keyword != null && !keyword.isEmpty()) {
+            listHistorico = historias.stream()
+                    .filter(h -> h.getCliente() != null && h.getCliente().getNome().toLowerCase().contains(keyword.toLowerCase()))
+                    .toList();
+        }
+
+        System.out.println("Resultados encontrados: " + listHistorico.size());
+
+        // Adiciona objetos ao modelo
         mv.addObject("totalNotify", totalNotify);
         mv.addObject("notifications", notifications);
         mv.addObject("priceTotals", priceTotalsPorParcelas);
         mv.addObject("priceTotalSP", priceTotalSP);
         mv.addObject("dataFormatada", dataFormatada);
         mv.addObject("clientes", clientes);
+        mv.addObject("socios", socios);
         mv.addObject("historias", historias);
         mv.addObject("dataDePagamentoMap", dataDePagamentoMap);
+        mv.addObject("bancos", bancos);
+        mv.addObject("listHistorico", listHistorico);
+        mv.addObject("keyword", keyword);
 
         return mv;
     }
-
 }

@@ -6,6 +6,20 @@
 </head>
 <body>
 
+<!-- ✅ Exibe mensagens de sucesso ou erro caso existam -->
+<th:block th:if="${success}">
+    <script>
+        alert("[[${success}]]");
+        window.location.href = window.location.href; // Recarrega a página automaticamente
+    </script>
+</th:block>
+
+<th:block th:if="${error}">
+    <script>
+        alert("[[${error}]]");
+    </script>
+</th:block>
+
 <div id="modals-emprestimo" class="modal hide">
     <div class="modal-content">
         <div class="modal-headers">
@@ -14,7 +28,7 @@
                 <a>Receber</a>
             </button>
             <button class="back">
-                <a href="/">Voltar</a>
+                <a href="/Table">Voltar</a>
             </button>
         </div>
         <div class="modal-body">
@@ -60,11 +74,23 @@
                         </div>
                         <div class="field">
                             <label>Data:</label>
-                            <input type="text" name="created" th:value="${#dates.format(histori.created, 'dd/MM/yyyy')}" readonly />
+                            <input type="text" name="created"
+                                   th:value="${histori.created != null ? #dates.format(histori.created, 'dd/MM/yyyy') : 'Data não disponível'}"
+                                   readonly />
                         </div>
                         <div class="field">
                             <label>Data Final:</label>
-                            <input type="text" name="finalDate" th:value="${dataDePagamentoMap[histori.id]}" readonly />
+                            <input type="text" name="finalDate"
+                                   th:value="${histori.creationF != null ? #dates.format(histori.creationF, 'dd/MM/yyyy') : 'Data não disponível'}"
+                                   readonly />
+                        </div>
+                        <div class="field">
+                            <label>Parcelas Pagas:</label>
+                            <span th:if="${parcelas != null and not #lists.isEmpty(parcelas)}">
+                            <span th:text="${#aggregates.sum(parcelas.![pagas == 1 ? 1 : 0])}"></span> /
+                            <span th:text="${#lists.size(parcelas)}"></span>
+                             </span>
+                            <span th:if="${parcelas == null or #lists.isEmpty(parcelas)}">Nenhuma parcela registrada</span>
                         </div>
                     </div>
                 </div>
@@ -73,7 +99,7 @@
     </div>
 </div>
 
-<!-- Modal de opções de pagamento -->
+<!-- ✅ Modal de opções de pagamento -->
 <div id="modal-receber" class="modal-receber hide">
     <div class="modal-content">
         <div class="modal-headers">
@@ -103,7 +129,7 @@
     </thead>
     <tbody>
     <tr th:each="log : ${pagamentos}">
-        <td th:text="${#dates.format(log.dataPagamento, 'dd/MM/yyyy HH:mm')}"></td>
+        <td th:text="${log.dataPagamento != null ? #dates.format(log.dataPagamento, 'dd/MM/yyyy HH:mm') : 'Data não disponível'}"></td>
         <td th:text="${log.valorPago}"></td>
     </tr>
     </tbody>

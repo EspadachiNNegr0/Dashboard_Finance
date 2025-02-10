@@ -5,13 +5,15 @@ import com.shadow.dashboard.repository.*;
 import com.shadow.dashboard.service.ClientService;
 import com.shadow.dashboard.service.HistoricoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDate;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -43,123 +45,73 @@ public class IndexController {
     private NotificationRepository notificationRepository;
 
     @Autowired
+    private ParcelasRepository parcelasRepository;
+
+    @Autowired
     private PagamentoLogRepository pagamentoLogRepository;
 
-    // Função para converter Date para LocalDate
-    private LocalDate convertToLocalDate(Date date) {
-        if (date instanceof java.sql.Date) {
-            return ((java.sql.Date) date).toLocalDate(); // 🔹 Correta conversão de SQL Date para LocalDate
-        }
-        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(); // 🔹 Caso seja um Date normal
+    // 🔹 Método para converter LocalDateTime para Date (para compatibilidade com Thymeleaf)
+    private Date convertToDate(LocalDateTime dateTime) {
+        return Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 
     @GetMapping("/")
-    public ModelAndView index(@RequestParam(value = "status", required = false) String status,
-                              @RequestParam(value = "month", required = false, defaultValue = "0") int selectedMonth) {
+    public ModelAndView index(@RequestParam(value = "month", required = false) Integer selectedMonth) {
         ModelAndView mv = new ModelAndView("index");
 
-        // Buscando todos os dados
+        // 🔹 Se nenhum mês for passado, define automaticamente como Janeiro (1)
+        final int finalSelectedMonth = (selectedMonth == null || selectedMonth == 0) ? 1 : selectedMonth;
+
         List<Clientes> clientes = clientRepository.findAll();
-        // Buscar todos os históricos
-        List<Historico> historias = (status != null && !status.isEmpty())
-                ? new ArrayList<>(historicoRepository.findByStatus(status)) // 🔹 Garante mutabilidade
-                : new ArrayList<>(historicoRepository.findAll()); // 🔹 Garante mutabilidade
-
-
         List<Banco> bancos = bancoRepository.findAll();
         List<Socios> socios = sociosRepository.findAll();
         List<Notification> notifications = notificationRepository.findAll();
 
-        String keyword = "Eduardo";
-        List<Historico> listHistorico = historicoService.listAll(keyword);
+        // 🔹 Atualiza o status das parcelas vencidas ANTES de carregá-las
+        historicoService.atualizarStatusParcelasVencidas();
 
-        // Limitar o número de clientes a 5
-        if (clientes.size() > 5) {
-            clientes = clientes.subList(0, 5);
-        }
+        List<Parcelas> todasParcelas = parcelasRepository.findAll();
 
-        long emprestimosAtivos = historias.stream()
-                .filter(historia -> !"complete".equalsIgnoreCase(String.valueOf(historia.getStatus())))
-                .count();
+        // 🔹 Filtra apenas as parcelas do mês de janeiro ou do mês selecionado
+        List<Parcelas> parcelasFiltradas = todasParcelas.stream()
+                .filter(p -> {
+                    if (p.getDataPagamento() == null) return false;
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTime(p.getDataPagamento());
+                    return cal.get(Calendar.MONTH) + 1 == finalSelectedMonth;
+                })
+                .toList();
 
-        Long ClientesSize = clientes.stream()
-                .count();
-
-
-        // Criar um mapa para armazenar as datas de pagamento filtradas
-        Map<Long, List<Date>> mapaDatasPagamento = new HashMap<>();
-        // 🔹 Aplicando a conversão para LocalDate antes de filtrar
-        if (selectedMonth != 0) {
-            historias = historias.stream()
-                    .filter(h -> {
-                        List<Date> datasPagamento = historicoService.calculaDatasDePagamento(h);
-                        boolean temPagamentoNoMes = datasPagamento.stream()
-                                .anyMatch(data -> convertToLocalDate(data).getMonthValue() == selectedMonth);
-                        if (temPagamentoNoMes) {
-                            mapaDatasPagamento.put(h.getId(), datasPagamento); // Adiciona apenas se o empréstimo tiver pagamento no mês
-                        }
-                        return temPagamentoNoMes;
-                    })
-                    .collect(Collectors.toList());
-        } else {
-            // Se for "Todos os meses", carregar normalmente todas as datas de pagamento
-            for (Historico historico : historias) {
-                mapaDatasPagamento.put(historico.getId(), historicoService.calculaDatasDePagamento(historico));
-            }
-        }
-
-        // Criando os mapas de dados a serem passados para a view
-        Map<Long, Double> priceTotalsPorParcelas = new HashMap<>();
-        Map<Long, Double> priceTotalSP = new HashMap<>();
-        Map<Long, Object> dataFormatada = new HashMap<>();
-        Map<Long, String> dataDePagamentoMap = new HashMap<>();
-
-        for (Historico historia : historias) {
-            mapaDatasPagamento.put(historia.getId(), historicoService.calculaDatasDePagamento(historia));
-            priceTotalsPorParcelas.put(historia.getId(), clientService.calcularPrecoTotalComJuros(historia));
-            priceTotalSP.put(historia.getId(), clientService.calcularPrecoTotalComJurosSemParcelar(historia));
-            dataFormatada.put(historia.getId(), historicoService.formatadorData(historia));
-            dataDePagamentoMap.put(historia.getId(), historicoService.calculadorDeMeses(historia));
-        }
-
-        historias.sort(Comparator.comparing(Historico::getCreated).reversed());
-
-        // Total de notificações
         int totalNotify = notifications.size();
-        double somaDeEmprestimo = historicoService.somaDeTodosOsEmprestimos(historias);
+        long emprestimosAtivos = parcelasFiltradas.stream()
+                .filter(parcela -> parcela.getHistorico() != null
+                        && !"complete".equalsIgnoreCase(parcela.getHistorico().getStatus().toString()))
+                .count();
 
-        // Passando os dados para a visão
-        mv.addObject("ClientesSize", ClientesSize);
+        double somaDeEmprestimo = parcelasFiltradas.stream()
+                .mapToDouble(Parcelas::getValor)
+                .sum();
+
+        // 🔹 Adiciona os atributos para a view
+        mv.addObject("ClientesSize", clientes.size());
         mv.addObject("emprestimosAtivos", emprestimosAtivos);
-        mv.addObject("datasDePagamento", mapaDatasPagamento);
-        mv.addObject("selectedMonth", selectedMonth);
+        mv.addObject("parcelas", parcelasFiltradas);
+        mv.addObject("selectedMonth", finalSelectedMonth);
         mv.addObject("totalNotify", totalNotify);
-        mv.addObject("listHistorico", listHistorico);
         mv.addObject("notifications", notifications);
         mv.addObject("somaDeEmprestimo", somaDeEmprestimo);
-        mv.addObject("priceTotals", priceTotalsPorParcelas);
-        mv.addObject("priceTotalSP", priceTotalSP);
-        mv.addObject("dataFormatada", dataFormatada);
         mv.addObject("clientes", clientes);
         mv.addObject("socios", socios);
-        mv.addObject("historias", historias);
-        mv.addObject("dataDePagamentoMap", dataDePagamentoMap);
         mv.addObject("bancos", bancos);
 
         return mv;
     }
 
-    private int getMonthFromDate(Date date) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        return cal.get(Calendar.MONTH) + 1; // +1 porque os meses em Calendar são 0-indexados
-    }
-
     @PostMapping("/")
     public String saveEmprestimo(@ModelAttribute Historico historia, RedirectAttributes redirectAttributes) {
         // Verifica se o status está vazio ou é diferente de COMPLETE e FAILED
-        if (historia.getStatus() == null || (historia.getStatus() != Status.COMPLETE && historia.getStatus() != Status.FAILED)) {
-            historia.setStatus(Status.PROCESSING); // Define o status como PROCESSING (ativo)
+        if (historia.getStatus() == null || (historia.getStatus() != Status.PAGO && historia.getStatus() != Status.PENDENTE)) {
+            historia.setStatus(Status.PENDENTE); // Define o status como PROCESSING (ativo)
         }
 
         // Salva o histórico no banco de dados e cria a notificação
@@ -169,108 +121,201 @@ public class IndexController {
         redirectAttributes.addFlashAttribute("message", "Empréstimo registrado com sucesso!");
 
         // Redireciona para a página inicial
-        return "redirect:/";
+        return "redirect:/Table";
     }
 
     @GetMapping("/histori/{id}")
-    public String detalhesVenda(@PathVariable("id") String id, Model model) {
-        // Converter o id para long
-        long historiId = Long.parseLong(id);
+    public String detalhesVenda(@PathVariable("id") Long id, Model model) {
+        Historico histori = historicoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Histórico não encontrado para o ID: " + id));
 
-        // Buscar o histórico específico pelo ID
-        Historico histori = historicoRepository.findById(historiId)
-                .orElseThrow(() -> new RuntimeException("Histórico não encontrado para o ID: " + historiId));
+        // 🔹 Buscar parcelas associadas
+        List<Parcelas> parcelasList = parcelasRepository.findByHistoricoId(id);
 
-        // Carregar outras listas no modelo
-        List<Clientes> clientes = clientRepository.findAll();
-        List<Banco> bancos = bancoRepository.findAll();
-        List<Socios> socios = sociosRepository.findAll();
-        List<Historico> historico = historicoRepository.findAll();
 
-        // Mapear datas formatadas
-        Map<Long, Object> dataFormatada = new HashMap<>();
-        dataFormatada.put(histori.getId(), historicoService.formatadorData(histori));
 
-        // Calcular preços totais com juros
-        Map<Long, Double> priceTotals = new HashMap<>();
-        priceTotals.put(histori.getId(), clientService.calcularPrecoTotalComJuros(histori));
-
-        // Calcular preço sem parcelar
-        Map<Long, Double> priceTotalSP = new HashMap<>();
-        priceTotalSP.put(histori.getId(), clientService.calcularPrecoTotalComJurosSemParcelar(histori));
-
-        // Mapear data de pagamento
-        Map<Long, String> dataDePagamentoMapFormatada = new HashMap<>();
-        dataDePagamentoMapFormatada.put(histori.getId(), historicoService.calculadorDeMeses(histori));
-
-        // Passar dados para o modelo
         model.addAttribute("histori", histori);
-        model.addAttribute("historico", historico);
-        model.addAttribute("priceTotals", priceTotals);
-        model.addAttribute("priceTotalSP", priceTotalSP);
-        model.addAttribute("clientes", clientes);
-        model.addAttribute("socios", socios);
-        model.addAttribute("bancos", bancos);
-        model.addAttribute("dataFormatada", dataFormatada);
-        model.addAttribute("dataDePagamentoMap", dataDePagamentoMapFormatada);
-
-        return "detalhe/detalhes";  // Verifique se o caminho para o template está correto
+        model.addAttribute("parcelas", parcelasList);
+        return "detalhe/detalhes";
     }
 
-    @PostMapping("/histori/{id}/pagar-juros")
-    public String pagarJuros(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-        // Buscar o empréstimo pelo ID
-        Historico historico = historicoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Histórico não encontrado"));
+    @PostMapping("/pagar-parcela/{id}")
+    public ResponseEntity<String> pagarParcela(@PathVariable Long id, @RequestParam double valorPago) {
+        try {
+            Parcelas parcela = parcelasRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Parcela não encontrada"));
 
-        // Calcular o valor dos juros
-        double valorJuros = historico.getPrice() * (historico.getPercentage() / 100.0);
+            Historico historico = parcela.getHistorico();
+            double valorMensal = historico.getValorMensal();
 
-        // Criar e salvar o log de pagamento
-        PagamentoLog log = new PagamentoLog();
-        log.setHistorico(historico);
-        log.setValorPago(valorJuros);
-        log.setDataPagamento(LocalDateTime.now()); // ✅ Agora funciona corretamente!
+            if (valorPago < valorMensal) {
+                historicoService.criarNovaParcelaComValorRestante(parcela, valorPago, valorMensal);
+            }
 
-        pagamentoLogRepository.save(log); // 🔹 Salvando corretamente no banco
+            parcela.setPagas(1);
+            parcelasRepository.save(parcela);
 
-        // Mensagem de confirmação
-        redirectAttributes.addFlashAttribute("message", "Pagamento de juros registrado com sucesso! Valor: R$ " + valorJuros);
-        return "redirect:/histori/" + id;
+            historicoService.criarNotificacao(historico, valorPago, "Pagamento da Parcela");
+
+            return ResponseEntity.ok("✅ Pagamento registrado com sucesso!");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("❌ Erro: " + e.getMessage());
+        }
     }
 
     @PostMapping("/histori/{id}/pagar-mensal")
-    public String pagarMensal(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-        // Buscar o empréstimo pelo ID
-        Historico historico = historicoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Histórico não encontrado"));
+    public String pagarParcela(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        Optional<Historico> optionalHistorico = historicoRepository.findById(id);
 
-        // Verificar se o empréstimo ainda tem saldo a pagar
-        if (historico.getPrice() <= 0) {
-            redirectAttributes.addFlashAttribute("error", "Este empréstimo já foi quitado.");
+        if (optionalHistorico.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Histórico não encontrado.");
+            return "redirect:/Table";
+        }
+
+        Historico historico = optionalHistorico.get();
+        List<Parcelas> parcelasList = parcelasRepository.findByHistorico(historico);
+
+        if (parcelasList.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Nenhuma parcela encontrada.");
+            return "redirect:/Table";
+        }
+
+        // 🔹 Seleciona a primeira parcela com pagas == 0 ou -1 (ATRASADA)
+        Parcelas parcelaPendente = parcelasList.stream()
+                .filter(p -> p.getPagas() == 0 || p.getPagas() == -1)
+                .min(Comparator.comparing(Parcelas::getId))
+                .orElse(null);
+
+        if (parcelaPendente == null) {
+            redirectAttributes.addFlashAttribute("error", "Todas as parcelas já foram pagas.");
             return "redirect:/histori/" + id;
         }
 
-        // Calcular o valor mensal com juros
-        double juros = (historico.getPrice() * (historico.getPercentage() / 100.0));
-        double valorMensal = (historico.getPrice() / historico.getParcelamento()) + juros;
+        // 🔹 Obtém o valor da parcela mensal
+        double valorParcela = historico.getPrice() / historico.getParcelamento();
 
-        // Atualizar o saldo do empréstimo subtraindo apenas a parcela mensal
-        historico.setPrice(historico.getPrice() - valorMensal);
+        // 🔹 Registra o pagamento no log
+        PagamentoLog log = new PagamentoLog();
+        log.setHistorico(historico);
+        log.setDataPagamento(LocalDateTime.now());
+        log.setValorPago(valorParcela);
 
-        // Se o saldo restante for 0 ou menor, definir o status como "COMPLETO"
-        if (historico.getPrice() <= 0) {
-            historico.setStatus(Status.COMPLETE);
+        try {
+            pagamentoLogRepository.save(log);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Erro ao registrar pagamento.");
+            return "redirect:/histori/" + id;
+        }
+
+        // 🔹 Atualiza a parcela como PAGA (1)
+        parcelaPendente.setPagas(1);
+        parcelasRepository.save(parcelaPendente);
+
+        // 🔹 Verifica se todas as parcelas foram quitadas
+        boolean todasPagas = parcelasList.stream().allMatch(p -> p.getPagas() == 1);
+
+        if (todasPagas) {
+            historico.setStatus(Status.PAGO);
+        } else {
+            // 🔹 Se ainda houver parcelas a pagar, o histórico volta para PENDENTE
+            historico.setStatus(Status.PENDENTE);
         }
 
         historicoRepository.save(historico);
 
-        // Registrar o pagamento no log
-        PagamentoLog log = new PagamentoLog(historico, valorMensal);
-        pagamentoLogRepository.save(log);
+        // ✅ Criar Notificação do Pagamento Mensal
+        historicoService.criarNotificacao(historico, valorParcela, "Pagamento Mensal");
 
-        // Mensagem de confirmação
-        redirectAttributes.addFlashAttribute("message", "Pagamento de R$ " + valorMensal + " realizado com sucesso!");
+        redirectAttributes.addFlashAttribute("success", "Pagamento mensal registrado com sucesso!");
+        return "redirect:/histori/" + id;
+    }
+
+    @PostMapping("/histori/{id}/pagar-juros")
+    public String pagarJuros(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        Optional<Historico> optionalHistorico = historicoRepository.findById(id);
+
+        if (optionalHistorico.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Histórico não encontrado.");
+            return "redirect:/Table";
+        }
+
+        Historico historico = optionalHistorico.get();
+        List<Parcelas> parcelasList = parcelasRepository.findByHistorico(historico);
+
+        if (parcelasList.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Nenhuma parcela encontrada.");
+            return "redirect:/Table";
+        }
+
+        // 🔹 Calcula o valor dos juros
+        double valorJuros = historico.getValorTotal() * (historico.getPercentage() / 100.0);
+
+        // 🔹 Obtém o valor mensal esperado
+        double valorMensal = historico.getValorMensal();
+
+        // 🔹 Seleciona a primeira parcela pendente (em vez da última)
+        Parcelas primeiraParcelaPendente = parcelasList.stream()
+                .filter(p -> p.getPagas() == 0) // Pegamos a primeira parcela ainda não paga
+                .min(Comparator.comparing(Parcelas::getId))
+                .orElse(null);
+
+        if (primeiraParcelaPendente == null) {
+            // 🔹 Se não houver mais parcelas pendentes, pegamos a última parcela paga com `2`
+            primeiraParcelaPendente = parcelasList.stream()
+                    .filter(p -> p.getPagas() == 2)
+                    .max(Comparator.comparing(Parcelas::getId))
+                    .orElse(null);
+        }
+
+        if (primeiraParcelaPendente == null) {
+            redirectAttributes.addFlashAttribute("error", "Nenhuma parcela disponível para pagamento.");
+            return "redirect:/histori/" + id;
+        }
+
+        // 🔹 Se apenas os juros forem pagos, marcamos a parcela como "2"
+        if (valorJuros < valorMensal) {
+            primeiraParcelaPendente.setPagas(2);
+            System.out.println("⚠️ Apenas os juros foram pagos! Criando nova parcela para o valor restante.");
+        } else {
+            primeiraParcelaPendente.setPagas(1);
+            System.out.println("✅ Parcela quitada.");
+        }
+
+        parcelasRepository.save(primeiraParcelaPendente);
+
+        // 🔹 Verifica se existem parcelas ainda não pagas (`pagas == 0`)
+        boolean existemParcelasNaoPagas = parcelasList.stream().anyMatch(p -> p.getPagas() == 0);
+
+        // 🔹 Criar nova parcela SOMENTE se todas as parcelas já estiverem pagas (`pagas != 0`) e a última for `2`
+        if (!existemParcelasNaoPagas && primeiraParcelaPendente.getPagas() == 2) {
+            System.out.println("⚠️ Criando nova parcela pois todas as outras já foram pagas!");
+            historicoService.criarNovaParcelaComValorRestante(primeiraParcelaPendente, valorJuros, valorMensal);
+        }
+
+        // 🔹 Atualiza o histórico com o novo valor total, incluindo juros pagos
+        historico.setValorTotal(historico.getValorTotal() + valorJuros);
+        historicoRepository.save(historico);
+
+        // 🔹 Atualiza o novo valor mensal das parcelas pendentes
+        historicoService.atualizarProximasParcelasEValorMensal(historico, parcelasList);
+
+        // 🔹 Registra o pagamento no log
+        PagamentoLog log = new PagamentoLog();
+        log.setHistorico(historico);
+        log.setValorPago(valorJuros);
+        log.setDataPagamento(LocalDateTime.now());
+
+        try {
+            pagamentoLogRepository.save(log);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Erro ao registrar pagamento de juros.");
+            return "redirect:/histori/" + id;
+        }
+
+        // ✅ Criar Notificação do Pagamento de Juros
+        historicoService.criarNotificacao(historico, valorJuros, "Pagamento de Juros");
+
+        redirectAttributes.addFlashAttribute("success", "Pagamento de juros registrado com sucesso! Novo valor de juros: R$ " + valorJuros);
         return "redirect:/histori/" + id;
     }
 

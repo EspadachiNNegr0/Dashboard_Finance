@@ -41,12 +41,6 @@
                 <span class="text">Analytics</span>
             </a>
         </li>
-        <li>
-            <a href="#">
-                <i class='bx bxs-group' ></i>
-                <span class="text">Team</span>
-            </a>
-        </li>
     </ul>
 </section>
 <!-- SIDEBAR -->
@@ -147,17 +141,20 @@
                     <h3>Recent Orders</h3>
 
                     <!-- Botão para abrir o modal de adicionar cliente -->
-                    <button class="addC" aria-label="Adicionar Cliente">Add Cliente</button>
+                    <button class="addC" id="openModalCliente" aria-label="Adicionar Cliente">Add Cliente</button>
 
                     <!-- Modal de Adicionar Cliente -->
                     <div id="modal-add-cliente" class="modal-add-cliente hide">
                         <div class="modal-content">
                             <div class="modal-headers">
                                 <header>Adicionar Cliente</header>
-                                <button class="close">&times;</button>
+                                <button class="close" id="closeModalCliente">&times;</button>
                             </div>
                             <div class="modal-body">
-                                <form th:action="@{/clientes}" method="POST">
+                                <!-- Alerta de erro -->
+                                <div id="mensagem-erro" style="color: red; font-weight: bold; display: none;"></div>
+
+                                <form id="form-cliente">
                                     <div class="details-cliente">
                                         <span class="title">Detalhes do Cliente</span>
                                         <div class="fields">
@@ -165,25 +162,25 @@
                                             <!-- Nome do Cliente -->
                                             <div class="input-field">
                                                 <label>Nome</label>
-                                                <input type="text" name="nome" placeholder="Digite o nome do cliente" required>
+                                                <input type="text" id="nome" name="nome" placeholder="Digite o nome do cliente" required>
                                             </div>
 
                                             <!-- CPF -->
                                             <div class="input-field">
                                                 <label>CPF</label>
-                                                <input type="text" name="cpf" placeholder="Digite o CPF" required>
+                                                <input type="text" id="cpf" name="cpf" placeholder="Digite o CPF" required>
                                             </div>
 
                                             <!-- Contato (Telefone) -->
                                             <div class="input-field">
                                                 <label>Contato</label>
-                                                <input type="text" name="contato" placeholder="Digite o contato do cliente" required>
+                                                <input type="text" id="contato" name="contato" placeholder="Digite o contato do cliente" required>
                                             </div>
 
                                             <!-- Endereço -->
                                             <div class="input-field">
                                                 <label>Endereço</label>
-                                                <input type="text" name="endereco" placeholder="Digite o endereço" required>
+                                                <input type="text" id="endereco" name="endereco" placeholder="Digite o endereço" required>
                                             </div>
 
                                             <!-- Botão de envio -->
@@ -194,6 +191,7 @@
                             </div>
                         </div>
                     </div>
+
 
                     <button class="add" aria-label="Adicionar empréstimo">Add Emprestimo</button>
                     <div id="modal-add-emprestimo" class="modal hide">
@@ -280,7 +278,36 @@
                         </div>
                     </div>
 
-                    <i class='bx bx-filter' ></i>
+                    <i class='bx bx-filter' id="openModalFiltro"></i>
+
+                    <!-- MODAL DE FILTRO -->
+                    <div class="modal-filtro" id="modalFiltro">
+                        <div class="modal-filtro-content">
+                            <!-- Botão de fechar -->
+                            <div class="closeButton">
+                                <button class="modal-close" id="btnFecharModal">X</button>
+                            </div>
+
+                            <h2>Selecione os filtros desejados</h2>
+
+                            <form id="form-filtro">
+
+                                <!-- Filtro: Valor do Empréstimo -->
+                                <div class="input-group">
+                                    <label>Valor do Empréstimo:</label>
+                                    <div class="valor-range">
+                                        <input type="number" id="valor-min" name="valorMin" placeholder="De" step="0.01">
+                                        <span>até</span>
+                                        <input type="number" id="valor-max" name="valorMax" placeholder="Até" step="0.01">
+                                    </div>
+                                </div>
+
+                                <!-- Botão de envio -->
+                                <button id="btn-modal-filtro" type="submit">Filtrar</button>
+                            </form>
+                        </div>
+                    </div>
+
                 </div>
                 <table id="example" class="table table-striped" style="width:100%">
                     <thead>
@@ -288,7 +315,7 @@
                         <th>Name</th>
                         <th>Price</th>
                         <th>Porcent</th>
-                        <th>PriceTotal</th>
+                        <th>Valor mensal</th>
                         <th>Parcelamento</th>
                         <th>Start date</th>
                         <th>End date</th>
@@ -305,16 +332,17 @@
                             <span th:text="${historico.percentage} + ' '"></span>%
                         </td>
                         <td>
-                            $<span th:text="${priceTotals[historico.id]}"></span>
+                            $<span th:text="${historico.valorMensal}"></span>
                         </td>
                         <td>
                             <span th:text="${historico.parcelamento} + ' '"></span>
                         </td>
                         <td>
-                            <span th:text="${dataFormatada[historico.id]} + ' '"></span>
+                            <span th:text="${historico.created} + ' '"></span>
+
                         </td>
                         <td>
-                            <span th:text="${dataDePagamentoMap[historico.id]}"></span>
+                            <span th:text="${historico.creationF}"></span>
                         </td>
                         <td>
                             <span th:text="${historico.status} + ' '"></span>

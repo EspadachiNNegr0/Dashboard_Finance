@@ -2,8 +2,6 @@ package com.shadow.dashboard.models;
 
 import jakarta.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
-
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -13,17 +11,22 @@ public class Historico {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = true)
     private Long id;
 
     @Column(nullable = false)
-    private double price;
+    private double price; // Valor do empréstimo atual
+
+    @Column(nullable = false)
+    private double valorTotal; // Novo: Valor total do empréstimo antes de qualquer pagamento
+
+    @Column(nullable = false)
+    private double valorMensal; // Novo: Valor da parcela mensal
 
     @Column(nullable = false)
     private int percentage;
 
-    @Enumerated(EnumType.STRING)  // Para armazenar o status como uma string
-    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
     private Status status;
 
     @Column(length = 255)
@@ -33,8 +36,8 @@ public class Historico {
     private Socios socios;
 
     @ManyToOne
-    @JoinColumn(name = "cliente_id", nullable = false)  // A chave estrangeira
-    private Clientes cliente; // Cliente associado a esse History
+    @JoinColumn(name = "cliente_id", nullable = false)
+    private Clientes cliente;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Temporal(TemporalType.DATE)
@@ -52,17 +55,12 @@ public class Historico {
     @Column(nullable = false)
     private int parcelamento;
 
-    @ElementCollection
-    @CollectionTable(name = "payment_dates", joinColumns = @JoinColumn(name = "history_id"))
-    @Column(name = "payment_date")
-    private List<Date> datasPagamentos = new ArrayList<>();
+    @OneToMany(mappedBy = "historico", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Parcelas> parcelas;
 
+    public Historico() {}
 
-    @Column(nullable = true)
-    private Double jurosPagos = 0.0;
-
-
-    // Getters e setters
+    // Getters e Setters
     public Long getId() {
         return id;
     }
@@ -77,6 +75,23 @@ public class Historico {
 
     public void setPrice(double price) {
         this.price = price;
+        calcularValorMensal(); // Atualiza automaticamente o valor da parcela
+    }
+
+    public double getValorTotal() {
+        return valorTotal;
+    }
+
+    public void setValorTotal(double valorTotal) {
+        this.valorTotal = valorTotal;
+    }
+
+    public double getValorMensal() {
+        return valorMensal;
+    }
+
+    public void setValorMensal(double valorMensal) {
+        this.valorMensal = valorMensal;
     }
 
     public int getPercentage() {
@@ -141,6 +156,7 @@ public class Historico {
 
     public void setParcelamento(int parcelamento) {
         this.parcelamento = parcelamento;
+        calcularValorMensal(); // Atualiza automaticamente o valor da parcela
     }
 
     public Banco getBanco() {
@@ -151,19 +167,20 @@ public class Historico {
         this.banco = banco;
     }
 
-    public List<Date> getDatasPagamentos() {
-        return datasPagamentos;
+    public List<Parcelas> getParcelas() {
+        return parcelas;
     }
 
-    public void setDatasPagamentos(List<Date> datasPagamentos) {
-        this.datasPagamentos = datasPagamentos;
+    public void setParcelas(List<Parcelas> parcelas) {
+        this.parcelas = parcelas;
     }
 
-    public Double getJurosPagos() {
-        return jurosPagos;
-    }
-
-    public void setJurosPagos(Double jurosPagos) {
-        this.jurosPagos = jurosPagos;
+    /**
+     * Método para calcular o valor da parcela mensal automaticamente
+     */
+    public void calcularValorMensal() {
+        if (parcelamento > 0) {
+            this.valorMensal = this.price / this.parcelamento;
+        }
     }
 }

@@ -47,12 +47,6 @@
                 <span class="text">Message</span>
             </a>
         </li>
-        <li>
-            <a href="#">
-                <i class='bx bxs-group' ></i>
-                <span class="text">Team</span>
-            </a>
-        </li>
     </ul>
 </section>
 <!-- SIDEBAR -->
@@ -141,7 +135,7 @@
                     </li>
                     <li><i class='bx bx-chevron-right' ></i></li>
                     <li>
-                        <a class="active" href="#">Table</a>
+                        <a class="active" href="#">Search</a>
                     </li>
                 </ul>
             </div>
@@ -154,7 +148,35 @@
 
                     <button class="add" aria-label="Adicionar empréstimo">Add Emprestimo</button>
 
-                    <i class='bx bx-filter' ></i>
+                    <i class='bx bx-filter' id="openModalFiltro"></i>
+
+                    <!-- MODAL DE FILTRO -->
+                    <div class="modal-filtro" id="modalFiltro">
+                        <div class="modal-filtro-content">
+                            <!-- Botão de fechar -->
+                            <div class="closeButton">
+                                <button class="modal-close" id="btnFecharModal">X</button>
+                            </div>
+
+                            <h2>Selecione os filtros desejados</h2>
+
+                            <form id="form-filtro">
+
+                                <!-- Filtro: Valor do Empréstimo -->
+                                <div class="input-group">
+                                    <label>Valor do Empréstimo:</label>
+                                    <div class="valor-range">
+                                        <input type="number" id="valor-min" name="valorMin" placeholder="De" step="0.01">
+                                        <span>até</span>
+                                        <input type="number" id="valor-max" name="valorMax" placeholder="Até" step="0.01">
+                                    </div>
+                                </div>
+
+                                <!-- Botão de envio -->
+                                <button id="btn-modal-filtro" type="submit">Filtrar</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
                 <table id="example" class="table table-striped" style="width:100%">
                     <thead>

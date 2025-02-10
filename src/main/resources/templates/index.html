@@ -39,12 +39,7 @@
                 <span class="text">Analytics</span>
             </a>
         </li>
-        <li>
-            <a href="#">
-                <i class='bx bxs-group' ></i>
-                <span class="text">Team</span>
-            </a>
-        </li>
+
     </ul>
 </section>
 <!-- SIDEBAR -->
@@ -57,14 +52,14 @@
     <nav>
         <i class='bx bx-menu' ></i>
         <div class="search">
-        <form th:action="@{/search}" method="get" >
-            <label for="keyword"></label>
-            <input type="text" id="keyword" name="keyword" placeholder="Digite o nome do cliente">
-            <button type="submit"><span class="material-symbols-sharp">
+            <form th:action="@{/search}" method="get" >
+                <label for="keyword"></label>
+                <input type="text" id="keyword" name="keyword" placeholder="Digite o nome do cliente">
+                <button type="submit"><span class="material-symbols-sharp">
                 search
             </span>
-            </button>
-        </form>
+                </button>
+            </form>
         </div>
 
         <!-- Botão para abrir o modal de notificações -->
@@ -99,10 +94,8 @@
             </div>
         </div>
 
-
-
-        <div class="profile" onclick="toggleSubMenu()">
-            <div class="profile-photo">
+        <div class="profile">
+            <div class="profile-photo" onclick="toggleSubMenu()">
                 <img src="/img/Admin.jpg" alt="" />
             </div>
         </div>
@@ -173,7 +166,6 @@
                         <form method="get" action="/">
                             <label for="month-select">Escolha o Mês: </label>
                             <select id="month-select" name="month" onchange="this.form.submit()">
-                                <option value="0" th:selected="${selectedMonth == 0}">Todos os meses</option>
                                 <option value="1" th:selected="${selectedMonth == 1}">Janeiro</option>
                                 <option value="2" th:selected="${selectedMonth == 2}">Fevereiro</option>
                                 <option value="3" th:selected="${selectedMonth == 3}">Março</option>
@@ -190,8 +182,6 @@
                         </form>
 
                     </div>
-
-                    <i class='bx bx-filter' ></i>
 
                 </div>
 
@@ -211,22 +201,20 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr th:each="historia : ${historias}"
-                                th:if="${#dates.format(historia.created, 'dd') == #numbers.formatInteger(dia, 2)}">
-                                <td th:text="${historia.cliente.nome}"></td>
-                                <td th:text="${priceTotals[historia.id]}"></td>
-                                <td th:text="${#dates.format(historia.created, 'dd/MM/yyyy')}"></td>
+                            <tr th:each="parcela : ${parcelas}"
+                                th:if="${#dates.format(parcela.dataPagamento, 'dd') == #numbers.formatInteger(dia, 2)}">
+                                <td th:text="${parcela.historico.cliente.nome}"></td>
+                                <td th:text="${parcela.valor}"></td>
+                                <td th:text="${#dates.format(parcela.historico.created, 'dd/MM/yyyy')}"></td>
+                                <td th:text="${#dates.format(parcela.dataPagamento, 'dd/MM/yyyy')}"></td>
                                 <td>
-                                    <ul>
-                                        <li th:each="dataPagamento : ${datasDePagamento[historia.id]}"
-                                            th:if="${selectedMonth == 0 or #dates.format(dataPagamento, 'MM') == #numbers.formatInteger(selectedMonth, 2)}"
-                                            th:text="${#dates.format(dataPagamento, 'dd/MM/yyyy')}"></li>
-                                    </ul>
+                                    <span th:if="${parcela.pagas == -1}" style="color: red;">PENDENTE</span>
+                                    <span th:if="${parcela.pagas > 0}" style="color: green;">PAGO</span>
+                                    <span th:if="${parcela.pagas == 0}" style="color: orange;">A PAGAR</span>
                                 </td>
-                                <td th:text="${historia.status}"></td>
                             </tr>
                             </tbody>
-                            <tfoot>
+                        <tfoot>
                             <tr>
                                 <th>Cliente</th>
                                 <th>Valor Mensal</th>

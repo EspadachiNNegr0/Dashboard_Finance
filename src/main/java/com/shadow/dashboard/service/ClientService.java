@@ -1,13 +1,22 @@
 package com.shadow.dashboard.service;
 
+import com.shadow.dashboard.models.Clientes;
 import com.shadow.dashboard.models.Historico;
+import com.shadow.dashboard.models.Notification;
 import com.shadow.dashboard.repository.ClientRepository;
+import com.shadow.dashboard.repository.NotificationRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class ClientService {
 
     private final ClientRepository clientRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     public ClientService(ClientRepository clientRepository) {
         this.clientRepository = clientRepository;
@@ -53,5 +62,48 @@ public class ClientService {
     }
 
 
+    public Clientes saveClienteAndCreateNotification(Clientes cliente) {
+        // Verifique se os campos obrigatórios estão preenchidos
+        if (cliente.getNome() == null || cliente.getNome().trim().isEmpty()) {
+            throw new IllegalArgumentException("O campo 'nome' é obrigatório.");
+        }
+
+        if (cliente.getCpf() == null || cliente.getCpf().trim().isEmpty()) {
+            throw new IllegalArgumentException("O campo 'CPF' é obrigatório.");
+        }
+
+        // Verificar se o CPF já existe no banco
+        Optional<Clientes> clienteExistente = clientRepository.findByCpf(cliente.getCpf());
+        if (clienteExistente.isPresent()) {
+            throw new RuntimeException("O CPF já está cadastrado no sistema.");
+        }
+
+        // Salve o cliente no banco de dados
+        clientRepository.save(cliente);
+
+        // Criar a notificação
+        createNotification(cliente);
+
+        return cliente;
+    }
+
+    private void createNotification(Clientes cliente) {
+        if (cliente.getId() == null) {
+            System.out.println("ID do cliente é nulo.");
+            return;
+        }
+
+        String message = "Novo cliente cadastrado: " + cliente.getNome();
+
+        Notification notification = new Notification();
+        notification.setCliente(cliente);
+        notification.setMessage(message);
+
+        notificationRepository.save(notification);
+    }
+
+
+
 
 }
+

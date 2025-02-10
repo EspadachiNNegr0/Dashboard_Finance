@@ -3,14 +3,11 @@ package com.shadow.dashboard.service;
 import com.shadow.dashboard.models.*;
 import com.shadow.dashboard.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 public class HistoricoService {
@@ -24,29 +21,160 @@ public class HistoricoService {
     @Autowired
     private ClientRepository clienteRepository;
 
+    @Autowired
+    private ParcelasRepository parcelasRepository;
+
+    /**
+     * Salva o histórico e cria suas parcelas e notificações
+     */
     public Historico saveHistoryAndCreateNotification(Historico historico) {
-        // Verifique se os campos necessários estão preenchidos
+        // Validações
         if (historico.getCreated() == null || historico.getParcelamento() <= 0) {
             throw new IllegalArgumentException("Os campos 'created' e 'parcelamento' são obrigatórios.");
         }
 
-        // Calcule a data final (creationF) com base na lógica de parcelamento
+        // 🔹 Calcular o valor total do empréstimo considerando os juros
+        double valorTotalComJuros = calcularValorTotalComJuros(historico);
+        historico.setValorTotal(valorTotalComJuros);
+
+        // 🔹 Calcular o valor mensal das parcelas
+        double valorParcelaMensal = calcularValorMensal(historico);
+        historico.setValorMensal(valorParcelaMensal);
+
+        // 🔹 Calcular a data final do empréstimo
         historico.setCreationF(calculaDataFinal(historico));
 
-        // Salve o histórico no banco de dados
-        historicoRepository.save(historico);
+        // 🔹 Salvar o histórico antes de criar as parcelas
+        historico = historicoRepository.save(historico);
 
-        // Criação da notificação
+        // 🔹 Criar parcelas vinculadas às datas de pagamento
+        criarParcelas(historico);
+
+        // 🔹 Criar notificação
         createNotification(historico);
 
         return historico;
     }
 
+    /**
+     * Calcula o valor total do empréstimo SEM considerar os juros
+     */
+    public double calcularValorTotalSemJuros(Historico historico) {
+        return historico.getPrice(); // Apenas o valor original do empréstimo
+    }
+
+    public void atualizarProximasParcelasEValorMensal(Historico historico, List<Parcelas> parcelasList) {
+        // 🔹 Filtra as parcelas que ainda não foram pagas
+        List<Parcelas> parcelasNaoPagas = parcelasList.stream()
+                .filter(p -> p.getPagas() == 0)
+                .sorted(Comparator.comparing(Parcelas::getId))
+                .toList();
+
+        if (!parcelasNaoPagas.isEmpty()) {
+            // 🔹 Recalcula o valor das próximas parcelas com base no saldo devedor atualizado
+            double novoValorMensal = historico.getValorTotal() / parcelasNaoPagas.size();
+            historico.setValorMensal(novoValorMensal); // ✅ Atualiza o `valorMensal` do `Historico`
+
+            for (Parcelas parcela : parcelasNaoPagas) {
+                parcela.setValor(novoValorMensal);
+                parcelasRepository.save(parcela);
+            }
+        }
+    }
+
+    /**
+     * Calcula o valor total do empréstimo considerando os juros
+     */
+    private double calcularValorTotalComJuros(Historico historico) {
+        double juros = historico.getPrice() * (historico.getPercentage() / 100.0);
+        return historico.getPrice() + juros;
+    }
+
+    /**
+     * Calcula o valor mensal da parcela com base no total corrigido com juros
+     */
+    private double calcularValorMensal(Historico historico) {
+        double totalComJuros = calcularValorTotalComJuros(historico);
+        return totalComJuros / historico.getParcelamento();
+    }
+
+    /**
+     * Calcula a data final do empréstimo
+     */
     private Date calculaDataFinal(Historico historico) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(historico.getCreated());
         calendar.add(Calendar.MONTH, historico.getParcelamento());
         return calendar.getTime();
+    }
+
+    /**
+     * Cria as parcelas com os valores corretos e datas ajustadas
+     */
+    private void criarParcelas(Historico historico) {
+        Calendar calendar = Calendar.getInstance();
+
+        // 🔹 Garante que a data de criação do histórico esteja definida
+        if (historico.getCreated() == null) {
+            System.out.println("❌ Erro: O campo 'created' do histórico está NULL. Usando a data atual.");
+            historico.setCreated(new Date());
+        }
+
+        calendar.setTime(historico.getCreated());
+
+        double valorMensal = historico.getValorMensal();
+
+        for (int i = 0; i < historico.getParcelamento(); i++) {
+            calendar.add(Calendar.MONTH, 1); // Adiciona um mês para cada parcela
+
+            Parcelas parcela = new Parcelas();
+            parcela.setHistorico(historico);
+            parcela.setParcelas(historico.getParcelamento());
+            parcela.setPagas(0);
+            parcela.setValor(valorMensal);
+
+            // ✅ Garante que `dataPagamento` nunca seja NULL
+            Date dataParcela = calendar.getTime();
+            if (dataParcela == null) {
+                System.out.println("⚠️ AVISO: Data gerada é NULL. Usando a data atual.");
+                dataParcela = new Date();
+            }
+            parcela.setDataPagamento(dataParcela);
+
+            parcelasRepository.save(parcela);
+            System.out.println("✅ Parcela salva com data: " + dataParcela);
+        }
+    }
+
+    /**
+     * Cria uma notificação associada ao histórico e ao cliente
+     */
+    private void createNotification(Historico historico) {
+        if (historico.getCliente().getId() == null) {
+            System.out.println("ID do cliente é nulo no objeto Historico.");
+            return;
+        }
+
+        Clientes cliente = clienteRepository.findById(historico.getCliente().getId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado para o ID: " + historico.getCliente().getId()));
+
+        String message = "📢 Novo empréstimo registrado para " + cliente.getNome() +
+                " no valor de R$ " + historico.getPrice() +
+                " com juros de " + historico.getPercentage() + "%.";
+
+        Notification notification = new Notification();
+        notification.setCliente(cliente);
+        notification.setMessage(message);
+        notification.setCreatedAt(LocalDateTime.now());
+
+        notificationRepository.save(notification);
+    }
+
+    /**
+     * Retorna a soma de todos os empréstimos ativos
+     */
+    public double somaDeTodosOsEmprestimos(List<Historico> historias) {
+        return historias.stream().mapToDouble(Historico::getPrice).sum();
     }
 
     public List<Date> calculaDatasDePagamento(Historico historico) {
@@ -67,117 +195,173 @@ public class HistoricoService {
         return datas;
     }
 
-    private void createNotification(Historico historico) {
-        // Verifique se o ID do cliente existe
-        if (historico.getCliente().getId() == null) {
-            System.out.println("ID do cliente é nulo no objeto History.");
-            return;
+    /**
+     * Cria uma notificação para pagamentos
+     */
+    public void criarNotificacao(Historico historico, double valorPago, String tipoPagamento) {
+        if (historico.getCliente() == null) {
+            return; // Não cria notificação se não houver cliente associado
         }
 
-        // Buscar o cliente no banco de dados
-        Clientes cliente = clienteRepository.findById(historico.getCliente().getId())
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado para o ID: " + historico.getCliente().getId()));
-
-        // Crie a mensagem de notificação
-        String message = "Novo histórico para o cliente " + cliente.getNome() + " com status " + historico.getStatus();
-
-        // Crie o objeto Notification
         Notification notification = new Notification();
-        notification.setCliente(cliente); // Relacione a notificação ao cliente
-        notification.setMessage(message);
+        notification.setCliente(historico.getCliente());
+        notification.setMessage("📢 " + tipoPagamento + (valorPago > 0 ? " de R$ " + valorPago : "")
+                + " registrado para o empréstimo #" + historico.getId()
+                + " do cliente " + historico.getCliente().getNome() + ".");
+        notification.setCreatedAt(LocalDateTime.now());
+        notification.setRead(false);
 
-        // Salve a notificação no banco de dados
         notificationRepository.save(notification);
     }
 
-    public String formatadorData(Historico history) {
-        if (history != null && history.getCreated() != null) {
-            Calendar calendars = Calendar.getInstance();
-            calendars.setTime(history.getCreated());
+    // 🔹 Método para pagar uma parcela e atualizar o status do histórico
+    public void atualizarStatusParcelaPaga(Long parcelaId, double valorPago) {
+        Parcelas parcela = parcelasRepository.findById(parcelaId)
+                .orElseThrow(() -> new RuntimeException("Parcela não encontrada"));
 
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-            return sdf.format(calendars.getTime());
-        }
-        return null;
-    }
+        Historico historico = parcela.getHistorico();
 
-    public String calculadorDeMeses(Historico history) {
-        if (history != null && history.getCreated() != null && history.getParcelamento() > 0) {
+        // 🔹 Obtém o valor mensal esperado
+        double valorMensal = historico.getValorMensal();
+
+        // 🔹 Verifica se o valor pago foi menor que o valor mensal (apenas juros pagos)
+        if (valorPago < valorMensal) {
+            System.out.println("⚠️ Apenas juros foram pagos! Criando nova parcela para o valor restante.");
+
+            // Calcula o valor restante
+            double valorRestante = valorMensal - valorPago;
+
+            // Criar nova parcela para o valor restante
+            Parcelas novaParcela = new Parcelas();
+            novaParcela.setHistorico(historico);
+            novaParcela.setParcelas(1); // Apenas uma parcela adicional
+            novaParcela.setPagas(0); // Ainda precisa ser paga
+            novaParcela.setValor(valorRestante);
+
+            // Define data da nova parcela para o próximo mês
             Calendar calendar = Calendar.getInstance();
-            calendar.setTime(history.getCreated());
-            calendar.add(Calendar.MONTH, history.getParcelamento());
-            Date dataPagamento = calendar.getTime();
-            history.setCreationF(dataPagamento); // Define no objeto `Historico`
+            if (parcela.getDataPagamento() != null) {
+                calendar.setTime(parcela.getDataPagamento());
+            } else {
+                calendar.setTime(new Date());
+            }
+            calendar.add(Calendar.MONTH, 1);
+            novaParcela.setDataPagamento(calendar.getTime());
 
-            // Log para confirmar
-            System.out.println("Data final calculada: " + dataPagamento);
-
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-            return sdf.format(dataPagamento);
+            parcelasRepository.save(novaParcela);
+            System.out.println("✅ Nova parcela criada com valor restante de R$ " + valorRestante);
+        } else {
+            // 🔹 Se o valor total foi pago, a parcela é considerada quitada
+            parcela.setPagas(1);
+            parcelasRepository.save(parcela);
         }
-        return null;
+
+        // 🔹 Criar notificação de pagamento
+        criarNotificacao(historico.getCliente(),
+                "✅ Pagamento de R$ " + valorPago + " realizado na parcela #" + parcela.getId());
+
+        // 🔹 Atualiza o status do histórico
+        atualizarStatusHistoricoAoPagar(historico);
     }
 
+    /**
+     * Verifica se ainda existem parcelas atrasadas e ajusta o status do histórico
+     */
+    private void atualizarStatusHistoricoAoPagar(Historico historico) {
+        if (historico == null) return;
 
-    public List<Historico> listAll(String keyword) {
-        return historicoRepository.findAll(keyword);  // Chamando o repositório
-    }
+        // Verifica se ainda existem parcelas atrasadas (-1)
+        boolean temParcelasAtrasadas = parcelasRepository.findByHistorico(historico)
+                .stream().anyMatch(parcela -> parcela.getPagas() == -1);
 
-    public void atualizeHistoryAndCreateNotification(Historico historico) {
-        // Salve o histórico
-        historicoRepository.save(historico);
+        // Se não houver mais parcelas atrasadas, retorna o status do histórico para PENDENTE
+        if (!temParcelasAtrasadas && historico.getStatus() == Status.ATRASADO) {
+            historico.setStatus(Status.PENDENTE);
+            historicoRepository.save(historico);
 
-        // Criação da notificação
-        createNotificationatualizada(historico);
-    }
-
-    private void createNotificationatualizada(Historico historico) {
-        if (historico.getCliente().getId() == null) {
-            System.out.println("Cliente is null");
+            // Criar notificação de alteração de status
+            criarNotificacao(historico.getCliente(),
+                    "⚠️ Seu empréstimo #" + historico.getId() + " voltou para PENDENTE.");
         }
-        Clientes cliente = clienteRepository.findById(historico.getCliente().getId())
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado para o ID: " + historico.getCliente().getId()));
-
-        String msg = "Message updated with success! " + historico.getCliente().getNome();
-
-        Notification notification = new Notification();
-        notification.setCliente(cliente);
-        notification.setMessage(msg);
-        notificationRepository.save(notification);
     }
 
-    public double somaDeTodosOsEmprestimos(List<Historico> historias) {
-        double soma = 0;
-        for (Historico historico : historias) {
-            soma = soma + historico.getPrice();
+    public void criarNovaParcelaComValorRestante(Parcelas ultimaParcela, double valorPago, double valorMensal) {
+        double valorRestante = valorMensal - valorPago;
+
+        if (valorRestante > 0) {
+            Parcelas novaParcela = new Parcelas();
+            novaParcela.setHistorico(ultimaParcela.getHistorico());
+            novaParcela.setParcelas(1);
+            novaParcela.setPagas(0); // 🔹 Nova parcela precisa ser paga
+            novaParcela.setValor(valorRestante);
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(ultimaParcela.getDataPagamento() != null ? ultimaParcela.getDataPagamento() : new Date());
+            calendar.add(Calendar.MONTH, 1);
+            novaParcela.setDataPagamento(calendar.getTime());
+
+            parcelasRepository.save(novaParcela);
+            System.out.println("✅ Nova parcela criada com valor restante de R$ " + valorRestante);
+
+            // 🔹 Atualiza o histórico para refletir o aumento do número de parcelas
+            Historico historico = ultimaParcela.getHistorico();
+            historico.setParcelamento(historico.getParcelamento() + 1);
+            historico.setValorTotal(historico.getValorTotal() + valorRestante); // 🔹 Atualiza o valor total
+            historicoRepository.save(historico);
+
+            // 🔹 Atualiza o novo valor mensal das parcelas pendentes
+            List<Parcelas> parcelasList = parcelasRepository.findByHistorico(historico);
+            atualizarProximasParcelasEValorMensal(historico, parcelasList);
         }
-        return soma;
     }
 
-    public void pagarApenasJuros(Historico historico) {
-        // Calcular o valor dos juros para esse mês
-        double juros = calcularJuros(historico.getPrice(), historico.getPercentage());
+    /**
+     * Atualiza automaticamente o status de parcelas vencidas a cada 1 minuto.
+     */
 
-        // Garantir que o valor de jurosPagos não seja nulo antes de somar
-        double jurosPagosAtualizados = (historico.getJurosPagos() != null ? historico.getJurosPagos() : 0.0) + juros;
+    @Scheduled(fixedRate = 60000) // Executa a cada 60 segundos (1 min)
+    public void atualizarStatusParcelasVencidas() {
+        List<Parcelas> parcelas = parcelasRepository.findAll();
+        Date hoje = new Date();
 
-        // Atualizar o campo de juros pagos
-        historico.setJurosPagos(jurosPagosAtualizados);
+        for (Parcelas parcela : parcelas) {
+            // ✅ Verifica se `dataPagamento` não é nula antes de comparar
+            if (parcela.getDataPagamento() == null) {
+                System.out.println("⚠️ AVISO: Parcela ID " + parcela.getId() + " possui dataPagamento NULL. Definindo como data atual.");
+                parcela.setDataPagamento(hoje); // Define uma data para evitar erro
+                parcelasRepository.save(parcela);
+                continue; // Passa para a próxima parcela
+            }
 
-        // Registrar a data do pagamento de juros
-        Date dataPagamento = new Date(); // Pode ser a data atual ou lógica para a data real do pagamento
-        historico.getDatasPagamentos().add(dataPagamento);
+            if (parcela.getDataPagamento().before(hoje)) {
+                if (parcela.getPagas() == 0) {
+                    parcela.setPagas(-1); // 🔹 Define como ATRASADO (-1)
+                    parcelasRepository.save(parcela);
 
-        // Somar o valor dos juros ao preço para o próximo pagamento
-        historico.setPrice(historico.getPrice() + juros);
-
-        // Salvar no banco
-        historicoRepository.save(historico);
+                    // 🔹 Verificação extra para evitar NullPointerException
+                    Optional.ofNullable(parcela.getHistorico())
+                            .map(Historico::getCliente)
+                            .ifPresent(cliente -> criarNotificacao(cliente,
+                                    "❌ Sua parcela de R$ " + parcela.getValor() + " venceu e está PENDENTE!"));
+                }
+            }
+        }
     }
 
+    /**
+     * Cria uma notificação associada ao cliente.
+     */
+    private void criarNotificacao(Clientes cliente, String mensagem) {
+        if (cliente == null) return;
 
-    private double calcularJuros(double price, int percentage) {
-        // Calcular os juros baseados na porcentagem do histórico
-        return price * (percentage / 100.0);
+        Notification notificacao = new Notification();
+        notificacao.setCliente(cliente);
+        notificacao.setMessage(mensagem);
+        notificacao.setCreatedAt(LocalDateTime.now());
+        notificacao.setRead(false);
+
+        notificationRepository.save(notificacao);
     }
 }
+
+
