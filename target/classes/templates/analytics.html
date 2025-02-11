@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Importação da fonte de ícones do Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp"/>
+    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+    <!-- My CSS -->
+    <link rel="stylesheet" href="/css/index.css">
+    <title>AdminHub</title>
+</head>
+
+<style>
+    .charts-analytcs {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px; /* Espaço entre os gráficos */
+        margin-top: 20px;
+    }
+
+    .chart-analytcs {
+        flex: 1;
+        max-width: 49%; /* Ajusta a largura dos gráficos */
+        background: #fff;
+        border-radius: 10px;
+        padding: 10px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .chart-analytcs canvas {
+        width: 86% !important;
+        height: 380px !important; /* Define a altura fixa para o gráfico de pizza */
+    }
+
+    .btn-modais {
+        background-color: #36A2EB;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-size: 14px;
+        font-weight: bold;
+        font-family: Poppins;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease; /* Animação suave */
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Sombra leve */
+        margin-top: 1rem;
+    }
+
+    .btn-modais:hover {
+        background-color: #2587cc;
+        transform: scale(1.05); /* Efeito de zoom */
+    }
+</style>
+
+<body>
+
+<!-- SIDEBAR -->
+<section id="sidebar">
+    <a href="/" class="brand">
+        <i class='bx bxs-smile'></i>
+        <span class="text">AdminHub</span>
+    </a>
+    <ul class="side-menu top">
+        <li>
+            <a href="/">
+                <i class='bx bxs-dashboard' ></i>
+                <span class="text">Dashboard</span>
+            </a>
+        </li>
+        <li>
+            <a href="/Table">
+                <i class='bx bxs-shopping-bag-alt' ></i>
+                <span class="text">My Table</span>
+            </a>
+        </li>
+        <li class="active">
+            <a href="/Analytics">
+                <i class='bx bxs-doughnut-chart' ></i>
+                <span class="text">Analytics</span>
+            </a>
+        </li>
+        <li>
+            <a href="#">
+                <i class='bx bxs-group' ></i>
+                <span class="text">Team</span>
+            </a>
+        </li>
+    </ul>
+</section>
+<!-- SIDEBAR -->
+
+<!-- CONTENT -->
+<section id="content">
+    <!-- NAVBAR -->
+    <nav>
+        <i class='bx bx-menu' ></i>
+        <div class="search">
+            <form th:action="@{/search}" method="get" >
+                <label for="keyword"></label>
+                <input type="text" id="keyword" name="keyword" placeholder="Digite o nome do cliente">
+                <button type="submit"><span class="material-symbols-sharp">
+                search
+            </span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Botão para abrir o modal de notificações -->
+        <div id="open-modal">
+            <button class="notification">
+                <span class="material-symbols-sharp">notifications</span>
+                <span class="num" th:text="${totalNotify}"></span>
+            </button>
+        </div>
+
+        <!-- Área de fundo (Fade) -->
+        <div id="fade" class="hide"></div>
+        <!-- Modal -->
+        <div id="modal" class="hide">
+            <div class="modal-header">
+                <h2>Notifications</h2>
+                <button id="close-modal">
+                    <span class="material-symbols-sharp">close</span>
+                </button>
+            </div>
+
+            <div class="notify-item" th:each="notification : ${notifications}">
+                <div class="notify_img">
+                    <img src="/img/Admin.jpg" alt="" style="width: 50px;">
+                </div>
+                <div class="notify-info">
+                    <p><span th:text="${notification.message}"></span></p>
+                    <p>
+                        <span class="notify-time" th:text="${#temporals.format(notification.createdAt, 'mm')}"></span> minutes ago.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile" onclick="toggleSubMenu()">
+            <div class="profile-photo">
+                <img src="/img/Admin.jpg" alt="" />
+            </div>
+        </div>
+        <div class="sub-menu-wrap" id="subMenu">
+            <div class="sub-menu">
+                <div class="user-info">
+                    <img src="img/Admin.jpg" alt="Perfil">
+                    <h2>Shadow</h2>
+                </div>
+                <hr>
+                <a href="/logout">
+                    <span class="material-symbols-sharp">logout</span>
+                    Sair
+                </a>
+            </div>
+        </div>
+    </nav>
+    <!-- NAVBAR -->
+
+    <!-- MAIN -->
+    <main>
+        <div class="head-title">
+            <div class="left">
+                <h1>Dashboard</h1>
+                <ul class="breadcrumb">
+                    <li><a href="#">Dashboard</a></li>
+                    <li><i class='bx bx-chevron-right'></i></li>
+                    <li><a class="active" href="#">Home</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <ul class="box-info">
+            <li>
+                <i class='bx bxs-calendar-check'></i>
+                <span class="text">
+                    <h3>1020</h3>
+                    <p>New Order</p>
+                </span>
+            </li>
+            <li>
+                <i class='bx bxs-group'></i>
+                <span class="text">
+                    <h3>2834</h3>
+                    <p>Visitors</p>
+                </span>
+            </li>
+            <li>
+                <i class='bx bxs-dollar-circle'></i>
+                <span class="text">
+                    <h3>$<span th:text="${somaDeEmprestimo}"></span></h3>
+                    <p>Total de Emprestimos (S/J)</p>
+                </span>
+            </li>
+        </ul>
+
+        <!-- Gráficos -->
+        <div class="charts-analytcs">
+            <div class="chart-analytcs">
+                <canvas id="pieChart"></canvas>
+            </div>
+            <div class="chart-analytcs">
+                <canvas id="barChart"></canvas>
+            </div>
+            
+        </div>
+
+        <!-- Botões para modais -->
+        <div class="buttons">
+            <button id="openClientsModal" class="btn-modais">Clientes Cadastrados</button>
+            <button id="openEmployeesModal" class="btn-modais">Funcionários Cadastrados</button>
+        </div>
+
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const meses = /*[[${meses}]]*/ [];
+        const valoresMensais = /*[[${valoresMensais}]]*/ [];
+
+        const pieChart = new Chart(document.getElementById('pieChart'), {
+            type: 'pie',
+            data: {
+                labels: meses, 
+                datasets: [{
+                    data: valoresMensais, 
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#FF9F40']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                aspectRatio: 1.5,
+                plugins: {
+                    legend: { position: 'right' }
+                }
+            }
+        });
+
+        // Gráfico de Barras
+        const barChart = new Chart(document.getElementById('barChart'), {
+            type: 'bar',
+            data: {
+                labels: meses, 
+                datasets: [{
+                    label: 'Vendas Mensais',
+                    data: valoresMensais, 
+                    backgroundColor: '#36A2EB',
+                    barThickness: 20
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                aspectRatio: 1.5,
+                scales: {
+                    x: { beginAtZero: true },
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+        /*]]>*/
+    </script>
+
+</section>
+
+<script src="/js/script.js"></script>
+
+</body>
+</html>

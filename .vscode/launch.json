@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-DashBoardApplication<DashBoard>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.shadow.dashboard.DashBoardApplication",
+            "projectName": "DashBoard",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

@@ -14,50 +14,49 @@
 
 <style>
     .charts-analytcs {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 20px; /* Espaço entre os gráficos */
-    margin-top: 20px;
-}
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px; /* Espaço entre os gráficos */
+        margin-top: 20px;
+    }
 
-.chart-analytcs {
-    flex: 1;
-    max-width: 49%; /* Ajusta a largura dos gráficos */
-    background: #fff;
-    border-radius: 10px;
-    padding: 10px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-}
+    .chart-analytcs {
+        flex: 1;
+        max-width: 49%; /* Ajusta a largura dos gráficos */
+        background: #fff;
+        border-radius: 10px;
+        padding: 10px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
 
-.chart-analytcs canvas {
-    width: 86 % !important;
-    height: 380px !important; /* Define a altura fixa para o gráfico de pizza */
-}
+    .chart-analytcs canvas {
+        width: 86% !important;
+        height: 380px !important; /* Define a altura fixa para o gráfico de pizza */
+    }
 
-  .btn-modais {
-    background-color: #36A2EB;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-size: 14px;
-    font-weight: bold;
-    font-family: Poppins;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease; /* Animação suave */
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Sombra leve */
-    margin-top: 1rem;
-}
+    .btn-modais {
+        background-color: #36A2EB;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-size: 14px;
+        font-weight: bold;
+        font-family: Poppins;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease; /* Animação suave */
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Sombra leve */
+        margin-top: 1rem;
+    }
 
-.btn-modais:hover {
-    background-color: #2587cc;
-    transform: scale(1.05); /* Efeito de zoom */
-}
-
+    .btn-modais:hover {
+        background-color: #2587cc;
+        transform: scale(1.05); /* Efeito de zoom */
+    }
 </style>
-<body>
 
+<body>
 
 <!-- SIDEBAR -->
 <section id="sidebar">
@@ -93,8 +92,6 @@
     </ul>
 </section>
 <!-- SIDEBAR -->
-
-
 
 <!-- CONTENT -->
 <section id="content">
@@ -144,8 +141,6 @@
             </div>
         </div>
 
-
-
         <div class="profile" onclick="toggleSubMenu()">
             <div class="profile-photo">
                 <img src="/img/Admin.jpg" alt="" />
@@ -184,23 +179,23 @@
             <li>
                 <i class='bx bxs-calendar-check'></i>
                 <span class="text">
-                <h3>1020</h3>
-                <p>New Order</p>
-            </span>
+                    <h3>1020</h3>
+                    <p>New Order</p>
+                </span>
             </li>
             <li>
                 <i class='bx bxs-group'></i>
                 <span class="text">
-                <h3>2834</h3>
-                <p>Visitors</p>
-            </span>
+                    <h3>2834</h3>
+                    <p>Visitors</p>
+                </span>
             </li>
             <li>
                 <i class='bx bxs-dollar-circle'></i>
                 <span class="text">
-                <h3>$<span th:text="${somaDeEmprestimo}"></span></h3>
-                <p>Total de Emprestimos (S/J)</p>
-            </span>
+                    <h3>$<span th:text="${somaDeEmprestimo}"></span></h3>
+                    <p>Total de Emprestimos (S/J)</p>
+                </span>
             </li>
         </ul>
 
@@ -212,6 +207,7 @@
             <div class="chart-analytcs">
                 <canvas id="barChart"></canvas>
             </div>
+            
         </div>
 
         <!-- Botões para modais -->
@@ -223,61 +219,58 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-    // Gráfico de Pizza
-    const pieChart = new Chart(document.getElementById('pieChart'), {
-        type: 'pie',
-        data: {
-            labels: ['Categoria 1', 'Categoria 2', 'Categoria 3'],
-            datasets: [{
-                data: [30, 45, 25],
-                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56']
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            aspectRatio: 1.5,
-            plugins: {
-                legend: { position: 'right' }
-            }
-        }
-    });
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const meses = /*[[${meses}]]*/ [];
+        const valoresMensais = /*[[${valoresMensais}]]*/ [];
 
-    // Gráfico de Barras
-    const barChart = new Chart(document.getElementById('barChart'), {
-        type: 'bar',
-        data: {
-            labels: [
-                'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-            ],
-            datasets: [{
-                label: 'Vendas',
-                data: [5000, 7000, 8000, 6000, 5500, 6500, 7200, 8000, 7500, 6800, 6200, 7000],
-                backgroundColor: '#36A2EB',
-                barThickness: 20
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            aspectRatio: 1.5,
-            scales: {
-                x: { beginAtZero: true },
-                y: { beginAtZero: true }
+        const pieChart = new Chart(document.getElementById('pieChart'), {
+            type: 'pie',
+            data: {
+                labels: meses, 
+                datasets: [{
+                    data: valoresMensais, 
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#FF9F40']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                aspectRatio: 1.5,
+                plugins: {
+                    legend: { position: 'right' }
+                }
             }
-        }
-    });
-});
+        });
 
+        // Gráfico de Barras
+        const barChart = new Chart(document.getElementById('barChart'), {
+            type: 'bar',
+            data: {
+                labels: meses, 
+                datasets: [{
+                    label: 'Vendas Mensais',
+                    data: valoresMensais, 
+                    backgroundColor: '#36A2EB',
+                    barThickness: 20
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                aspectRatio: 1.5,
+                scales: {
+                    x: { beginAtZero: true },
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+        /*]]>*/
     </script>
 
 </section>
 
 <script src="/js/script.js"></script>
-
 
 </body>
 </html>

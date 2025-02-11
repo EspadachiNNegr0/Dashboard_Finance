@@ -1,125 +1,152 @@
-const allSideMenu = document.querySelectorAll('#sidebar .side-menu.top li a');
+document.addEventListener("DOMContentLoaded", function () {
 
-allSideMenu.forEach(item=> {
-    const li = item.parentElement;
+    // ================= MODAL DE ADICIONAR EMPRÉSTIMO =================
+    const addButton = document.querySelector(".add");
+    const modalAdd = document.getElementById("modal-add-emprestimo");
+    const closeAddModalButton = document.getElementById("close-modal");
 
-    item.addEventListener('click', function () {
-        allSideMenu.forEach(i=> {
-            i.parentElement.classList.remove('active');
-        })
-        li.classList.add('active');
-    })
-});
+    if (addButton && modalAdd && closeAddModalButton) {
+        addButton.addEventListener("click", () => {
+            modalAdd.classList.remove("hide");
+            modalAdd.classList.add("show");
+        });
 
+        closeAddModalButton.addEventListener("click", () => {
+            modalAdd.classList.remove("show");
+            modalAdd.classList.add("hide");
+        });
 
-
-
-// TOGGLE SIDEBAR
-const menuBar = document.querySelector('#content nav .bx.bx-menu');
-const sidebar = document.getElementById('sidebar');
-
-menuBar.addEventListener('click', function () {
-    sidebar.classList.toggle('hide');
-})
-
-
-
-
-
-
-
-const searchButton = document.querySelector('#content nav form .form-input button');
-const searchButtonIcon = document.querySelector('#content nav form .form-input button .bx');
-const searchForm = document.querySelector('#content nav form');
-
-searchButton.addEventListener('click', function (e) {
-    if(window.innerWidth < 576) {
-        e.preventDefault();
-        searchForm.classList.toggle('show');
-        if(searchForm.classList.contains('show')) {
-            searchButtonIcon.classList.replace('bx-search', 'bx-x');
-        } else {
-            searchButtonIcon.classList.replace('bx-x', 'bx-search');
-        }
+        modalAdd.addEventListener("click", (event) => {
+            if (event.target === modalAdd) {
+                modalAdd.classList.remove("show");
+                modalAdd.classList.add("hide");
+            }
+        });
     }
-})
 
+    // ================= MODAL DE NOTIFICAÇÕES =================
+    const openModalButton = document.querySelector("#open-modal .notification");
+    const modalNotification = document.getElementById("modal");
+    const fade = document.getElementById("fade");
+    const closeModalButton = document.getElementById("close-modal");
 
+    if (openModalButton && modalNotification && fade && closeModalButton) {
+        openModalButton.addEventListener("click", function () {
+            modalNotification.classList.remove("hide");
+            fade.classList.remove("hide");
+        });
 
+        closeModalButton.addEventListener("click", function () {
+            modalNotification.classList.add("hide");
+            fade.classList.add("hide");
+        });
 
-
-if(window.innerWidth < 768) {
-    sidebar.classList.add('hide');
-} else if(window.innerWidth > 576) {
-    searchButtonIcon.classList.replace('bx-x', 'bx-search');
-    searchForm.classList.remove('show');
-}
-
-
-window.addEventListener('resize', function () {
-    if(this.innerWidth > 576) {
-        searchButtonIcon.classList.replace('bx-x', 'bx-search');
-        searchForm.classList.remove('show');
-    }
-})
-
-
-
-const switchMode = document.getElementById('switch-mode');
-
-// Verifica se existe uma preferência no localStorage e aplica
-if (localStorage.getItem('theme') === 'dark') {
-    document.body.classList.add('dark');
-    switchMode.checked = true; // Marca o switch para indicar que o modo escuro está ativo
-}
-
-// Adiciona evento para alternar entre os temas e salvar a preferência
-switchMode.addEventListener('change', function () {
-    if (this.checked) {
-        document.body.classList.add('dark');
-        localStorage.setItem('theme', 'dark'); // Salva a preferência no localStorage
+        fade.addEventListener("click", function () {
+            modalNotification.classList.add("hide");
+            fade.classList.add("hide");
+        });
     } else {
-        document.body.classList.remove('dark');
-        localStorage.setItem('theme', 'light'); // Salva a preferência no localStorage
+        console.error("❌ Elementos do modal de notificações não encontrados!");
     }
+
+    // ================= MODAL DE ADICIONAR CLIENTE =================
+    const addClienteButton = document.querySelector(".addC");
+    const modalCliente = document.getElementById("modal-add-cliente");
+    const closeClienteButton = modalCliente?.querySelector(".close");
+
+    if (addClienteButton && modalCliente && closeClienteButton) {
+        addClienteButton.addEventListener("click", () => {
+            modalCliente.classList.remove("hide");
+            modalCliente.classList.add("show");
+        });
+
+        closeClienteButton.addEventListener("click", () => {
+            modalCliente.classList.remove("show");
+            modalCliente.classList.add("hide");
+        });
+
+        modalCliente.addEventListener("click", (event) => {
+            if (event.target === modalCliente) {
+                modalCliente.classList.remove("show");
+                modalCliente.classList.add("hide");
+            }
+        });
+    }
+
+    // ================= TOGGLE DO MENU DO PERFIL =================
+    const profile = document.querySelector(".profile");
+    const subMenu = document.getElementById("subMenu");
+
+    if (profile && subMenu) {
+        // Evento de clique no perfil para abrir/fechar o submenu
+        profile.addEventListener("click", function (event) {
+            event.stopPropagation(); // Evita fechamento imediato
+            subMenu.classList.toggle("show");
+
+            console.log("🔹 Submenu status:", subMenu.classList.contains("show")); // 🔹 Debug no console
+        });
+
+        // Evento para fechar o submenu ao clicar fora dele
+        document.addEventListener("click", function (event) {
+            if (!profile.contains(event.target) && !subMenu.contains(event.target)) {
+                subMenu.classList.remove("show");
+            }
+        });
+    } else {
+        console.error("❌ Elemento 'profile' ou 'subMenu' não encontrado!");
+    }
+
 });
 
-// O restante do código permanece o mesmo
-
-
-
-// JS para o submenu
+// =================== FUNÇÃO GERAL PARA O SUBMENU ===================
 function toggleSubMenu() {
     const subMenu = document.getElementById("subMenu");
-    subMenu.classList.toggle("show");
+    if (subMenu) {
+        subMenu.classList.toggle("show");
+    } else {
+        console.error("❌ Elemento 'subMenu' não encontrado!");
+    }
 }
 
-// Fecha o submenu ao clicar fora
-window.addEventListener("click", function (e) {
+document.addEventListener("DOMContentLoaded", function () {
+    const profile = document.querySelector(".profile");
     const subMenu = document.getElementById("subMenu");
-    if (!e.target.closest(".profile") && !e.target.closest(".sub-menu-wrap")) {
-        subMenu.classList.remove("show");
+
+    if (profile && subMenu) {
+        // Evento de clique no perfil para abrir/fechar o submenu
+        profile.addEventListener("click", function (event) {
+            event.stopPropagation(); // Evita fechamento imediato
+            subMenu.classList.toggle("show");
+
+            console.log("🔹 Submenu status:", subMenu.classList.contains("show")); // 🔹 Debug no console
+        });
+
+        // Evento para fechar o submenu ao clicar fora dele
+        document.addEventListener("click", function (event) {
+            if (!profile.contains(event.target) && !subMenu.contains(event.target)) {
+                subMenu.classList.remove("show");
+            }
+        });
+    } else {
+        console.error("❌ Elemento 'profile' ou 'subMenu' não encontrado!");
     }
 });
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".pagar-parcela").forEach(button => {
+        button.addEventListener("click", function () {
+            const parcelaId = this.getAttribute("data-id");
 
-// Código para alternar a visibilidade do submenu
-document.querySelector('.profile').addEventListener('click', function() {
-    const submenu = document.querySelector('.sub-menu-wrap');
-    submenu.style.visibility = submenu.style.visibility === 'visible' ? 'hidden' : 'visible';
-    submenu.style.opacity = submenu.style.opacity === '1' ? '0' : '1';
+            fetch(`/pagar-parcela/${parcelaId}`, {
+                method: "POST"
+            })
+                .then(response => response.text())
+                .then(message => {
+                    alert(message);
+                    location.reload(); // 🔄 Atualiza a página para refletir a mudança no status
+                })
+                .catch(error => console.error("Erro ao pagar parcela:", error));
+        });
+    });
 });
 
-const openModalButton = document.querySelector("#open-modal");
-const closeModalButton = document.querySelector("#close-modal");
-const modal = document.querySelector("#modal");
-const fade = document.querySelector("#fade");
-
-const toggleModal = () => {
-    modal.classList.toggle("hide");
-    fade.classList.toggle("hide");
-}
-
-[openModalButton, closeModalButton, fade].forEach((el) => {
-    el.addEventListener("click", () => toggleModal());
-});
 

@@ -6,7 +6,8 @@
 
     <!-- Importação da fonte de ícones do Material Symbols -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp"/>
-    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
     <!-- My CSS -->
     <link rel="stylesheet" href="/css/index.css">
 
@@ -17,13 +18,13 @@
 
 <!-- SIDEBAR -->
 <section id="sidebar">
-    <a href="#" class="brand">
+    <a href="/" class="brand">
         <i class='bx bxs-smile'></i>
         <span class="text">AdminHub</span>
     </a>
     <ul class="side-menu top">
         <li >
-            <a href="/index">
+            <a href="/">
                 <i class='bx bxs-dashboard' ></i>
                 <span class="text">Dashboard</span>
             </a>
@@ -35,35 +36,9 @@
             </a>
         </li>
         <li>
-            <a href="#">
+            <a href="/Analytics">
                 <i class='bx bxs-doughnut-chart' ></i>
                 <span class="text">Analytics</span>
-            </a>
-        </li>
-        <li>
-            <a href="#">
-                <i class='bx bxs-message-dots' ></i>
-                <span class="text">Message</span>
-            </a>
-        </li>
-        <li>
-            <a href="#">
-                <i class='bx bxs-group' ></i>
-                <span class="text">Team</span>
-            </a>
-        </li>
-    </ul>
-    <ul class="side-menu">
-        <li>
-            <a href="#">
-                <i class='bx bxs-cog' ></i>
-                <span class="text">Settings</span>
-            </a>
-        </li>
-        <li>
-            <a href="#" class="logout">
-                <i class='bx bxs-log-out-circle' ></i>
-                <span class="text">Logout</span>
             </a>
         </li>
     </ul>
@@ -77,23 +52,54 @@
     <!-- NAVBAR -->
     <nav>
         <i class='bx bx-menu' ></i>
-        <form action="#">
-            <div class="form-input">
-                <input type="search" placeholder="Search...">
-                <button type="submit" class="search-btn"><i class='bx bx-search' ></i></button>
+        <div class="search">
+            <form th:action="@{/search}" method="get" >
+                <label for="keyword"></label>
+                <input type="text" id="keyword" name="keyword" placeholder="Digite o nome do cliente">
+                <button type="submit"><span class="material-symbols-sharp">
+                search
+            </span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Botão para abrir o modal de notificações -->
+        <div id="open-modal">
+            <button class="notification">
+                <span class="material-symbols-sharp">notifications</span>
+                <span class="num" th:text="${totalNotify}"></span>
+            </button>
+        </div>
+
+        <!-- Área de fundo (Fade) -->
+        <div id="fade" class="hide"></div>
+        <!-- Modal -->
+        <div id="modal" class="hide">
+            <div class="modal-header">
+                <h2>Notifications</h2>
+                <button id="close-modal">
+                    <span class="material-symbols-sharp">close</span>
+                </button>
             </div>
-        </form>
-        <input type="checkbox" id="switch-mode" hidden>
-        <label for="switch-mode" class="switch-mode"></label>
-        <a href="#" class="notification">
-				<span class="material-symbols-sharp">
-					notifications
-					</span>
-            <span class="num">8</span>
-        </a>
+
+            <div class="notify-item" th:each="notification : ${notifications}">
+                <div class="notify_img">
+                    <img src="/img/Admin.jpg" alt="" style="width: 50px;">
+                </div>
+                <div class="notify-info">
+                    <p><span th:text="${notification.message}"></span></p>
+                    <p>
+                        <span class="notify-time" th:text="${#temporals.format(notification.createdAt, 'mm')}"></span> minutes ago.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+
+
         <div class="profile" onclick="toggleSubMenu()">
             <div class="profile-photo">
-                <img src="img/Admin.jpg" alt="" />
+                <img src="/img/Admin.jpg" alt="" />
             </div>
         </div>
         <div class="sub-menu-wrap" id="subMenu">
@@ -103,13 +109,9 @@
                     <h2>Shadow</h2>
                 </div>
                 <hr>
-                <a href="/profile">
-                    <span class="material-symbols-sharp">person</span>
-                    Meu Perfil
-                </a>
-                <a href="/settings">
-                    <span class="material-symbols-sharp">settings</span>
-                    Configurações
+                <a href="/logout">
+                    <span class="material-symbols-sharp">logout</span>
+                    Sair
                 </a>
             </div>
         </div>
@@ -131,126 +133,242 @@
                     </li>
                 </ul>
             </div>
-            <!-- <a href="#" class="btn-download">
-                <i class='bx bxs-cloud-download' ></i>
-                <span class="text">Download PDF</span>
-            </a> -->
         </div>
-
-        <!-- <ul class="box-info">
-            <li>
-                <i class='bx bxs-calendar-check' ></i>
-                <span class="text">
-                    <h3>1020</h3>
-                    <p>New Order</p>
-                </span>
-            </li>
-            <li>
-                <i class='bx bxs-group' ></i>
-                <span class="text">
-                    <h3>2834</h3>
-                    <p>Visitors</p>
-                </span>
-            </li>
-            <li>
-                <i class='bx bxs-dollar-circle' ></i>
-                <span class="text">
-                    <h3>$2543</h3>
-                    <p>Total Sales</p>
-                </span>
-            </li>
-        </ul> -->
 
         <div class="table-data">
             <div class="order">
                 <div class="head">
                     <h3>Recent Orders</h3>
-                    <i class='bx bx-search' ></i>
-                    <i class='bx bx-filter' ></i>
+
+                    <!-- Botão para abrir o modal de adicionar cliente -->
+                    <button class="addC" id="openModalCliente" aria-label="Adicionar Cliente">Add Cliente</button>
+
+                    <!-- Modal de Adicionar Cliente -->
+                    <div id="modal-add-cliente" class="modal-add-cliente hide">
+                        <div class="modal-content">
+                            <div class="modal-headers">
+                                <header>Adicionar Cliente</header>
+                                <button class="close" id="closeModalCliente">&times;</button>
+                            </div>
+                            <div class="modal-body">
+                                <!-- Alerta de erro -->
+                                <div id="mensagem-erro" style="color: red; font-weight: bold; display: none;"></div>
+
+                                <form id="form-cliente">
+                                    <div class="details-cliente">
+                                        <span class="title">Detalhes do Cliente</span>
+                                        <div class="fields">
+
+                                            <!-- Nome do Cliente -->
+                                            <div class="input-field">
+                                                <label>Nome</label>
+                                                <input type="text" id="nome" name="nome" placeholder="Digite o nome do cliente" required>
+                                            </div>
+
+                                            <!-- CPF -->
+                                            <div class="input-field">
+                                                <label>CPF</label>
+                                                <input type="text" id="cpf" name="cpf" placeholder="Digite o CPF" required>
+                                            </div>
+
+                                            <!-- Contato (Telefone) -->
+                                            <div class="input-field">
+                                                <label>Contato</label>
+                                                <input type="text" id="contato" name="contato" placeholder="Digite o contato do cliente" required>
+                                            </div>
+
+                                            <!-- Endereço -->
+                                            <div class="input-field">
+                                                <label>Endereço</label>
+                                                <input type="text" id="endereco" name="endereco" placeholder="Digite o endereço" required>
+                                            </div>
+
+                                            <!-- Botão de envio -->
+                                            <button type="submit">Salvar Cliente</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <button class="add" aria-label="Adicionar empréstimo">Add Emprestimo</button>
+                    <div id="modal-add-emprestimo" class="modal hide">
+                        <div class="modal-content">
+                            <div class="modal-headers">
+                                <header>Registro de Empréstimo</header>
+                            </div>
+                            <div class="modal-body">
+                                <form action="/" method="POST">
+                                    <div class="details-emprestimo">
+                                        <span class="title">Detalhes do Empréstimo</span>
+                                        <div class="fields">
+                                            <!-- Nome do Cliente -->
+                                            <div class="input-field">
+                                                <label>Nome do Cliente</label>
+                                                <select name="cliente.id" required>
+                                                    <option value="" disabled selected>Escolha o Cliente</option>
+                                                    <option th:each="cliente : ${clientes}"
+                                                            th:value="${cliente.id}"
+                                                            th:text="${cliente.nome}"></option>
+                                                </select>
+                                            </div>
+
+
+                                            <!-- Valor do Empréstimo -->
+                                            <div class="input-field">
+                                                <label>Valor do Empréstimo</label>
+                                                <input type="number" name="price" placeholder="Digite o valor do empréstimo" required>
+                                            </div>
+
+                                            <!-- Porcentagem -->
+                                            <div class="input-field">
+                                                <label>Porcentagem (%)</label>
+                                                <input type="number" name="percentage" step="0.01" placeholder="Digite a porcentagem de juros" required>
+                                            </div>
+
+                                            <!-- Parcelamento -->
+                                            <div class="input-field">
+                                                <label>Parcelamento (meses)</label>
+                                                <input type="number" name="parcelamento" placeholder="Digite o número de parcelas" required>
+                                            </div>
+
+                                            <!-- Banco -->
+                                            <div class="input-field">
+                                                <label>Banco</label>
+                                                <select name="banco.id" required>
+                                                    <option value="" disabled selected>Escolha um Banco</option>
+                                                    <option th:each="banco : ${bancos}"
+                                                            th:value="${banco.id}"
+                                                            th:text="${banco.nome}"></option>
+                                                </select>
+                                            </div>
+
+                                            <!-- Socio -->
+                                            <div class="input-field">
+                                                <label>Socio</label>
+                                                <select name="socios.id" required> <!-- Alterado de banco.id para socios.id -->
+                                                    <option value="" disabled selected>Escolha quem emprestou</option>
+                                                    <option th:each="socio : ${socios}"
+                                                            th:value="${socio.id}"
+                                                            th:text="${socio.name}"></option>
+                                                </select>
+                                            </div>
+
+
+                                            <!-- Data -->
+                                            <div class="input-field">
+                                                <label>Data</label>
+                                                <input type="date" name="created" required>
+                                            </div>
+
+                                            <!-- Descrição -->
+                                            <div class="input-field">
+                                                <label>Descrição</label>
+                                                <input type="text" name="description" placeholder="Coloque uma Descrição" required>
+                                            </div>
+
+                                            <button type="submit">Salvar</button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <i class='bx bx-filter' id="openModalFiltro"></i>
+
+                    <!-- MODAL DE FILTRO -->
+                    <div class="modal-filtro" id="modalFiltro">
+                        <div class="modal-filtro-content">
+                            <!-- Botão de fechar -->
+                            <div class="closeButton">
+                                <button class="modal-close" id="btnFecharModal">X</button>
+                            </div>
+
+                            <h2>Selecione os filtros desejados</h2>
+
+                            <form id="form-filtro">
+
+                                <!-- Filtro: Valor do Empréstimo -->
+                                <div class="input-group">
+                                    <label>Valor do Empréstimo:</label>
+                                    <div class="valor-range">
+                                        <input type="number" id="valor-min" name="valorMin" placeholder="De" step="0.01">
+                                        <span>até</span>
+                                        <input type="number" id="valor-max" name="valorMax" placeholder="Até" step="0.01">
+                                    </div>
+                                </div>
+
+                                <!-- Botão de envio -->
+                                <button id="btn-modal-filtro" type="submit">Filtrar</button>
+                            </form>
+                        </div>
+                    </div>
+
                 </div>
-                <table>
+                <table id="example" class="table table-striped" style="width:100%">
                     <thead>
                     <tr>
-                        <th>User</th>
-                        <th>Date Order</th>
+                        <th>Name</th>
                         <th>Price</th>
+                        <th>Porcent</th>
+                        <th>Valor mensal</th>
+                        <th>Parcelamento</th>
+                        <th>Start date</th>
+                        <th>End date</th>
                         <th>Status</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
+                    <tr th:each="historico: ${historias}">
+                        <td><a href="#" th:text="${historico.cliente.nome}"></a></td>
                         <td>
-                            <img src="img/people.png">
-                            <p>John Doe</p>
+                            <span th:text="${historico.price} + ' '"></span>
                         </td>
-                        <td>01-10-2021</td>
-                        <td><span class="status completed">Completed</span></td>
-                    </tr>
-                    <tr>
                         <td>
-                            <img src="img/people.png">
-                            <p>John Doe</p>
+                            <span th:text="${historico.percentage} + ' '"></span>%
                         </td>
-                        <td>01-10-2021</td>
-                        <td><span class="status pending">Pending</span></td>
-                    </tr>
-                    <tr>
                         <td>
-                            <img src="img/people.png">
-                            <p>John Doe</p>
+                            $<span th:text="${historico.valorMensal}"></span>
                         </td>
-                        <td>01-10-2021</td>
-                        <td><span class="status process">Process</span></td>
-                    </tr>
-                    <tr>
                         <td>
-                            <img src="img/people.png">
-                            <p>John Doe</p>
+                            <span th:text="${historico.parcelamento} + ' '"></span>
                         </td>
-                        <td>01-10-2021</td>
-                        <td><span class="status pending">Pending</span></td>
-                    </tr>
-                    <tr>
                         <td>
-                            <img src="img/people.png">
-                            <p>John Doe</p>
+                            <span th:text="${historico.created} + ' '"></span>
+
                         </td>
-                        <td>01-10-2021</td>
-                        <td><span class="status completed">Completed</span></td>
+                        <td>
+                            <span th:text="${historico.creationF}"></span>
+                        </td>
+                        <td>
+                            <span th:text="${historico.status} + ' '"></span>
+                        </td>
+                        <td>
+                            <a th:href="@{/histori/{id}(id=${historico.id})}" class="btn btn-info">
+                                <span class="material-symbols-sharp">file_open</span>
+                            </a>
+                        </td>
                     </tr>
+
                     </tbody>
+                    <tfoot>
+                    <tr>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Porcent</th>
+                        <th>PriceTotal</th>
+                        <th>Parcelamento</th>
+                        <th>Start date</th>
+                        <th>End date</th>
+                        <th>Status</th>
+                    </tr>
+                    </tfoot>
                 </table>
             </div>
-            <!-- <div class="todo">
-                <div class="head">
-                    <h3>Todos</h3>
-                    <i class='bx bx-plus' ></i>
-                    <i class='bx bx-filter' ></i>
-                </div>
-                <ul class="todo-list">
-
-                    <li class="completed">
-                        <p>Todo List</p>
-                        <i class='bx bx-dots-vertical-rounded' ></i>
-                    </li>
-                    <li class="completed">
-                        <p>Todo List</p>
-                        <i class='bx bx-dots-vertical-rounded' ></i>
-                    </li>
-                    <li class="not-completed">
-                        <p>Todo List</p>
-                        <i class='bx bx-dots-vertical-rounded' ></i>
-                    </li>
-                    <li class="completed">
-                        <p>Todo List</p>
-                        <i class='bx bx-dots-vertical-rounded' ></i>
-                    </li>
-                    <li class="not-completed">
-                        <p>Todo List</p>
-                        <i class='bx bx-dots-vertical-rounded' ></i>
-                    </li>
-                </ul>
-            </div> -->
         </div>
     </main>
     <!-- MAIN -->
