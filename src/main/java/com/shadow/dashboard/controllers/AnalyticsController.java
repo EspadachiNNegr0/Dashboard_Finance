@@ -18,11 +18,12 @@ public class AnalyticsController {
 
     @GetMapping("/Analytics")
     public String showAnalytics(Model model) {
-        int currentYear = 2024; // use LocalDate.now().getYear() para pegar o ano atual dinamicamente
+        int currentYear = 2024; // usar LocalDate.now().getYear() para pegar o ano atual
 
         List<String> meses = new ArrayList<>();
         List<Double> valoresMensais = new ArrayList<>();
 
+        // Calculando valores mensais
         for (int month = 1; month <= 12; month++) {
             List<Historico> historicos = historicoRepository.findByMonthAndYear(month, currentYear);
 
@@ -34,8 +35,22 @@ public class AnalyticsController {
             valoresMensais.add(totalMensal);
         }
 
+        // Consultando total de empréstimos por sócio
+        List<Object[]> sociosData = historicoRepository.sumLoansBySocio();
+
+        List<String> sociosNames = new ArrayList<>();
+        List<Double> sociosValues = new ArrayList<>();
+
+        // Preenchendo as listas de sócios e valores
+        for (Object[] obj : sociosData) {
+            sociosNames.add((String) obj[0]);  
+            sociosValues.add((Double) obj[1]); 
+        }
+
         model.addAttribute("meses", meses);
         model.addAttribute("valoresMensais", valoresMensais);
+        model.addAttribute("sociosNames", sociosNames);
+        model.addAttribute("sociosValues", sociosValues);
 
         return "analytics"; 
     }

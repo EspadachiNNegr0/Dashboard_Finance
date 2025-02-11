@@ -223,14 +223,19 @@
         /*<![CDATA[*/
         const meses = /*[[${meses}]]*/ [];
         const valoresMensais = /*[[${valoresMensais}]]*/ [];
-
+    
+        // Gráfico de Pizza (Empréstimos por Sócio)
+        const sociosNames = /*[[${sociosNames}]]*/ [];  
+        const sociosValues = /*[[${sociosValues}]]*/ [];  
+    
+        // Gráfico de Pizza
         const pieChart = new Chart(document.getElementById('pieChart'), {
             type: 'pie',
             data: {
-                labels: meses, 
+                labels: sociosNames,  
                 datasets: [{
-                    data: valoresMensais, 
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#FF9F40']
+                    data: sociosValues,  
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#FF9F40', '#FF5733', '#33FF57', '#3357FF']  
                 }]
             },
             options: {
@@ -242,7 +247,7 @@
                 }
             }
         });
-
+    
         // Gráfico de Barras
         const barChart = new Chart(document.getElementById('barChart'), {
             type: 'bar',

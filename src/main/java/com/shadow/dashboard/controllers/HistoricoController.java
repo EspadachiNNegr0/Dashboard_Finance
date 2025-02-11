@@ -51,9 +51,7 @@ public class HistoricoController {
         // Mapa para armazenar a soma dos valores mensais por mês
         Map<String, Double> valoresPorMes = new TreeMap<>();
 
-        // Iterar sobre cada histórico e agrupar por mês e ano
         for (Historico historia : historias) {
-            // Formatar a data para obter o mês e o ano (exemplo: "2024-01")
             String mesAno = formatarMesAno(historia.getCreated());
 
             // Somar os valores mensais para o mês
@@ -64,7 +62,6 @@ public class HistoricoController {
         List<String> meses = new ArrayList<>(valoresPorMes.keySet());
         List<Double> valoresMensais = new ArrayList<>(valoresPorMes.values());
 
-        // Passar os dados para a visão (Analytics)
         mv.addObject("meses", meses);
         mv.addObject("valoresMensais", valoresMensais);
 
@@ -73,7 +70,6 @@ public class HistoricoController {
 
     // Método para formatar a data no formato "yyyy-MM"
     private String formatarMesAno(Date date) {
-        // Usando Calendar para extrair o mês e ano
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         int mes = cal.get(Calendar.MONTH) + 1; // Meses começam em 0
