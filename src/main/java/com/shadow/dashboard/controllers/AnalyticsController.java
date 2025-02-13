@@ -1,12 +1,13 @@
 package com.shadow.dashboard.controllers;
 
 import com.shadow.dashboard.models.Clientes;
-import com.shadow.dashboard.models.Historico;
 import com.shadow.dashboard.models.Notification;
+import com.shadow.dashboard.models.Parcelas;
 import com.shadow.dashboard.models.Socios;
 import com.shadow.dashboard.repository.ClientRepository;
 import com.shadow.dashboard.repository.HistoricoRepository;
 import com.shadow.dashboard.repository.NotificationRepository;
+import com.shadow.dashboard.repository.ParcelasRepository;
 import com.shadow.dashboard.repository.SociosRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -22,7 +23,10 @@ import java.util.List;
 public class AnalyticsController {
 
     @Autowired
-    private HistoricoRepository historicoRepository; // Correta injeção de dependência
+    private HistoricoRepository historicoRepository; 
+
+    @Autowired
+    private ParcelasRepository parcelasRepository;
 
     @Autowired
     private NotificationRepository notificationRepository;
@@ -36,7 +40,7 @@ public class AnalyticsController {
     @GetMapping("/Analytics")
     public String showAnalytics(@RequestParam(value = "year", required = false) Integer selectedYear, Model model) {
 
-        List<Integer> anosDisponiveis = historicoRepository.findDistinctYears();
+        List<Integer> anosDisponiveis = parcelasRepository.findDistinctYears();
 
         if (selectedYear == null) {
             selectedYear = LocalDate.now().getYear();
@@ -51,18 +55,17 @@ public class AnalyticsController {
         // Total de notificações
         int totalNotify = notifications.size();
 
-        // Calculando valores mensais
+        // Calculando valores mensais a partir das parcelas
         for (int month = 1; month <= 12; month++) {
-            List<Historico> historicos = historicoRepository.findByMonthAndYear(month, selectedYear);
+            List<Parcelas> parcelas = parcelasRepository.findByMonthAndYear(month, selectedYear);
 
-            double totalMensal = historicos.stream()
-                    .mapToDouble(Historico::getValorMensal)
+            double totalMensal = parcelas.stream()
+                    .mapToDouble(Parcelas::getValor)
                     .sum();
 
             meses.add(getMonthName(month));
             valoresMensais.add(totalMensal);
         }
-
         // Consultando total de empréstimos por sócio
         List<Object[]> sociosData = historicoRepository.sumLoansBySocio();
         List<String> sociosNames = new ArrayList<>();
