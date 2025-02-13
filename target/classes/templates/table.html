@@ -152,9 +152,17 @@
                             </div>
                             <div class="modal-body">
                                 <!-- Alerta de erro -->
-                                <div id="mensagem-erro" style="color: red; font-weight: bold; display: none;"></div>
+                                <!-- 🔹 Mensagem de Sucesso -->
+                                <div th:if="${success}" id="mensagem-sucesso" class="alert alert-success">
+                                    <span th:text="${success}"></span>
+                                </div>
 
-                                <form id="form-cliente">
+                                <!-- 🔹 Mensagem de Erro -->
+                                <div th:if="${error}" id="mensagem-erro" class="alert alert-danger">
+                                    <span th:text="${error}"></span>
+                                </div>
+
+                                <form id="form-cliente" method="post" action="/clientes/adicionar">
                                     <div class="details-cliente">
                                         <span class="title">Detalhes do Cliente</span>
                                         <div class="fields">
@@ -171,7 +179,7 @@
                                                 <input type="text" id="cpf" name="cpf" placeholder="Digite o CPF" required>
                                             </div>
 
-                                            <!-- Contato (Telefone) -->
+                                            <!-- Contato -->
                                             <div class="input-field">
                                                 <label>Contato</label>
                                                 <input type="text" id="contato" name="contato" placeholder="Digite o contato do cliente" required>
@@ -183,7 +191,7 @@
                                                 <input type="text" id="endereco" name="endereco" placeholder="Digite o endereço" required>
                                             </div>
 
-                                            <!-- Botão de envio -->
+                                            <!-- Botão de Envio -->
                                             <button type="submit">Salvar Cliente</button>
                                         </div>
                                     </div>
@@ -324,9 +332,12 @@
                     </thead>
                     <tbody>
                     <tr th:each="historico: ${historias}">
-                        <td><a href="#" th:text="${historico.cliente.nome}"></a></td>
                         <td>
-                            <span th:text="${historico.price} + ' '"></span>
+                            <a th:href="@{/historico/{id}(id=${historico.cliente.id})}"
+                               th:text="${historico.cliente.nome}"></a>
+                        </td>
+                        <td>
+                        <span th:text="${historico.price} + ' '"></span>
                         </td>
                         <td>
                             <span th:text="${historico.percentage} + ' '"></span>%
@@ -353,7 +364,6 @@
                             </a>
                         </td>
                     </tr>
-
                     </tbody>
                     <tfoot>
                     <tr>
