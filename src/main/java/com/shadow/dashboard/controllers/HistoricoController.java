@@ -6,7 +6,9 @@ import com.shadow.dashboard.service.ClientService;
 import com.shadow.dashboard.service.HistoricoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -38,44 +40,7 @@ public class HistoricoController {
     private NotificationRepository notificationRepository;
 
     @Autowired
-    private ParcelasRepository parcelasRepository;
-
-    // Endpoint para a página de Analytics
-    @GetMapping("/analytics")
-    public ModelAndView analytics() {
-        ModelAndView mv = new ModelAndView("analytics");
-
-        // Buscar todos os históricos
-        List<Historico> historias = historicoRepository.findAll();
-
-        // Mapa para armazenar a soma dos valores mensais por mês
-        Map<String, Double> valoresPorMes = new TreeMap<>();
-
-        for (Historico historia : historias) {
-            String mesAno = formatarMesAno(historia.getCreated());
-
-            // Somar os valores mensais para o mês
-            valoresPorMes.put(mesAno, valoresPorMes.getOrDefault(mesAno, 0.0) + historia.getValorMensal());
-        }
-
-        // Gerar os meses (x) e os valores mensais (y) para o gráfico
-        List<String> meses = new ArrayList<>(valoresPorMes.keySet());
-        List<Double> valoresMensais = new ArrayList<>(valoresPorMes.values());
-
-        mv.addObject("meses", meses);
-        mv.addObject("valoresMensais", valoresMensais);
-
-        return mv;
-    }
-
-    // Método para formatar a data no formato "yyyy-MM"
-    private String formatarMesAno(Date date) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        int mes = cal.get(Calendar.MONTH) + 1; // Meses começam em 0
-        int ano = cal.get(Calendar.YEAR);
-        return String.format("%d-%02d", ano, mes); // Exemplo: "2024-01"
-    }
+    private ParcelasRepository parcelasRepository; // Adicionado para evitar erro
 
     @GetMapping("/Table")
     public ModelAndView table() {
@@ -159,4 +124,18 @@ public class HistoricoController {
 
         return mv;
     }
+
+    @GetMapping("/historico/{id}")
+    public String exibirHistoricoCliente(@PathVariable("id") Long id, Model model) {
+        Clientes cliente = clientRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado para o ID: " + id));
+
+        List<Historico> historicos = historicoRepository.findByCliente(cliente);
+
+        model.addAttribute("cliente", cliente);
+        model.addAttribute("historicos", historicos);
+
+        return "modalHis"; // Nome do arquivo modalHis.html dentro da pasta templates/detalhe/
+    }
+
 }

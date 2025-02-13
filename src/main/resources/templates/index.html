@@ -202,7 +202,7 @@
                             </thead>
                             <tbody>
                             <tr th:each="parcela : ${parcelas}"
-                                th:if="${#dates.format(parcela.dataPagamento, 'dd') == #numbers.formatInteger(dia, 2)}">
+                                th:if="${#dates.format(parcela.dataPagamento, 'MM') == #numbers.formatInteger(dia, 2)}">
                                 <td th:text="${parcela.historico.cliente.nome}"></td>
                                 <td th:text="${parcela.valor}"></td>
                                 <td th:text="${#dates.format(parcela.historico.created, 'dd/MM/yyyy')}"></td>

@@ -8,6 +8,7 @@ import com.shadow.dashboard.repository.NotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -63,47 +64,40 @@ public class ClientService {
 
 
     public Clientes saveClienteAndCreateNotification(Clientes cliente) {
-        // Verifique se os campos obrigatórios estão preenchidos
+        // Validações básicas
         if (cliente.getNome() == null || cliente.getNome().trim().isEmpty()) {
             throw new IllegalArgumentException("O campo 'nome' é obrigatório.");
         }
-
         if (cliente.getCpf() == null || cliente.getCpf().trim().isEmpty()) {
             throw new IllegalArgumentException("O campo 'CPF' é obrigatório.");
         }
 
-        // Verificar se o CPF já existe no banco
+        // Verificar se o CPF já existe
         Optional<Clientes> clienteExistente = clientRepository.findByCpf(cliente.getCpf());
         if (clienteExistente.isPresent()) {
             throw new RuntimeException("O CPF já está cadastrado no sistema.");
         }
 
-        // Salve o cliente no banco de dados
-        clientRepository.save(cliente);
+        // Salvar cliente
+        cliente = clientRepository.save(cliente);
 
-        // Criar a notificação
-        createNotification(cliente);
+        // Criar notificação
+        criarNotificacao(cliente, "✅ Cliente "+ cliente.getNome() +" cadastrado com sucesso!");
 
         return cliente;
     }
 
-    private void createNotification(Clientes cliente) {
-        if (cliente.getId() == null) {
-            System.out.println("ID do cliente é nulo.");
-            return;
-        }
-
-        String message = "Novo cliente cadastrado: " + cliente.getNome();
+    public void criarNotificacao(Clientes cliente, String mensagem) {
+        if (cliente == null || cliente.getId() == null) return;
 
         Notification notification = new Notification();
         notification.setCliente(cliente);
-        notification.setMessage(message);
+        notification.setMessage(mensagem);
+        notification.setCreatedAt(LocalDateTime.now());
+        notification.setRead(false);
 
         notificationRepository.save(notification);
     }
-
-
-
 
 }
 

@@ -83,12 +83,6 @@
                 <span class="text">Analytics</span>
             </a>
         </li>
-        <li>
-            <a href="#">
-                <i class='bx bxs-group' ></i>
-                <span class="text">Team</span>
-            </a>
-        </li>
     </ul>
 </section>
 <!-- SIDEBAR -->
@@ -141,8 +135,8 @@
             </div>
         </div>
 
-        <div class="profile" onclick="toggleSubMenu()">
-            <div class="profile-photo">
+        <div class="profile">
+            <div class="profile-photo" onclick="toggleSubMenu()">
                 <img src="/img/Admin.jpg" alt="" />
             </div>
         </div>
@@ -170,7 +164,7 @@
                 <ul class="breadcrumb">
                     <li><a href="#">Dashboard</a></li>
                     <li><i class='bx bx-chevron-right'></i></li>
-                    <li><a class="active" href="#">Home</a></li>
+                    <li><a class="active" href="#">Analytics</a></li>
                 </ul>
             </div>
         </div>
@@ -206,22 +200,22 @@
             </div>
             <div class="chart-analytcs">
                 <canvas id="barChart"></canvas>
-                
+
                 <!-- Seleção de ano do gráfico de barras -->
                 <div class="ano-navegacao">
                     <form method="get" action="/Analytics">
                         <label for="year-select">Escolha o Ano: </label>
                         <select id="year-select" name="year" onchange="this.form.submit()">
-                            <option th:each="ano : ${anosDisponiveis}" th:value="${ano}" th:text="${ano}" 
+                            <option th:each="ano : ${anosDisponiveis}" th:value="${ano}" th:text="${ano}"
                                     th:selected="${ano == selectedYear}"></option>
                         </select>
                     </form>
                 </div>
                 <!-- Seleção de ano do gráfico de barras -->
 
-                
+
             </div>
-            
+
         </div>
 
         <!-- Botões para modais -->
@@ -237,18 +231,18 @@
         /*<![CDATA[*/
         const meses = /*[[${meses}]]*/ [];
         const valoresMensais = /*[[${valoresMensais}]]*/ [];
-    
-        const sociosNames = /*[[${sociosNames}]]*/ [];  
-        const sociosValues = /*[[${sociosValues}]]*/ [];  
-    
+
+        const sociosNames = /*[[${sociosNames}]]*/ [];
+        const sociosValues = /*[[${sociosValues}]]*/ [];
+
         // Gráfico de Pizza
         const pieChart = new Chart(document.getElementById('pieChart'), {
             type: 'pie',
             data: {
-                labels: sociosNames,  
+                labels: sociosNames,
                 datasets: [{
-                    data: sociosValues,  
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#FF9F40', '#FF5733', '#33FF57', '#3357FF']  
+                    data: sociosValues,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#FF9F40', '#FF5733', '#33FF57', '#3357FF']
                 }]
             },
             options: {
@@ -260,15 +254,15 @@
                 }
             }
         });
-    
+
         // Gráfico de Barras
         const barChart = new Chart(document.getElementById('barChart'), {
             type: 'bar',
             data: {
-                labels: meses, 
+                labels: meses,
                 datasets: [{
                     label: 'Vendas Mensais',
-                    data: valoresMensais, 
+                    data: valoresMensais,
                     backgroundColor: '#36A2EB',
                     barThickness: 20
                 }]

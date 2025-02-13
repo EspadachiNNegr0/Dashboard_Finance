@@ -1,7 +1,9 @@
 package com.shadow.dashboard.controllers;
 
 import com.shadow.dashboard.models.Historico;
+import com.shadow.dashboard.models.Notification;
 import com.shadow.dashboard.repository.HistoricoRepository;
+import com.shadow.dashboard.repository.NotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,7 +18,10 @@ import java.util.List;
 public class AnalyticsController {
 
     @Autowired
-    private HistoricoRepository historicoRepository;
+    private HistoricoRepository historicoRepository; // Correta injeção de dependência
+
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     @GetMapping("/Analytics")
     public String showAnalytics(@RequestParam(value = "year", required = false) Integer selectedYear, Model model) {
@@ -29,18 +34,23 @@ public class AnalyticsController {
 
         List<String> meses = new ArrayList<>();
         List<Double> valoresMensais = new ArrayList<>();
+        List<Notification> notifications = notificationRepository.findAll();
+
+        // Total de notificações
+        int totalNotify = notifications.size();
 
         // Calculando valores mensais
         for (int month = 1; month <= 12; month++) {
             List<Historico> historicos = historicoRepository.findByMonthAndYear(month, selectedYear);
 
             double totalMensal = historicos.stream()
-                                           .mapToDouble(Historico::getValorMensal)
-                                           .sum();
+                    .mapToDouble(Historico::getValorMensal)
+                    .sum();
 
             meses.add(getMonthName(month));
             valoresMensais.add(totalMensal);
         }
+
         // Consultando total de empréstimos por sócio
         List<Object[]> sociosData = historicoRepository.sumLoansBySocio();
         List<String> sociosNames = new ArrayList<>();
@@ -52,6 +62,8 @@ public class AnalyticsController {
         }
 
         model.addAttribute("anosDisponiveis", anosDisponiveis);
+        model.addAttribute("totalNotify", totalNotify);
+        model.addAttribute("notifications", notifications);
         model.addAttribute("selectedYear", selectedYear);
         model.addAttribute("meses", meses);
         model.addAttribute("valoresMensais", valoresMensais);
@@ -63,8 +75,8 @@ public class AnalyticsController {
 
     private String getMonthName(int month) {
         String[] meses = {
-            "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+                "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
         };
         return (month >= 1 && month <= 12) ? meses[month - 1] : "";
     }
