@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,59 +19,53 @@ public class AnalyticsController {
     private HistoricoRepository historicoRepository;
 
     @GetMapping("/Analytics")
-    public String showAnalytics(Model model) {
-        int currentYear = 2024; // usar LocalDate.now().getYear() para pegar o ano atual
+    public String showAnalytics(@RequestParam(value = "year", required = false) Integer selectedYear, Model model) {
+
+        List<Integer> anosDisponiveis = historicoRepository.findDistinctYears();
+
+        if (selectedYear == null) {
+            selectedYear = LocalDate.now().getYear();
+        }
 
         List<String> meses = new ArrayList<>();
         List<Double> valoresMensais = new ArrayList<>();
 
         // Calculando valores mensais
         for (int month = 1; month <= 12; month++) {
-            List<Historico> historicos = historicoRepository.findByMonthAndYear(month, currentYear);
+            List<Historico> historicos = historicoRepository.findByMonthAndYear(month, selectedYear);
 
             double totalMensal = historicos.stream()
-                                           .mapToDouble(Historico::getValorMensal) 
+                                           .mapToDouble(Historico::getValorMensal)
                                            .sum();
 
-            meses.add(getMonthName(month)); // Função para converter número do mês para nome
+            meses.add(getMonthName(month));
             valoresMensais.add(totalMensal);
         }
-
         // Consultando total de empréstimos por sócio
         List<Object[]> sociosData = historicoRepository.sumLoansBySocio();
-
         List<String> sociosNames = new ArrayList<>();
         List<Double> sociosValues = new ArrayList<>();
 
-        // Preenchendo as listas de sócios e valores
         for (Object[] obj : sociosData) {
-            sociosNames.add((String) obj[0]);  
-            sociosValues.add((Double) obj[1]); 
+            sociosNames.add((String) obj[0]);
+            sociosValues.add((Double) obj[1]);
         }
 
+        model.addAttribute("anosDisponiveis", anosDisponiveis);
+        model.addAttribute("selectedYear", selectedYear);
         model.addAttribute("meses", meses);
         model.addAttribute("valoresMensais", valoresMensais);
         model.addAttribute("sociosNames", sociosNames);
         model.addAttribute("sociosValues", sociosValues);
 
-        return "analytics"; 
+        return "analytics";
     }
 
     private String getMonthName(int month) {
-        switch (month) {
-            case 1: return "Janeiro";
-            case 2: return "Fevereiro";
-            case 3: return "Março";
-            case 4: return "Abril";
-            case 5: return "Maio";
-            case 6: return "Junho";
-            case 7: return "Julho";
-            case 8: return "Agosto";
-            case 9: return "Setembro";
-            case 10: return "Outubro";
-            case 11: return "Novembro";
-            case 12: return "Dezembro";
-            default: return "";
-        }
+        String[] meses = {
+            "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+        };
+        return (month >= 1 && month <= 12) ? meses[month - 1] : "";
     }
 }

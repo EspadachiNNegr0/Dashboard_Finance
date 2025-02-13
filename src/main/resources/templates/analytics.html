@@ -206,6 +206,20 @@
             </div>
             <div class="chart-analytcs">
                 <canvas id="barChart"></canvas>
+                
+                <!-- Seleção de ano do gráfico de barras -->
+                <div class="ano-navegacao">
+                    <form method="get" action="/Analytics">
+                        <label for="year-select">Escolha o Ano: </label>
+                        <select id="year-select" name="year" onchange="this.form.submit()">
+                            <option th:each="ano : ${anosDisponiveis}" th:value="${ano}" th:text="${ano}" 
+                                    th:selected="${ano == selectedYear}"></option>
+                        </select>
+                    </form>
+                </div>
+                <!-- Seleção de ano do gráfico de barras -->
+
+                
             </div>
             
         </div>
@@ -224,7 +238,6 @@
         const meses = /*[[${meses}]]*/ [];
         const valoresMensais = /*[[${valoresMensais}]]*/ [];
     
-        // Gráfico de Pizza (Empréstimos por Sócio)
         const sociosNames = /*[[${sociosNames}]]*/ [];  
         const sociosValues = /*[[${sociosValues}]]*/ [];  
     
