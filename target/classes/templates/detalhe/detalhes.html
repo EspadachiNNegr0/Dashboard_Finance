@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="stylesheet" href="/css/detalhes.css">
+    <title>Detalhes do Empréstimo</title>
+</head>
+<body>
+
+<!-- ✅ Exibe mensagens de sucesso ou erro caso existam -->
+<th:block th:if="${success}">
+    <script>
+        alert("[[${success}]]");
+        window.location.href = window.location.href; // Recarrega a página automaticamente
+    </script>
+</th:block>
+
+<th:block th:if="${error}">
+    <script>
+        alert("[[${error}]]");
+    </script>
+</th:block>
+
+<div id="modals-emprestimo" class="modal hide">
+    <div class="modal-content">
+        <div class="modal-headers">
+            <header>Detalhes do Empréstimo</header>
+            <button class="buy" onclick="openReceberModal()">
+                <a>Receber</a>
+            </button>
+            <button class="back">
+                <a href="/Table">Voltar</a>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form action="/editHistorico" method="POST">
+                <input type="hidden" name="_method" value="PUT" />
+                <div class="details-emprestimo">
+                    <div class="fields-group">
+                        <div class="field">
+                            <label>ID:</label>
+                            <input type="text" name="id" th:value="${histori.id}" readonly />
+                        </div>
+                        <div class="field">
+                            <label>Nome do Cliente:</label>
+                            <input type="text" name="cliente" th:value="${histori.cliente.nome}" readonly />
+                        </div>
+                        <div class="field">
+                            <label>Status:</label>
+                            <input type="text" name="status" th:value="${histori.status}" readonly />
+                        </div>
+                    </div>
+                    <div class="fields-group">
+                        <div class="field">
+                            <label>Valor do Empréstimo:</label>
+                            <input type="text" name="price" th:value="${histori.price}" readonly/>
+                        </div>
+                        <div class="field">
+                            <label>Porcentagem:</label>
+                            <input type="text" name="percentage" th:value="${histori.percentage}" readonly />
+                        </div>
+                        <div class="field">
+                            <label>Parceiro:</label>
+                            <input type="text" name="socio" th:value="${histori.socios.name}" readonly />
+                        </div>
+                    </div>
+                    <div class="fields-group">
+                        <div class="field">
+                            <label>Banco:</label>
+                            <input type="text" name="banco" th:value="${histori.banco.nome}" readonly />
+                        </div>
+                        <div class="field">
+                            <label>Descrição:</label>
+                            <input type="text" name="description" th:value="${histori.description}" readonly />
+                        </div>
+                        <div class="field">
+                            <label>Data:</label>
+                            <input type="text" name="created"
+                                   th:value="${histori.created != null ? #dates.format(histori.created, 'dd/MM/yyyy') : 'Data não disponível'}"
+                                   readonly />
+                        </div>
+                        <div class="field">
+                            <label>Data Final:</label>
+                            <input type="text" name="finalDate"
+                                   th:value="${histori.creationF != null ? #dates.format(histori.creationF, 'dd/MM/yyyy') : 'Data não disponível'}"
+                                   readonly />
+                        </div>
+                        <div class="field">
+                            <label>Parcelas Pagas:</label>
+                            <span th:if="${parcelas != null and not #lists.isEmpty(parcelas)}">
+                            <span th:text="${#aggregates.sum(parcelas.![pagas == 1 ? 1 : 0])}"></span> /
+                            <span th:text="${#lists.size(parcelas)}"></span>
+                             </span>
+                            <span th:if="${parcelas == null or #lists.isEmpty(parcelas)}">Nenhuma parcela registrada</span>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ Modal de opções de pagamento -->
+<div id="modal-receber" class="modal-receber hide">
+    <div class="modal-content">
+        <div class="modal-headers">
+            <header>Escolha uma Opção de Pagamento</header>
+            <button class="close" onclick="closeReceberModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form th:action="@{/histori/{id}/pagar-mensal(id=${histori.id})}" method="POST">
+                <input type="hidden" name="id" th:value="${histori.id}" />
+                <button class="option" type="submit">Pagar Mensal (Valor Completo)</button>
+            </form>
+            <form th:action="@{/histori/{id}/pagar-juros(id=${histori.id})}" method="POST">
+                <input type="hidden" name="id" th:value="${histori.id}" />
+                <button class="option" type="submit">Pagar Apenas os Juros</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<h3>Pagamentos Realizados</h3>
+<table class="tabela-historico">
+    <thead>
+    <tr>
+        <th>Data do Pagamento</th>
+        <th>Valor Pago</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="log : ${pagamentos}">
+        <td th:text="${log.dataPagamento != null ? #dates.format(log.dataPagamento, 'dd/MM/yyyy HH:mm') : 'Data não disponível'}"></td>
+        <td th:text="${log.valorPago}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<script>
+    function openReceberModal() {
+        document.getElementById('modal-receber').classList.remove('hide');
+    }
+
+    function closeReceberModal() {
+        document.getElementById('modal-receber').classList.add('hide');
+    }
+</script>
+
+</body>
+</html>

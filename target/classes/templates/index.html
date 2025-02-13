@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp"/>
     <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
     <!-- My CSS -->
-    <link rel="stylesheet" href="./css/index.css">
+    <link rel="stylesheet" href="/css/index.css">
     <title>AdminHub</title>
 </head>
 <body>
@@ -16,7 +16,7 @@
 
 <!-- SIDEBAR -->
 <section id="sidebar">
-    <a href="#" class="brand">
+    <a href="/" class="brand">
         <i class='bx bxs-smile'></i>
         <span class="text">AdminHub</span>
     </a>
@@ -34,37 +34,12 @@
             </a>
         </li>
         <li>
-            <a href="#">
+            <a href="/Analytics">
                 <i class='bx bxs-doughnut-chart' ></i>
                 <span class="text">Analytics</span>
             </a>
         </li>
-        <li>
-            <a href="#">
-                <i class='bx bxs-message-dots' ></i>
-                <span class="text">Message</span>
-            </a>
-        </li>
-        <li>
-            <a href="#">
-                <i class='bx bxs-group' ></i>
-                <span class="text">Team</span>
-            </a>
-        </li>
-    </ul>
-    <ul class="side-menu">
-        <li>
-            <a href="#">
-                <i class='bx bxs-cog' ></i>
-                <span class="text">Settings</span>
-            </a>
-        </li>
-        <li>
-            <a href="#" class="logout">
-                <i class='bx bxs-log-out-circle' ></i>
-                <span class="text">Logout</span>
-            </a>
-        </li>
+
     </ul>
 </section>
 <!-- SIDEBAR -->
@@ -76,43 +51,51 @@
     <!-- NAVBAR -->
     <nav>
         <i class='bx bx-menu' ></i>
-        <form action="#">
-            <div class="form-input">
-                <input type="search" placeholder="Search...">
-                <button type="submit" class="search-btn"><i class='bx bx-search' ></i></button>
-            </div>
-        </form>
-        <input type="checkbox" id="switch-mode" hidden>
-        <label for="switch-mode" class="switch-mode"></label>
+        <div class="search">
+            <form th:action="@{/search}" method="get" >
+                <label for="keyword"></label>
+                <input type="text" id="keyword" name="keyword" placeholder="Digite o nome do cliente">
+                <button type="submit"><span class="material-symbols-sharp">
+                search
+            </span>
+                </button>
+            </form>
+        </div>
 
+        <!-- Botão para abrir o modal de notificações -->
         <div id="open-modal">
             <button class="notification">
                 <span class="material-symbols-sharp">notifications</span>
-                <span class="num">8</span>
+                <span class="num" th:text="${totalNotify}"></span>
             </button>
         </div>
 
+        <!-- Área de fundo (Fade) -->
         <div id="fade" class="hide"></div>
+        <!-- Modal -->
         <div id="modal" class="hide">
             <div class="modal-header">
                 <h2>Notifications</h2>
-                <button id="close-modal"><span class="material-symbols-sharp">
-                    close
-                </span></button>
+                <button id="close-modal">
+                    <span class="material-symbols-sharp">close</span>
+                </button>
             </div>
-            <div class="modal-body">
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                    Fuga quo maiores aspernatur quibusdam ex reprehenderit,
-                    suscipit eligendi ratione ipsum minima veniam iure harum laborum accusantium nulla
-                    quasi? At, doloremque aliquam!</p>
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptates unde harum non!
-                    Recusandae mollitia adipisci dignissimos libero suscipit, temporibus aut ullam
-                    doloribus dicta, error blanditiis distinctio nostrum nobis, voluptate laborum!</p>
+
+            <div class="notify-item" th:each="notification : ${notifications}">
+                <div class="notify_img">
+                    <img src="/img/Admin.jpg" alt="" style="width: 50px;">
+                </div>
+                <div class="notify-info">
+                    <p><span th:text="${notification.message}"></span></p>
+                    <p>
+                        <span class="notify-time" th:text="${#temporals.format(notification.createdAt, 'mm')}"></span> minutes ago.
+                    </p>
+                </div>
             </div>
         </div>
 
-        <div class="profile" onclick="toggleSubMenu()">
-            <div class="profile-photo">
+        <div class="profile">
+            <div class="profile-photo" onclick="toggleSubMenu()">
                 <img src="/img/Admin.jpg" alt="" />
             </div>
         </div>
@@ -123,13 +106,9 @@
                     <h2>Shadow</h2>
                 </div>
                 <hr>
-                <a href="/profile">
-                    <span class="material-symbols-sharp">person</span>
-                    Meu Perfil
-                </a>
-                <a href="/settings">
-                    <span class="material-symbols-sharp">settings</span>
-                    Configurações
+                <a href="/logout">
+                    <span class="material-symbols-sharp">logout</span>
+                    Sair
                 </a>
             </div>
         </div>
@@ -151,32 +130,28 @@
                     </li>
                 </ul>
             </div>
-            <!--            <a href="#" class="btn-download">-->
-            <!--                <i class='bx bxs-cloud-download' ></i>-->
-            <!--                <span class="text">Download PDF</span>-->
-            <!--            </a>-->
         </div>
 
         <ul class="box-info">
             <li>
-                <i class='bx bxs-calendar-check' ></i>
+                <i class='bx bxs-calendar-check'></i>
                 <span class="text">
-						<h3>1020</h3>
-						<p>New Order</p>
-					</span>
+                    <h3 th:text="${emprestimosAtivos}">0</h3>
+                    <p>Empréstimos Ativos</p>
+                </span>
             </li>
             <li>
                 <i class='bx bxs-group' ></i>
                 <span class="text">
-						<h3>2834</h3>
-						<p>Visitors</p>
+						<h3 th:text="${ClientesSize}"></h3>
+						<p>Clientes Cadastrados</p>
 					</span>
             </li>
             <li>
                 <i class='bx bxs-dollar-circle' ></i>
                 <span class="text">
-						<h3>$2543</h3>
-						<p>Total Sales</p>
+						<h3>$<span th:text="${somaDeEmprestimo}"></span></h3>
+						<p>Total de Emprestimos (S/J)</p>
 					</span>
             </li>
         </ul>
@@ -185,77 +160,81 @@
         <div class="table-data">
             <div class="order">
                 <div class="head">
-                    <h3>Recent Orders</h3>
-                    <i class='bx bx-search' ></i>
-                    <i class='bx bx-filter' ></i>
-                </div>
-                <table>
-                    <thead>
-                    <tr>
-                        <th>User</th>
-                        <th>Date Order</th>
-                        <th>juros</th>
-                        <th>Price</th>
-                        <th>Status</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="cliente : ${clientes}">
-                        <td th:text="${cliente.nome}"></td> <!-- Exibe o nome do cliente -->
-                        <td>
-                            <span th:each="historia : ${cliente.history}" th:text="${historia.created} + ' '"></span> <!-- Exibe os preços concatenados -->
-                        </td>
-                        <td>
-                            $<span th:text="${juros}"></span>
-                        </td>
-                        <td>
-                            <span th:each="historia : ${cliente.history}" th:text="${historia.price} + ' '"></span> <!-- Exibe os preços concatenados -->
-                        </td>
-                        <td>
-                            <span th:each="historia : ${cliente.history}" th:text="${historia.status} + ' '"></span> <!-- Exibe os preços concatenados -->
-                        </td>
-                    </tr>
 
-                    </tbody>
-                </table>
-            </div>
-            <div class="todo">
-                <div class="head">
-                    <h3>Todos</h3>
-                    <i class='bx bx-plus' ></i>
-                    <i class='bx bx-filter' ></i>
-                </div>
-                <ul class="todo-list">
+                    <!-- Navegação entre os meses -->
+                    <div class="mes-navegacao">
+                        <form method="get" action="/">
+                            <label for="month-select">Escolha o Mês: </label>
+                            <select id="month-select" name="month" onchange="this.form.submit()">
+                                <option value="1" th:selected="${selectedMonth == 1}">Janeiro</option>
+                                <option value="2" th:selected="${selectedMonth == 2}">Fevereiro</option>
+                                <option value="3" th:selected="${selectedMonth == 3}">Março</option>
+                                <option value="4" th:selected="${selectedMonth == 4}">Abril</option>
+                                <option value="5" th:selected="${selectedMonth == 5}">Maio</option>
+                                <option value="6" th:selected="${selectedMonth == 6}">Junho</option>
+                                <option value="7" th:selected="${selectedMonth == 7}">Julho</option>
+                                <option value="8" th:selected="${selectedMonth == 8}">Agosto</option>
+                                <option value="9" th:selected="${selectedMonth == 9}">Setembro</option>
+                                <option value="10" th:selected="${selectedMonth == 10}">Outubro</option>
+                                <option value="11" th:selected="${selectedMonth == 11}">Novembro</option>
+                                <option value="12" th:selected="${selectedMonth == 12}">Dezembro</option>
+                            </select>
+                        </form>
 
-                    <!-- <li class="completed">
-                        <p>Todo List</p>
-                        <i class='bx bx-dots-vertical-rounded' ></i>
-                    </li>
-                    <li class="completed">
-                        <p>Todo List</p>
-                        <i class='bx bx-dots-vertical-rounded' ></i>
-                    </li>
-                    <li class="not-completed">
-                        <p>Todo List</p>
-                        <i class='bx bx-dots-vertical-rounded' ></i>
-                    </li>
-                    <li class="completed">
-                        <p>Todo List</p>
-                        <i class='bx bx-dots-vertical-rounded' ></i>
-                    </li>
-                    <li class="not-completed">
-                        <p>Todo List</p>
-                        <i class='bx bx-dots-vertical-rounded' ></i>
-                    </li> -->
-                </ul>
+                    </div>
+
+                </div>
+
+                <!-- Tabela de Dados dos Históricos -->
+                <!-- Tabela de Dados dos Históricos -->
+                <div class="tabelas-mes">
+                    <div th:each="dia : ${#numbers.sequence(1, 31)}">
+                    <h3 th:text="|Dia ${dia}|"></h3>
+                    <table class="tabela-historico">
+                            <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Valor Mensal</th>
+                                <th>Dia do Empréstimo</th>
+                                <th>Datas de Pagamento</th>
+                                <th>Status</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="parcela : ${parcelas}"
+                                th:if="${#dates.format(parcela.dataPagamento, 'dd') == #numbers.formatInteger(dia, 2)}">
+                                <td th:text="${parcela.historico.cliente.nome}"></td>
+                                <td th:text="${parcela.valor}"></td>
+                                <td th:text="${#dates.format(parcela.historico.created, 'dd/MM/yyyy')}"></td>
+                                <td th:text="${#dates.format(parcela.dataPagamento, 'dd/MM/yyyy')}"></td>
+                                <td>
+                                    <span th:if="${parcela.pagas == -1}" style="color: red;">PENDENTE</span>
+                                    <span th:if="${parcela.pagas > 0}" style="color: green;">PAGO</span>
+                                    <span th:if="${parcela.pagas == 0}" style="color: orange;">A PAGAR</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        <tfoot>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Valor Mensal</th>
+                                <th>Dia do Empréstimo</th>
+                                <th>Datas de Pagamento</th>
+                                <th>Status</th>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
             </div>
+
         </div>
-    </main>
-    <!-- MAIN -->
-</section>
-<!-- CONTENT -->
 
+    </main>
+</section>
 
 <script src="/js/script.js"></script>
+
+
 </body>
 </html>

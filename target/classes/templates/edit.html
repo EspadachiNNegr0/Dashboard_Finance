@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="stylesheet" href="/css/detalhes.css">
+    <title>Detalhes do Empréstimo</title>
+</head>
+<body>
+<div id="modals-emprestimo" class="modal hide">
+    <div class="modal-content">
+        <div class="modal-headers">
+            <header>Detalhes do Empréstimo</header>
+            <button>
+                <a href="/">Voltar</a>
+            </button>
+        </div>
+        <div class="modal-body">
+            <!-- Iniciar o formulário com método POST -->
+            <form action="/editHistorico" method="POST">
+                <input type="hidden" name="_method" value="PUT" />
+                <div class="details-emprestimo">
+                    <div class="fields">
+                        <p><strong>ID:</strong>
+                            <input type="text" name="id" th:value="${histori.id}" readonly />
+                        </p>
+                        <p><strong>Nome do Cliente:</strong>
+                            <select name="cliente" required>
+                                <option th:each="cliente : ${clientes}"
+                                        th:value="${cliente.id}"
+                                        th:text="${cliente.nome}"
+                                        th:selected="${cliente.id == histori.cliente.id}">Cliente</option>
+                            </select>
+                        </p>
+                        <p><strong>Status:</strong>
+                            <input type="text" name="status" th:value="${histori.status}" readonly />
+                        </p>
+                        <p><strong>Valor do Empréstimo:</strong>
+                            <input type="text" name="price" th:value="${histori.price}" />
+                        </p>
+                        <p><strong>Porcentagem:</strong>
+                            <input type="text" name="status" th:value="${histori.percentage}" readonly />
+                        </p>
+                        <p><strong>Parceiro:</strong>
+                            <input type="text" name="status" th:value="${histori.socios.name}" readonly />
+                        </p>
+                        <p><strong>Banco:</strong>
+                            <input type="text" name="status" th:value="${histori.banco.nome}" readonly />
+                        </p>
+                        <p><strong>description:</strong>
+                            <input type="text" name="status" th:value="${histori.description}" readonly />
+                        </p>
+                        <p><strong>Data:</strong>
+                            <input type="text" name="status" th:value="${histori.created}" readonly />
+                        </p>
+                        <button type="submit">Salvar</button>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>
