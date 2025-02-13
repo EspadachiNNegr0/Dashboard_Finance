@@ -11,9 +11,6 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    private Clientes cliente;
-
     @Column(nullable = false)
     private String message;
 
@@ -54,13 +51,5 @@ public class Notification {
 
     public void setRead(boolean isRead) {
         this.isRead = isRead;
-    }
-
-    public Clientes getCliente() {
-        return cliente;
-    }
-
-    public void setCliente(Clientes cliente) {
-        this.cliente = cliente;
     }
 }

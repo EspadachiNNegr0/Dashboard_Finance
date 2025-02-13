@@ -163,7 +163,6 @@ public class HistoricoService {
                 " com juros de " + historico.getPercentage() + "%.";
 
         Notification notification = new Notification();
-        notification.setCliente(cliente);
         notification.setMessage(message);
         notification.setCreatedAt(LocalDateTime.now());
 
@@ -204,7 +203,6 @@ public class HistoricoService {
         }
 
         Notification notification = new Notification();
-        notification.setCliente(historico.getCliente());
         notification.setMessage("📢 " + tipoPagamento + (valorPago > 0 ? " de R$ " + valorPago : "")
                 + " registrado para o empréstimo #" + historico.getId()
                 + " do cliente " + historico.getCliente().getNome() + ".");
@@ -355,7 +353,6 @@ public class HistoricoService {
         if (cliente == null) return;
 
         Notification notificacao = new Notification();
-        notificacao.setCliente(cliente);
         notificacao.setMessage(mensagem);
         notificacao.setCreatedAt(LocalDateTime.now());
         notificacao.setRead(false);

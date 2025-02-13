@@ -7,19 +7,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (addButton && modalAdd && closeAddModalButton) {
         addButton.addEventListener("click", () => {
-            modalAdd.classList.remove("hide");
             modalAdd.classList.add("show");
+            modalAdd.classList.remove("hide");
         });
 
         closeAddModalButton.addEventListener("click", () => {
-            modalAdd.classList.remove("show");
             modalAdd.classList.add("hide");
+            modalAdd.classList.remove("show");
         });
 
         modalAdd.addEventListener("click", (event) => {
             if (event.target === modalAdd) {
-                modalAdd.classList.remove("show");
                 modalAdd.classList.add("hide");
+                modalAdd.classList.remove("show");
             }
         });
     }
@@ -32,18 +32,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (openModalButton && modalNotification && fade && closeModalButton) {
         openModalButton.addEventListener("click", function () {
+            modalNotification.classList.add("show");
             modalNotification.classList.remove("hide");
+            fade.classList.add("show");
             fade.classList.remove("hide");
         });
 
         closeModalButton.addEventListener("click", function () {
             modalNotification.classList.add("hide");
+            modalNotification.classList.remove("show");
             fade.classList.add("hide");
+            fade.classList.remove("show");
         });
 
         fade.addEventListener("click", function () {
             modalNotification.classList.add("hide");
+            modalNotification.classList.remove("show");
             fade.classList.add("hide");
+            fade.classList.remove("show");
         });
     } else {
         console.error("❌ Elementos do modal de notificações não encontrados!");
@@ -56,19 +62,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (addClienteButton && modalCliente && closeClienteButton) {
         addClienteButton.addEventListener("click", () => {
-            modalCliente.classList.remove("hide");
             modalCliente.classList.add("show");
+            modalCliente.classList.remove("hide");
         });
 
         closeClienteButton.addEventListener("click", () => {
-            modalCliente.classList.remove("show");
             modalCliente.classList.add("hide");
+            modalCliente.classList.remove("show");
         });
 
         modalCliente.addEventListener("click", (event) => {
             if (event.target === modalCliente) {
-                modalCliente.classList.remove("show");
                 modalCliente.classList.add("hide");
+                modalCliente.classList.remove("show");
             }
         });
     }
@@ -78,15 +84,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const subMenu = document.getElementById("subMenu");
 
     if (profile && subMenu) {
-        // Evento de clique no perfil para abrir/fechar o submenu
         profile.addEventListener("click", function (event) {
-            event.stopPropagation(); // Evita fechamento imediato
+            event.stopPropagation();
             subMenu.classList.toggle("show");
-
-            console.log("🔹 Submenu status:", subMenu.classList.contains("show")); // 🔹 Debug no console
         });
 
-        // Evento para fechar o submenu ao clicar fora dele
         document.addEventListener("click", function (event) {
             if (!profile.contains(event.target) && !subMenu.contains(event.target)) {
                 subMenu.classList.remove("show");
@@ -96,42 +98,7 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error("❌ Elemento 'profile' ou 'subMenu' não encontrado!");
     }
 
-});
-
-// =================== FUNÇÃO GERAL PARA O SUBMENU ===================
-function toggleSubMenu() {
-    const subMenu = document.getElementById("subMenu");
-    if (subMenu) {
-        subMenu.classList.toggle("show");
-    } else {
-        console.error("❌ Elemento 'subMenu' não encontrado!");
-    }
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-    const profile = document.querySelector(".profile");
-    const subMenu = document.getElementById("subMenu");
-
-    if (profile && subMenu) {
-        // Evento de clique no perfil para abrir/fechar o submenu
-        profile.addEventListener("click", function (event) {
-            event.stopPropagation(); // Evita fechamento imediato
-            subMenu.classList.toggle("show");
-
-            console.log("🔹 Submenu status:", subMenu.classList.contains("show")); // 🔹 Debug no console
-        });
-
-        // Evento para fechar o submenu ao clicar fora dele
-        document.addEventListener("click", function (event) {
-            if (!profile.contains(event.target) && !subMenu.contains(event.target)) {
-                subMenu.classList.remove("show");
-            }
-        });
-    } else {
-        console.error("❌ Elemento 'profile' ou 'subMenu' não encontrado!");
-    }
-});
-document.addEventListener("DOMContentLoaded", function () {
+    // =================== PAGAMENTO DE PARCELA ===================
     document.querySelectorAll(".pagar-parcela").forEach(button => {
         button.addEventListener("click", function () {
             const parcelaId = this.getAttribute("data-id");
@@ -142,11 +109,78 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(response => response.text())
                 .then(message => {
                     alert(message);
-                    location.reload(); // 🔄 Atualiza a página para refletir a mudança no status
+                    location.reload();
                 })
                 .catch(error => console.error("Erro ao pagar parcela:", error));
         });
     });
+
+    // =================== MODAL LISTA DE CLIENTES ===================
+    const clientsListWindow = document.getElementById('clientsListWindow');
+    const openClientsButton = document.getElementById('openClientsModal');
+    const closeClientsButton = document.getElementById('closeClientsList');
+
+    if (clientsListWindow && openClientsButton && closeClientsButton) {
+        openClientsButton.addEventListener('click', () => {
+            clientsListWindow.style.display = 'block';
+        });
+
+        closeClientsButton.addEventListener('click', () => {
+            clientsListWindow.style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === clientsListWindow) {
+                clientsListWindow.style.display = 'none';
+            }
+        });
+    }
+
+    // =================== MODAL LISTA DE SÓCIOS ===================
+    const sociosListWindow = document.getElementById('sociosListWindow');
+    const openSociosButton = document.getElementById('openEmployeesModal');
+    const closeSociosButton = document.getElementById('closeSociosList');
+
+    if (sociosListWindow && openSociosButton && closeSociosButton) {
+        openSociosButton.addEventListener('click', () => {
+            sociosListWindow.style.display = 'block';
+        });
+
+        closeSociosButton.addEventListener('click', () => {
+            sociosListWindow.style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === sociosListWindow) {
+                sociosListWindow.style.display = 'none';
+            }
+        });
+    }
+
+    // ================= MODAL DE ADICIONAR FUNCIONÁRIO =================
+    const openModalFuncionario = document.getElementById("openAddFuncionario");
+    const closeModalFuncionario = document.getElementById("closeAddFuncionario");
+    const modalFuncionario = document.getElementById("modal-add-funcionario");
+
+    if (openModalFuncionario && closeModalFuncionario && modalFuncionario) {
+        openModalFuncionario.addEventListener("click", function () {
+            modalFuncionario.classList.add("show");
+            modalFuncionario.classList.remove("hide");
+        });
+
+        closeModalFuncionario.addEventListener("click", function () {
+            modalFuncionario.classList.add("hide");
+            modalFuncionario.classList.remove("show");
+        });
+
+        window.addEventListener("click", function (event) {
+            if (event.target === modalFuncionario) {
+                modalFuncionario.classList.add("hide");
+                modalFuncionario.classList.remove("show");
+            }
+        });
+    } else {
+        console.error("❌ Elementos do modal de funcionário não foram encontrados!");
+    }
+
 });
-
-

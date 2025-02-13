@@ -1,41 +1,32 @@
 package com.shadow.dashboard.controllers;
 
 import com.shadow.dashboard.models.Clientes;
-import com.shadow.dashboard.repository.ClientRepository;
 import com.shadow.dashboard.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
-@RestController
+@Controller
 @RequestMapping("/clientes")
 public class ClientController {
 
     @Autowired
     private ClientService clientService;
 
-    @Autowired
-    private ClientRepository clientRepository;
-
-    @PostMapping
-    public ResponseEntity<Map<String, String>> adicionarCliente(@RequestBody Clientes cliente) {
-        Map<String, String> response = new HashMap<>();
-
-        // Verifica se o CPF já existe no banco de dados
-        Optional<Clientes> clienteExistente = clientRepository.findByCpf(cliente.getCpf());
-        if (clienteExistente.isPresent()) {
-            response.put("message", "Erro: CPF já cadastrado no sistema.");
-            return ResponseEntity.badRequest().body(response);
+    @PostMapping("/adicionar")
+    public String adicionarCliente(@ModelAttribute Clientes cliente, RedirectAttributes redirectAttributes) {
+        try {
+            // Salva o cliente no banco e cria uma notificação
+            clientService.saveClienteAndCreateNotification(cliente);
+            redirectAttributes.addFlashAttribute("success", "✅ Cliente"+ cliente.getNome() +" cadastrado com sucesso!");
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("error", "❌ " + e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "❌ Erro interno ao cadastrar cliente.");
         }
 
-        // Se o CPF não existir, salva o cliente e cria a notificação
-        clientService.saveClienteAndCreateNotification(cliente);
-        response.put("message", "Cliente cadastrado com sucesso!");
-
-        return ResponseEntity.ok(response);
+        // Redireciona para a mesma página para exibir as mensagens no modal
+        return "redirect:/Table";
     }
 }

@@ -54,6 +54,46 @@
         background-color: #2587cc;
         transform: scale(1.05); /* Efeito de zoom */
     }
+
+    .window {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 65%;
+        background: #f9f9f9;
+        border-radius: 10px;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+        z-index: 1000;
+        padding: 20px;
+        display: none;
+    }
+    .window-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+    }
+    .close-button {
+        font-size: 22px;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
+    table th, table td {
+        padding: 12px;
+        border-bottom: 1px solid #ccc;
+        text-align: center;
+    }
+    table th {
+        background-color: #e0e0e0;
+    }
 </style>
 
 <body>
@@ -81,12 +121,6 @@
             <a href="/Analytics">
                 <i class='bx bxs-doughnut-chart' ></i>
                 <span class="text">Analytics</span>
-            </a>
-        </li>
-        <li>
-            <a href="#">
-                <i class='bx bxs-group' ></i>
-                <span class="text">Team</span>
             </a>
         </li>
     </ul>
@@ -119,30 +153,39 @@
 
         <!-- Área de fundo (Fade) -->
         <div id="fade" class="hide"></div>
+
         <!-- Modal -->
-        <div id="modal" class="hide">
+        <div id="modal" class="modal-container">
             <div class="modal-header">
-                <h2>Notifications</h2>
+                <h2>Notificações</h2>
                 <button id="close-modal">
                     <span class="material-symbols-sharp">close</span>
                 </button>
             </div>
 
-            <div class="notify-item" th:each="notification : ${notifications}">
-                <div class="notify_img">
-                    <img src="/img/Admin.jpg" alt="" style="width: 50px;">
+            <!-- Área que terá scroll -->
+            <div class="modal-body">
+                <div class="notify-item" th:each="notification : ${notifications}">
+                    <div class="notify_img">
+                        <img src="/img/Admin.jpg" alt="" style="width: 50px;">
+                    </div>
+                    <div class="notify-info">
+                        <p><span th:text="${notification.message}"></span></p>
+                        <p>
+                            <span class="notify-time" th:text="${#temporals.format(notification.createdAt, 'mm')}"></span> minutos atrás.
+                        </p>
+                    </div>
                 </div>
-                <div class="notify-info">
-                    <p><span th:text="${notification.message}"></span></p>
-                    <p>
-                        <span class="notify-time" th:text="${#temporals.format(notification.createdAt, 'mm')}"></span> minutes ago.
-                    </p>
-                </div>
+            </div>
+
+            <!-- Botão para limpar notificações -->
+            <div class="modal-footer">
+                <button id="clear-notifications">Limpar Notificações</button>
             </div>
         </div>
 
-        <div class="profile" onclick="toggleSubMenu()">
-            <div class="profile-photo">
+        <div class="profile">
+            <div class="profile-photo" onclick="toggleSubMenu()">
                 <img src="/img/Admin.jpg" alt="" />
             </div>
         </div>
@@ -170,7 +213,7 @@
                 <ul class="breadcrumb">
                     <li><a href="#">Dashboard</a></li>
                     <li><i class='bx bx-chevron-right'></i></li>
-                    <li><a class="active" href="#">Home</a></li>
+                    <li><a class="active" href="#">Analytics</a></li>
                 </ul>
             </div>
         </div>
@@ -206,30 +249,86 @@
             </div>
             <div class="chart-analytcs">
                 <canvas id="barChart"></canvas>
-                
+
                 <!-- Seleção de ano do gráfico de barras -->
                 <div class="ano-navegacao">
                     <form method="get" action="/Analytics">
                         <label for="year-select">Escolha o Ano: </label>
                         <select id="year-select" name="year" onchange="this.form.submit()">
-                            <option th:each="ano : ${anosDisponiveis}" th:value="${ano}" th:text="${ano}" 
+                            <option th:each="ano : ${anosDisponiveis}" th:value="${ano}" th:text="${ano}"
                                     th:selected="${ano == selectedYear}"></option>
                         </select>
                     </form>
                 </div>
                 <!-- Seleção de ano do gráfico de barras -->
 
-                
+
             </div>
-            
+
         </div>
 
         <!-- Botões para modais -->
         <div class="buttons">
             <button id="openClientsModal" class="btn-modais">Clientes Cadastrados</button>
+            <!-- Modal Integrado ao Analytics -->
+            <div id="clientsListWindow" class="window">
+                <div class="window-header">
+                    <h2>Clientes Cadastrados</h2>
+                    <button id="closeClientsList" class="close-button">&times;</button>
+                </div>
+                <div class="window-body">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>CPF</th>
+                            <th>Contato</th>
+                            <th>Endereço</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="cliente : ${clientes}">
+                            <td th:text="${cliente.id}"></td>
+                            <td th:text="${cliente.nome}"></td>
+                            <td th:text="${cliente.cpf}"></td>
+                            <td th:text="${cliente.contato}"></td>
+                            <td th:text="${cliente.endereco}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
             <button id="openEmployeesModal" class="btn-modais">Funcionários Cadastrados</button>
+            <div id="sociosListWindow" class="window">
+                <div class="window-header">
+                    <h2>Funcionários Cadastrados</h2>
+                    <button id="closeSociosList" class="close-button">&times;</button>
+                </div>
+                <div class="window-body">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Endereço</th>
+                            <th>Idade</th>
+                            <th>Telefone</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="socio : ${socios}">
+                            <td th:text="${socio.id}"></td>
+                            <td th:text="${socio.name}"></td>
+                            <td th:text="${socio.address}"></td>
+                            <td th:text="${socio.age}"></td>
+                            <td th:text="${socio.phone}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -237,18 +336,18 @@
         /*<![CDATA[*/
         const meses = /*[[${meses}]]*/ [];
         const valoresMensais = /*[[${valoresMensais}]]*/ [];
-    
-        const sociosNames = /*[[${sociosNames}]]*/ [];  
-        const sociosValues = /*[[${sociosValues}]]*/ [];  
-    
+
+        const sociosNames = /*[[${sociosNames}]]*/ [];
+        const sociosValues = /*[[${sociosValues}]]*/ [];
+
         // Gráfico de Pizza
         const pieChart = new Chart(document.getElementById('pieChart'), {
             type: 'pie',
             data: {
-                labels: sociosNames,  
+                labels: sociosNames,
                 datasets: [{
-                    data: sociosValues,  
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#FF9F40', '#FF5733', '#33FF57', '#3357FF']  
+                    data: sociosValues,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#FF9F40', '#FF5733', '#33FF57', '#3357FF']
                 }]
             },
             options: {
@@ -260,15 +359,15 @@
                 }
             }
         });
-    
+
         // Gráfico de Barras
         const barChart = new Chart(document.getElementById('barChart'), {
             type: 'bar',
             data: {
-                labels: meses, 
+                labels: meses,
                 datasets: [{
                     label: 'Vendas Mensais',
-                    data: valoresMensais, 
+                    data: valoresMensais,
                     backgroundColor: '#36A2EB',
                     barThickness: 20
                 }]

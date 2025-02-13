@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/modalHis.css">
+    <title>Histórico de Cliente</title>
+</head>
+<body>
+<div class="container">
+    <div class="modal-body">
+        <!-- Lado esquerdo com informações do cliente -->
+        <div class="modal-left-side">
+            <div class="perfil-image">
+                <img src="/img/Admin.jpg" alt="" class="img-placeholder">
+            </div>
+            <div class="data-clients">
+                <span class="span-modal"><strong>Nome:</strong> <span th:text="${cliente.nome}"></span></span>
+                <span class="span-modal"><strong>CPF:</strong> <span th:text="${cliente.cpf}"></span></span>
+                <span class="span-modal"><strong>Contato:</strong> <span th:text="${cliente.contato}"></span></span>
+                <span class="span-modal"><strong>Endereço:</strong> <span th:text="${cliente.endereco}"></span></span>
+            </div>
+        </div>
+
+        <!-- Lado direito com histórico -->
+        <div class="modal-right-side">
+            <h2 id="title-modal-historico">Histórico</h2>
+            <div class="table-container">
+                <table class="history-table">
+                    <thead>
+                    <tr>
+                        <th>Valor</th>
+                        <th>Parcelas</th>
+                        <th>Data</th>
+                        <th>Porcentagem</th>
+                        <th>Código</th>
+                        <th>Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="historico : ${historicos}">
+                        <td th:text="${historico.price}"></td>
+                        <td th:text="${historico.parcelamento} + 'x'"></td>
+                        <td th:text="${#dates.format(historico.created, 'dd/MM/yyyy')}"></td>
+                        <td th:text="${historico.percentage} + '%'"></td>
+                        <td th:text="${historico.id}"></td>
+                        <td th:text="${historico.status}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Botão de fechar modal -->
+        <button class="close-button" onclick="window.location.href='/Table'">X</button>
+
+    </div>
+</div>
+
+</body>
+</html>

@@ -683,6 +683,7 @@ body {
 #modal .modal-header button {
     padding: 0px 0px 0px;
     background-color: #888;
+    margin-left: 10px;
     color: #fff;
     border: none;
     border-radius: 100px;
@@ -695,29 +696,37 @@ body {
     opacity: 1;
 }
 
-#fade{
+#fade {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.6);
-    z-index: 1;
+    z-index: 999;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
-#modal{
+
+#modal {
     position: fixed;
-    left: 50%;
     top: 50%;
+    left: 50%;
     transform: translate(-50%, -50%);
-    width: 500px;
-    padding: 1.2rem;
+    width: 450px;
+    max-height: 600px;
+    background-color: white;
     border-radius: 10px;
-    background-color: var(--light);
-    color: var(--dark);
-    z-index: 10;
-    max-width: 100%;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    display: none; /* Ocultar inicialmente */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 1000;
 }
+
 
 #fade,
 #modal {
@@ -732,6 +741,7 @@ body {
     margin: 140px;
     margin-top: -2px;
     justify-content: space-between;
+    background-color: #969595;
     align-items: center;
     border-bottom: 1px solid #ccc;
     margin-bottom: 1rem;
@@ -773,6 +783,11 @@ body {
     top: 0;
 }
 
+#fade.show {
+    display: block;
+    opacity: 1;
+}
+
 .table-data  .add{
     padding: 10px;
     background-color: var(--blue);
@@ -801,6 +816,18 @@ body {
 .table-data .addC {
     padding: 10px;
     background-color: var(--light-yellow);
+    margin-right: 20px;
+    color: var(--dark);
+    border: none;
+    border-radius: 1000px;
+    cursor: pointer;
+    opacity: .9;
+    font-size: 1rem;
+}
+
+.table-data .addF {
+    padding: 10px;
+    background-color: #85ca85;
     margin-right: 20px;
     color: var(--dark);
     border: none;
@@ -892,7 +919,8 @@ body {
     color: var(--dark);
 }
 
-.modal.show {
+#modal.show {
+    display: block;
     opacity: 1;
     visibility: visible;
 }
@@ -1471,10 +1499,6 @@ h3 {
     display: flex;
 }
 
-.hide {
-    display: none;
-}
-
 /* Estilo do Modal */
 .modal-filtro {
     position: fixed;
@@ -1704,98 +1728,304 @@ h3 {
     text-align: center;
 }
 
+/* ===================== MODAL DE FUNCIONÁRIO ===================== */
+#modal-add-funcionario {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 450px;
+    background: var(--light);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: none; /* 🔹 Agora começa oculto */
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    opacity: 0;
+    visibility: hidden;
+}
 
+#modal-add-funcionario.show {
+    display: block;
+    opacity: 1;
+    visibility: visible;
+}
 
-/* Responsividade */
-@media (max-width: 768px) {
-    .todo {
-        margin: 10px;
-    }
+#modal-add-funcionario.hide {
+    display: none;
+    opacity: 0;
+    visibility: hidden;
+}
 
-    table, thead, tbody, th, td, tr {
-        display: block;
-    }
+#modal-add-funcionario .window-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--lights);
+}
 
-    th {
-        background-color: #f4f4f4;
-    }
+#modal-add-funcionario .window-header h2 {
+    font-family: var(--poppins);
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--dark);
+}
 
-    td {
-        padding-left: 40%;
-    }
+#modal-add-funcionario .close-button {
+    font-size: 22px;
+    background: transparent;
+    border: none;
+    color: var(--dark);
+    cursor: pointer;
+    transition: color 0.2s;
+}
 
-    td:before {
-        content: attr(data-title);
-        font-weight: bold;
-        text-transform: uppercase;
-        position: absolute;
-        left: 0;
-    }
+#modal-add-funcionario .close-button:hover {
+    color: var(--red);
+}
+
+.input-field-clientes label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--dark);
+    display: block;
+}
+
+.input-field-clientes input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid var(--lights);
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.input-field-clientes input:focus {
+    border-color: var(--blue);
+    outline: none;
+}
+
+#btnSaveFuncionario {
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: bold;
+    font-family: var(--poppins);
+    color: var(--light);
+    background-color: var(--blue);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+#btnSaveFuncionario:hover {
+    background-color: #2a7bbd;
+}
+
+#clear-notifications {
+    background: red;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 6px
+}
+
+.modal-container {
+    width: 350px;
+    max-height: 500px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #ccc;
+}
+
+.modal-header {
+    padding: 15px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-body {
+    max-height: 380px;
+    overflow-y: scroll;
+    padding: 10px;
+    background-color: #fafafa;
+}
+
+/* Scroll Customizado */
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 10px;
+}
+
+.notify-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+}
+
+.notify-item:hover {
+    background-color: #f0f0f0;
+}
+
+.notify_img img {
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.modal-footer {
+    padding: 15px;
+    background-color: #f1f1f1;
+    border-top: 1px solid #ccc;
+    text-align: center;
 }
 
 
-
-@media screen and (max-width: 768px) {
-    #sidebar {
-        width: 200px;
-    }
-
-    #content {
-        width: calc(100% - 60px);
-        left: 200px;
-    }
-
-    #content nav .nav-link {
-        display: none;
-    }
+/* ===================== ESTILOS DO BOTÃO DE ABRIR MODAL ===================== */
+.addF {
+    padding: 10px;
+    background-color: #85ca85;
+    margin-right: 20px;
+    color: var(--dark);
+    border: none;
+    border-radius: 1000px;
+    cursor: pointer;
+    opacity: .9;
+    font-size: 1rem;
 }
 
+.addF:hover {
+    opacity: 1;
 
-
-
-
-
-@media screen and (max-width: 576px) {
-    #content nav form .form-input input {
-        display: none;
+    .modal-footer {
+        padding: 10px;
+        text-align: center;
+        border-top: 1px solid #ddd;
+        background: #f9f9f9;
     }
 
-    #content nav form .form-input button {
-        width: auto;
-        height: auto;
-        background: transparent;
-        color: var(--dark);
+    #clear-notifications {
+        background: red;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        font-size: 14px;
+        cursor: pointer;
+        border-radius: 5px;
+        margin-top: 6px
     }
 
-    #content nav form.show .form-input input {
-        display: block;
-        width: 100%;
-    }
-    #content nav form.show .form-input button {
-        width: 36px;
-        height: 100%;
-        border-radius: 0 36px 36px 0;
-        color: var(--light);
-        background: var(--red);
+    #clear-notifications:hover {
+        background: darkred;
     }
 
-    #content nav form.show ~ .notification,
-    #content nav form.show ~ .profile {
-        display: none;
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .todo {
+            margin: 10px;
+        }
+
+        table, thead, tbody, th, td, tr {
+            display: block;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        td {
+            padding-left: 40%;
+        }
+
+        td:before {
+            content: attr(data-title);
+            font-weight: bold;
+            text-transform: uppercase;
+            position: absolute;
+            left: 0;
+        }
     }
 
-    #content main .box-info {
-        grid-template-columns: 1fr;
+
+    @media screen and (max-width: 768px) {
+        #sidebar {
+            width: 200px;
+        }
+
+        #content {
+            width: calc(100% - 60px);
+            left: 200px;
+        }
+
+        #content nav .nav-link {
+            display: none;
+        }
     }
 
-    #content main .table-data .head {
-        min-width: 420px;
-    }
-    #content main .table-data .order table {
-        min-width: 420px;
-    }
-    #content main .table-data .todo .todo-list {
-        min-width: 420px;
-    }
 
+    @media screen and (max-width: 576px) {
+        #content nav form .form-input input {
+            display: none;
+        }
+
+        #content nav form .form-input button {
+            width: auto;
+            height: auto;
+            background: transparent;
+            color: var(--dark);
+        }
+
+        #content nav form.show .form-input input {
+            display: block;
+            width: 100%;
+        }
+
+        #content nav form.show .form-input button {
+            width: 36px;
+            height: 100%;
+            border-radius: 0 36px 36px 0;
+            color: var(--light);
+            background: var(--red);
+        }
+
+        #content nav form.show ~ .notification,
+        #content nav form.show ~ .profile {
+            display: none;
+        }
+
+        #content main .box-info {
+            grid-template-columns: 1fr;
+        }
+
+        #content main .table-data .head {
+            min-width: 420px;
+        }
+
+        #content main .table-data .order table {
+            min-width: 420px;
+        }
+
+        #content main .table-data .todo .todo-list {
+            min-width: 420px;
+        }
+
+    }
 }
