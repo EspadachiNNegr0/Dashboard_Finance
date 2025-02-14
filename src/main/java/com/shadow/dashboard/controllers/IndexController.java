@@ -153,7 +153,11 @@ public class IndexController {
             }
 
             parcela.setPagas(1);
+            parcela.setStatus("PAGO");
             parcelasRepository.save(parcela);
+
+            // ✅ Ajuste de status atualizado corretamente
+            historicoService.atualizarStatusParcelaPaga(id, valorPago);
 
             historicoService.criarNotificacao(historico, valorPago, "Pagamento da Parcela");
 
@@ -162,6 +166,7 @@ public class IndexController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("❌ Erro: " + e.getMessage());
         }
     }
+
 
     @PostMapping("/histori/{id}/pagar-mensal")
     public String pagarParcela(@PathVariable Long id, RedirectAttributes redirectAttributes) {

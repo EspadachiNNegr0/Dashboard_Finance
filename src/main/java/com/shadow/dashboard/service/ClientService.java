@@ -91,7 +91,6 @@ public class ClientService {
         if (cliente == null || cliente.getId() == null) return;
 
         Notification notification = new Notification();
-        notification.setCliente(cliente);
         notification.setMessage(mensagem);
         notification.setCreatedAt(LocalDateTime.now());
         notification.setRead(false);

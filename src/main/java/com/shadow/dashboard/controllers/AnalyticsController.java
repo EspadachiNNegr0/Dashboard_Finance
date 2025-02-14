@@ -1,9 +1,13 @@
 package com.shadow.dashboard.controllers;
 
-import com.shadow.dashboard.models.Historico;
+import com.shadow.dashboard.models.Clientes;
 import com.shadow.dashboard.models.Notification;
+import com.shadow.dashboard.models.Parcelas;
+import com.shadow.dashboard.repository.ClientRepository;
 import com.shadow.dashboard.repository.HistoricoRepository;
 import com.shadow.dashboard.repository.NotificationRepository;
+import com.shadow.dashboard.repository.ParcelasRepository;
+import com.shadow.dashboard.repository.SociosRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,16 +22,24 @@ import java.util.List;
 public class AnalyticsController {
 
     @Autowired
-    private HistoricoRepository historicoRepository; // Correta injeção de dependência
+    private HistoricoRepository historicoRepository;
+
+    @Autowired
+    private ParcelasRepository parcelasRepository;
 
     @Autowired
     private NotificationRepository notificationRepository;
 
+    @Autowired
+    private ClientRepository clientRepository;
+
+    @Autowired
+    private SociosRepository sociosRepository;
+
     @GetMapping("/Analytics")
     public String showAnalytics(@RequestParam(value = "year", required = false) Integer selectedYear, Model model) {
 
-        List<Integer> anosDisponiveis = historicoRepository.findDistinctYears();
-
+        List<Integer> anosDisponiveis = parcelasRepository.findDistinctYears();
         if (selectedYear == null) {
             selectedYear = LocalDate.now().getYear();
         }
@@ -35,43 +47,46 @@ public class AnalyticsController {
         List<String> meses = new ArrayList<>();
         List<Double> valoresMensais = new ArrayList<>();
         List<Notification> notifications = notificationRepository.findAll();
+        List<Clientes> clientes = clientRepository.findAll();
 
-        // Total de notificações
-        int totalNotify = notifications.size();
-
-        // Calculando valores mensais
-        for (int month = 1; month <= 12; month++) {
-            List<Historico> historicos = historicoRepository.findByMonthAndYear(month, selectedYear);
-
-            double totalMensal = historicos.stream()
-                    .mapToDouble(Historico::getValorMensal)
+        // Gerando os meses e valores de vendas mensais
+        for (int mes = 1; mes <= 12; mes++) {
+            String nomeMes = getMonthName(mes);
+            double valorMensal = parcelasRepository.findTotalByMonthAndYear(mes, selectedYear)
+                    .stream()
+                    .mapToDouble(Parcelas::getValor)
                     .sum();
 
-            meses.add(getMonthName(month));
-            valoresMensais.add(totalMensal);
+            meses.add(nomeMes);
+            valoresMensais.add(valorMensal);
         }
 
-        // Consultando total de empréstimos por sócio
-        List<Object[]> sociosData = historicoRepository.sumLoansBySocio();
-        List<String> sociosNames = new ArrayList<>();
-        List<Double> sociosValues = new ArrayList<>();
+        // Calculando totais por status
+        double totalPago = parcelasRepository.findByStatusPago().stream().mapToDouble(Parcelas::getValor).sum();
+        double totalPendente = parcelasRepository.findByStatusPendente().stream().mapToDouble(Parcelas::getValor).sum();
+        double totalAtrasado = parcelasRepository.findByStatusAtrasado().stream().mapToDouble(Parcelas::getValor).sum();
 
-        for (Object[] obj : sociosData) {
-            sociosNames.add((String) obj[0]);
-            sociosValues.add((Double) obj[1]);
-        }
+        // Logs para depuração
+        System.out.println("✅ Total Pago: " + totalPago);
+        System.out.println("⚠️ Total Pendente: " + totalPendente);
+        System.out.println("❌ Total Atrasado: " + totalAtrasado);
+        System.out.println("📊 Meses: " + meses);
+        System.out.println("📊 Valores Mensais: " + valoresMensais);
 
+        // Adicionando ao modelo para o Thymeleaf
         model.addAttribute("anosDisponiveis", anosDisponiveis);
-        model.addAttribute("totalNotify", totalNotify);
-        model.addAttribute("notifications", notifications);
         model.addAttribute("selectedYear", selectedYear);
         model.addAttribute("meses", meses);
         model.addAttribute("valoresMensais", valoresMensais);
-        model.addAttribute("sociosNames", sociosNames);
-        model.addAttribute("sociosValues", sociosValues);
+        model.addAttribute("totalPago", totalPago);
+        model.addAttribute("totalPendente", totalPendente);
+        model.addAttribute("totalAtrasado", totalAtrasado);
+        model.addAttribute("clientes", clientes);
+        model.addAttribute("notifications", notifications);
 
         return "analytics";
     }
+
 
     private String getMonthName(int month) {
         String[] meses = {

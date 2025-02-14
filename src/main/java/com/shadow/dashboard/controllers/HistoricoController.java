@@ -4,13 +4,15 @@ import com.shadow.dashboard.models.*;
 import com.shadow.dashboard.repository.*;
 import com.shadow.dashboard.service.ClientService;
 import com.shadow.dashboard.service.HistoricoService;
+import com.shadow.dashboard.service.SocioService;
+import jakarta.servlet.http.HttpServletRequest;
+import org.hibernate.mapping.Table;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -41,6 +43,8 @@ public class HistoricoController {
 
     @Autowired
     private ParcelasRepository parcelasRepository; // Adicionado para evitar erro
+    @Autowired
+    private SocioService socioService;
 
     @GetMapping("/Table")
     public ModelAndView table() {
@@ -54,14 +58,6 @@ public class HistoricoController {
 
         // Total de notificações
         int totalNotify = notifications.size();
-
-        // Evitar NullPointerException verificando cliente antes de acessar getNome()
-        Map<Long, Double> priceTotalsPorParcelas = historias.stream()
-                .collect(Collectors.toMap(
-                        Historico::getId,
-                        h -> clientService.calcularPrecoTotalComJuros(h),
-                        (a, b) -> b
-                ));
 
         // Passando os dados para a visão
         mv.addObject("totalNotify", totalNotify);
@@ -138,4 +134,31 @@ public class HistoricoController {
         return "modalHis"; // Nome do arquivo modalHis.html dentro da pasta templates/detalhe/
     }
 
+    @PostMapping("/Table")
+    public String SaveFuncionario(HttpServletRequest request, RedirectAttributes redirectAttributes) {
+        try {
+            System.out.println("Recebendo parâmetros: ");
+            System.out.println("Nome: " + request.getParameter("name"));
+            System.out.println("Idade: " + request.getParameter("idade"));
+            System.out.println("Contato: " + request.getParameter("contact"));
+            System.out.println("Endereço: " + request.getParameter("address"));
+
+            Socios socios = new Socios();
+            socios.setName(Optional.ofNullable(request.getParameter("name")).orElseThrow(() -> new IllegalArgumentException("Nome é obrigatório")));
+            socios.setAge(Integer.parseInt(Optional.ofNullable(request.getParameter("idade")).orElse("0")));
+            socios.setPhone(Optional.ofNullable(request.getParameter("contact")).orElse(""));
+            socios.setAddress(Optional.ofNullable(request.getParameter("address")).orElse(""));
+
+            socioService.saveAndNotify(socios);
+            redirectAttributes.addFlashAttribute("message", "Funcionário registrado com sucesso!");
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Idade inválida", e);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Erro ao registrar funcionário", e);
+        }
+
+        return "redirect:/Table";
+    }
+
 }
+

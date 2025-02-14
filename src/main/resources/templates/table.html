@@ -73,29 +73,36 @@
 
         <!-- Área de fundo (Fade) -->
         <div id="fade" class="hide"></div>
+
         <!-- Modal -->
-        <div id="modal" class="hide">
+        <div id="modal" class="modal-container">
             <div class="modal-header">
-                <h2>Notifications</h2>
+                <h2>Notificações</h2>
                 <button id="close-modal">
                     <span class="material-symbols-sharp">close</span>
                 </button>
             </div>
 
-            <div class="notify-item" th:each="notification : ${notifications}">
-                <div class="notify_img">
-                    <img src="/img/Admin.jpg" alt="" style="width: 50px;">
-                </div>
-                <div class="notify-info">
-                    <p><span th:text="${notification.message}"></span></p>
-                    <p>
-                        <span class="notify-time" th:text="${#temporals.format(notification.createdAt, 'mm')}"></span> minutes ago.
-                    </p>
+            <!-- Área que terá scroll -->
+            <div class="modal-body">
+                <div class="notify-item" th:each="notification : ${notifications}">
+                    <div class="notify_img">
+                        <img src="/img/Admin.jpg" alt="" style="width: 50px;">
+                    </div>
+                    <div class="notify-info">
+                        <p><span th:text="${notification.message}"></span></p>
+                        <p>
+                            <span class="notify-time" th:text="${#temporals.format(notification.createdAt, 'mm')}"></span> minutos atrás.
+                        </p>
+                    </div>
                 </div>
             </div>
+
+            <!-- Botão para limpar notificações -->
+            <div class="modal-footer">
+                <button id="clear-notifications">Limpar Notificações</button>
+            </div>
         </div>
-
-
 
         <div class="profile" onclick="toggleSubMenu()">
             <div class="profile-photo">
@@ -139,6 +146,40 @@
             <div class="order">
                 <div class="head">
                     <h3>Recent Orders</h3>
+
+                    <!-- Botão para abrir o modal de adicionar funcionário -->
+                    <button id="openAddFuncionario" class="addF" aria-label="Adicionar Funcionário">Add Funcionário</button>
+
+                    <!-- Formulário de Adicionar Funcionário Simplificado -->
+                    <div id="modal-add-funcionario" class="window hide">
+                        <div class="window-header">
+                            <h2>Adicionar Funcionário</h2>
+                            <button id="closeAddFuncionario" class="close-button">&times;</button>
+                        </div>
+                        <div class="window-body">
+                            <form action="/Table" method="POST">
+                                <div class="input-field-clientes">
+                                    <label for="nome">Nome</label>
+                                    <input id="name" name="name" type="text" placeholder="Digite o nome" required>
+                                </div>
+                                <div class="input-field-clientes">
+                                    <label for="idade">Idade</label>
+                                    <input id="idade" name="idade" type="number" placeholder="Digite a idade" required>
+                                </div>
+                                <div class="input-field-clientes">
+                                    <label for="contato">Contato</label>
+                                    <input id="contact" name="contact" type="text" placeholder="Digite o contato" required>
+                                </div>
+                                <div class="input-field-clientes">
+                                    <label for="endereco">Endereço</label>
+                                    <input id="address" name="address" type="text" placeholder="Digite o endereço" required>
+                                </div>
+                                <button id="btnSaveFuncionario" type="submit">Salvar Funcionário</button>
+                            </form>
+                        </div>
+                    </div>
+
+
 
                     <!-- Botão para abrir o modal de adicionar cliente -->
                     <button class="addC" id="openModalCliente" aria-label="Adicionar Cliente">Add Cliente</button>
@@ -204,6 +245,7 @@
                     <button class="add" aria-label="Adicionar empréstimo">Add Emprestimo</button>
                     <div id="modal-add-emprestimo" class="modal hide">
                         <div class="modal-content">
+                            <button class="close-button" aria-label="Fechar">X</button>
                             <div class="modal-headers">
                                 <header>Registro de Empréstimo</header>
                             </div>
