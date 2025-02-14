@@ -336,18 +336,23 @@
         /*<![CDATA[*/
         const meses = /*[[${meses}]]*/ [];
         const valoresMensais = /*[[${valoresMensais}]]*/ [];
-
-        const sociosNames = /*[[${sociosNames}]]*/ [];
-        const sociosValues = /*[[${sociosValues}]]*/ [];
-
+    
+        const totalPago = /*[[${totalPago}]]*/ 0;
+        const totalAPagar = /*[[${totalAPagar}]]*/ 0;
+        const totalAtrasado = /*[[${totalAtrasado}]]*/ 0;
+    
+        const statusLabels = ["PAGO", "A PAGAR", "ATRASADO"];
+        const statusValues = [totalPago, totalAPagar, totalAtrasado];
+        const statusColors = ['#36A2EB', '#FFCE56', '#FF6384'];
+    
         // Gráfico de Pizza
         const pieChart = new Chart(document.getElementById('pieChart'), {
             type: 'pie',
             data: {
-                labels: sociosNames,
+                labels: statusLabels,
                 datasets: [{
-                    data: sociosValues,
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#FF9F40', '#FF5733', '#33FF57', '#3357FF']
+                    data: statusValues,
+                    backgroundColor: statusColors
                 }]
             },
             options: {
@@ -359,7 +364,7 @@
                 }
             }
         });
-
+    
         // Gráfico de Barras
         const barChart = new Chart(document.getElementById('barChart'), {
             type: 'bar',
@@ -384,6 +389,7 @@
         });
         /*]]>*/
     </script>
+    
 
 </section>
 

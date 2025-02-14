@@ -3,7 +3,6 @@ package com.shadow.dashboard.controllers;
 import com.shadow.dashboard.models.Clientes;
 import com.shadow.dashboard.models.Notification;
 import com.shadow.dashboard.models.Parcelas;
-import com.shadow.dashboard.models.Socios;
 import com.shadow.dashboard.repository.ClientRepository;
 import com.shadow.dashboard.repository.HistoricoRepository;
 import com.shadow.dashboard.repository.NotificationRepository;
@@ -23,7 +22,7 @@ import java.util.List;
 public class AnalyticsController {
 
     @Autowired
-    private HistoricoRepository historicoRepository; 
+    private HistoricoRepository historicoRepository;
 
     @Autowired
     private ParcelasRepository parcelasRepository;
@@ -50,7 +49,6 @@ public class AnalyticsController {
         List<Double> valoresMensais = new ArrayList<>();
         List<Notification> notifications = notificationRepository.findAll();
         List<Clientes> clientes = clientRepository.findAll();
-        List<Socios> socios = sociosRepository.findAll();
 
         // Total de notificações
         int totalNotify = notifications.size();
@@ -66,15 +64,10 @@ public class AnalyticsController {
             meses.add(getMonthName(month));
             valoresMensais.add(totalMensal);
         }
-        // Consultando total de empréstimos por sócio
-        List<Object[]> sociosData = historicoRepository.sumLoansBySocio();
-        List<String> sociosNames = new ArrayList<>();
-        List<Double> sociosValues = new ArrayList<>();
 
-        for (Object[] obj : sociosData) {
-            sociosNames.add((String) obj[0]);
-            sociosValues.add((Double) obj[1]);
-        }
+        double totalPago = parcelasRepository.findByStatusPago().stream().mapToDouble(Parcelas::getValor).sum();
+        double totalAPagar = parcelasRepository.findByStatusAPagar().stream().mapToDouble(Parcelas::getValor).sum();
+        double totalAtrasado = parcelasRepository.findByStatusAtrasado().stream().mapToDouble(Parcelas::getValor).sum();
 
         model.addAttribute("anosDisponiveis", anosDisponiveis);
         model.addAttribute("totalNotify", totalNotify);
@@ -83,9 +76,9 @@ public class AnalyticsController {
         model.addAttribute("clientes", clientes);
         model.addAttribute("meses", meses);
         model.addAttribute("valoresMensais", valoresMensais);
-        model.addAttribute("sociosNames", sociosNames);
-        model.addAttribute("sociosValues", sociosValues);
-        model.addAttribute("socios", socios);
+        model.addAttribute("totalPago", totalPago);
+        model.addAttribute("totalAPagar", totalAPagar);
+        model.addAttribute("totalAtrasado", totalAtrasado);
 
         return "analytics";
     }

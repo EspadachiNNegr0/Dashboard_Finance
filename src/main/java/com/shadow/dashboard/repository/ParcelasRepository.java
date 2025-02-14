@@ -20,4 +20,13 @@ public interface ParcelasRepository extends JpaRepository<Parcelas, Long> {
 
     @Query("SELECT DISTINCT YEAR(p.dataPagamento) FROM Parcelas p ORDER BY YEAR(p.dataPagamento) DESC")
     List<Integer> findDistinctYears();
+
+    @Query("SELECT p FROM Parcelas p WHERE p.status = 'PAGO'")
+    List<Parcelas> findByStatusPago();
+
+    @Query("SELECT p FROM Parcelas p WHERE p.status = 'A PAGAR'")
+    List<Parcelas> findByStatusAPagar();
+
+    @Query("SELECT p FROM Parcelas p WHERE p.status = 'ATRASADO'")
+    List<Parcelas> findByStatusAtrasado();
 }
