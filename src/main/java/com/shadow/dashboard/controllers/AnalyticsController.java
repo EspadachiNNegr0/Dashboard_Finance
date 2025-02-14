@@ -55,15 +55,22 @@ public class AnalyticsController {
 
         // Calculando valores mensais a partir das parcelas
         for (int month = 1; month <= 12; month++) {
+            meses.add(getMonthName(month));
+            valoresMensais.add(0.0);
+        }
+
+        // Busca os dados das parcelas e substitui os valores corretamente
+        for (int month = 1; month <= 12; month++) {
             List<Parcelas> parcelas = parcelasRepository.findByMonthAndYear(month, selectedYear);
 
-            double totalMensal = parcelas.stream()
-                    .mapToDouble(Parcelas::getValor)
-                    .sum();
-
-            meses.add(getMonthName(month));
-            valoresMensais.add(totalMensal);
+            if (!parcelas.isEmpty()) {
+                double totalMensal = parcelas.stream()
+                        .mapToDouble(Parcelas::getValor)
+                        .sum();
+                valoresMensais.set(month - 1, totalMensal); 
+            }
         }
+
 
         double totalPago = parcelasRepository.findByStatusPago().stream().mapToDouble(Parcelas::getValor).sum();
         double totalAPagar = parcelasRepository.findByStatusAPagar().stream().mapToDouble(Parcelas::getValor).sum();
