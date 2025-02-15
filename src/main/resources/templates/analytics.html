@@ -180,7 +180,9 @@
 
             <!-- Botão para limpar notificações -->
             <div class="modal-footer">
-                <button id="clear-notifications">Limpar Notificações</button>
+                <form action="/notifications/clear" method="post" target="hidden-frame">
+                    <button type="submit">Limpar Notificações</button>
+                </form>
             </div>
         </div>
 
@@ -336,15 +338,15 @@
         /*<![CDATA[*/
         const meses = /*[[${meses}]]*/ [];
         const valoresMensais = /*[[${valoresMensais}]]*/ [];
-    
+
         const totalPago = /*[[${totalPago}]]*/ 0;
-        const totalAPagar = /*[[${totalAPagar}]]*/ 0;
+        const totalPendente = /*[[${totalPendente}]]*/ 0; // 🔹 Corrigido
         const totalAtrasado = /*[[${totalAtrasado}]]*/ 0;
-    
-        const statusLabels = ["PAGO", "A PAGAR", "ATRASADO"];
-        const statusValues = [totalPago, totalAPagar, totalAtrasado];
+
+        const statusLabels = ["PAGO", "PENDENTE", "ATRASADO"];
+        const statusValues = [totalPago, totalPendente, totalAtrasado];
         const statusColors = ['#36A2EB', '#FFCE56', '#FF6384'];
-    
+
         // Gráfico de Pizza
         const pieChart = new Chart(document.getElementById('pieChart'), {
             type: 'pie',
@@ -364,7 +366,7 @@
                 }
             }
         });
-    
+
         // Gráfico de Barras
         const barChart = new Chart(document.getElementById('barChart'), {
             type: 'bar',

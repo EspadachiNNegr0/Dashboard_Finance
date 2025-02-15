@@ -709,6 +709,26 @@ body {
     transition: opacity 0.3s ease;
 }
 
+.modal {
+    display: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal.show {
+    display: flex;
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal.hide {
+    display: none;
+    opacity: 0;
+    visibility: hidden;
+}
+
+
 
 #modal {
     position: fixed;
@@ -1896,6 +1916,12 @@ h3 {
     background-color: #f1f1f1;
     border-top: 1px solid #ccc;
     text-align: center;
+}
+
+.modal-footer button{
+    padding: 10px;
+    border-radius: 10px;
+    background-color: red;
 }
 
 

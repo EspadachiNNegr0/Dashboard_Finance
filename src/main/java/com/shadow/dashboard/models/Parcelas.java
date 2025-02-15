@@ -28,6 +28,7 @@ public class Parcelas {
     @Column(nullable = false)
     private double valor;
 
+
     @Column(length = 20) // 🔹 Adiciona a coluna status diretamente na tabela
     private String status;
 
@@ -41,16 +42,13 @@ public class Parcelas {
         if (this.pagas > 0) {
             this.status = "PAGO";
         } else if (this.dataPagamento == null) {
-            System.out.println("⚠️ AVISO: Parcela ID " + this.id + " possui dataPagamento NULL. Definindo como data atual.");
-            this.dataPagamento = hoje; // 🔹 Define uma data padrão
-            this.status = "A PAGAR";
-        } else if (this.dataPagamento.before(hoje) && this.pagas == 0) {
-            this.status = "PENDENTE";
+            this.status = "PENDENTE"; // ✅ Se não houver data de pagamento, assume que está pendente
+        } else if (this.dataPagamento.before(hoje)) {
+            this.status = "ATRASADO";
         } else {
-            this.status = "A PAGAR";
+            this.status = "PENDENTE";
         }
     }
-
 
     // Getters e Setters
     public Long getId() { return id; }

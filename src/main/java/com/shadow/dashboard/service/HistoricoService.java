@@ -56,13 +56,6 @@ public class HistoricoService {
         return historico;
     }
 
-    /**
-     * Calcula o valor total do empréstimo SEM considerar os juros
-     */
-    public double calcularValorTotalSemJuros(Historico historico) {
-        return historico.getPrice(); // Apenas o valor original do empréstimo
-    }
-
     public void atualizarProximasParcelasEValorMensal(Historico historico, List<Parcelas> parcelasList) {
         // 🔹 Filtra as parcelas que ainda não foram pagas
         List<Parcelas> parcelasNaoPagas = parcelasList.stream()
@@ -169,34 +162,6 @@ public class HistoricoService {
         notificationRepository.save(notification);
     }
 
-    /**
-     * Retorna a soma de todos os empréstimos ativos
-     */
-    public double somaDeTodosOsEmprestimos(List<Historico> historias) {
-        return historias.stream().mapToDouble(Historico::getPrice).sum();
-    }
-
-    public List<Date> calculaDatasDePagamento(Historico historico) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(historico.getCreated());
-
-        // Garante que a data inicial seja em janeiro
-        if (calendar.get(Calendar.MONTH) != Calendar.JANUARY) {
-            calendar.set(Calendar.MONTH, Calendar.JANUARY);
-            calendar.set(Calendar.DAY_OF_MONTH, 1); // Começa no 1º dia de janeiro
-        }
-
-        List<Date> datas = new ArrayList<>();
-        for (int i = 0; i < historico.getParcelamento(); i++) {
-            calendar.add(Calendar.MONTH, 1); // Adiciona um mês à data
-            datas.add(calendar.getTime());
-        }
-        return datas;
-    }
-
-    /**
-     * Cria uma notificação para pagamentos
-     */
     public void criarNotificacao(Historico historico, double valorPago, String tipoPagamento) {
         if (historico.getCliente() == null) {
             return; // Não cria notificação se não houver cliente associado
@@ -219,53 +184,51 @@ public class HistoricoService {
 
         Historico historico = parcela.getHistorico();
 
-        // 🔹 Obtém o valor mensal esperado
-        double valorMensal = historico.getValorMensal();
+        // ✅ Marca a parcela como paga
+        parcela.setPagas(1);
+        parcela.setStatus("PAGO");
+        parcelasRepository.save(parcela);
 
-        // 🔹 Verifica se o valor pago foi menor que o valor mensal (apenas juros pagos)
-        if (valorPago < valorMensal) {
-            System.out.println("⚠️ Apenas juros foram pagos! Criando nova parcela para o valor restante.");
+        // ✅ Atualiza o status do histórico se não houver mais parcelas atrasadas
+        atualizarStatusHistoricoAoPagar(historico);
 
-            // Calcula o valor restante
-            double valorRestante = valorMensal - valorPago;
-
-            // Criar nova parcela para o valor restante
-            Parcelas novaParcela = new Parcelas();
-            novaParcela.setHistorico(historico);
-            novaParcela.setParcelas(1); // Apenas uma parcela adicional
-            novaParcela.setPagas(0); // Ainda precisa ser paga
-            novaParcela.setValor(valorRestante);
-
-            // Define data da nova parcela para o próximo mês
-            Calendar calendar = Calendar.getInstance();
-            if (parcela.getDataPagamento() != null) {
-                calendar.setTime(parcela.getDataPagamento());
-            } else {
-                calendar.setTime(new Date());
-            }
-            calendar.add(Calendar.MONTH, 1);
-            novaParcela.setDataPagamento(calendar.getTime());
-
-            parcelasRepository.save(novaParcela);
-            System.out.println("✅ Nova parcela criada com valor restante de R$ " + valorRestante);
-        } else {
-            // 🔹 Se o valor total foi pago, a parcela é considerada quitada
-            parcela.setPagas(1);
-            parcelasRepository.save(parcela);
-        }
-
-        // 🔹 Criar notificação de pagamento
+        // ✅ Cria uma notificação informando que a parcela foi paga
         criarNotificacao(historico.getCliente(),
                 "✅ Pagamento de R$ " + valorPago + " realizado na parcela #" + parcela.getId());
+    }
 
-        // 🔹 Atualiza o status do histórico
-        atualizarStatusHistoricoAoPagar(historico);
+    @Scheduled(fixedRate = 60000) // Executa a cada 60 segundos (1 minuto)
+    public void verificarParcelasAtrasadasEAtualizarStatus() {
+        List<Parcelas> parcelasAtrasadas = parcelasRepository.findByStatusAtrasado();
+
+        for (Parcelas parcela : parcelasAtrasadas) {
+            Historico historico = parcela.getHistorico();
+            if (historico == null) continue;
+
+            // 🔹 Verifica se a parcela atrasada já foi paga
+            if ("PAGO".equals(parcela.getStatus())) {
+                boolean temOutrasAtrasadas = parcelasRepository.findByHistorico(historico)
+                        .stream().anyMatch(p -> "ATRASADO".equals(p.getStatus()));
+
+                // ✅ Se não houver mais atrasadas, muda status para PENDENTE
+                if (!temOutrasAtrasadas && historico.getStatus() == Status.ATRASADO) {
+                    historico.setStatus(Status.PENDENTE);
+                    historicoRepository.save(historico);
+
+                    // ✅ Cria notificação informando a atualização
+                    criarNotificacao(historico.getCliente(),
+                            "⚠️ Seu empréstimo #" + historico.getId() + " voltou para o status PENDENTE.");
+
+                    System.out.println("✅ Histórico #" + historico.getId() + " voltou para PENDENTE.");
+                }
+            }
+        }
     }
 
     /**
      * Verifica se ainda existem parcelas atrasadas e ajusta o status do histórico
      */
-    private void atualizarStatusHistoricoAoPagar(Historico historico) {
+    public void atualizarStatusHistoricoAoPagar(Historico historico) {
         if (historico == null) return;
 
         // Verifica se ainda existem parcelas atrasadas (-1)
@@ -334,6 +297,7 @@ public class HistoricoService {
             if (parcela.getDataPagamento().before(hoje)) {
                 if (parcela.getPagas() == 0) {
                     parcela.setPagas(-1); // 🔹 Define como ATRASADO (-1)
+                    parcela.setStatus("ATRASADO");
                     parcelasRepository.save(parcela);
 
                     // 🔹 Verificação extra para evitar NullPointerException

@@ -3,6 +3,7 @@ package com.shadow.dashboard.controllers;
 import com.shadow.dashboard.models.Clientes;
 import com.shadow.dashboard.models.Notification;
 import com.shadow.dashboard.models.Parcelas;
+import com.shadow.dashboard.models.Socios;
 import com.shadow.dashboard.repository.ClientRepository;
 import com.shadow.dashboard.repository.HistoricoRepository;
 import com.shadow.dashboard.repository.NotificationRepository;
@@ -40,7 +41,6 @@ public class AnalyticsController {
     public String showAnalytics(@RequestParam(value = "year", required = false) Integer selectedYear, Model model) {
 
         List<Integer> anosDisponiveis = parcelasRepository.findDistinctYears();
-
         if (selectedYear == null) {
             selectedYear = LocalDate.now().getYear();
         }
@@ -48,47 +48,50 @@ public class AnalyticsController {
         List<String> meses = new ArrayList<>();
         List<Double> valoresMensais = new ArrayList<>();
         List<Notification> notifications = notificationRepository.findAll();
+        int totalNotify = notificationRepository.findAll().size();
+        List<Socios> socios = sociosRepository.findAll();
         List<Clientes> clientes = clientRepository.findAll();
 
-        // Total de notificações
-        int totalNotify = notifications.size();
+        // Gerando os meses e valores de vendas mensais
+        for (int mes = 1; mes <= 12; mes++) {
+            String nomeMes = getMonthName(mes);
+            double valorMensal = parcelasRepository.findTotalByMonthAndYear(mes, selectedYear)
+                    .stream()
+                    .mapToDouble(Parcelas::getValor)
+                    .sum();
 
-        // Calculando valores mensais a partir das parcelas
-        for (int month = 1; month <= 12; month++) {
-            meses.add(getMonthName(month));
-            valoresMensais.add(0.0);
+            meses.add(nomeMes);
+            valoresMensais.add(valorMensal);
         }
 
-        // Busca os dados das parcelas e substitui os valores corretamente
-        for (int month = 1; month <= 12; month++) {
-            List<Parcelas> parcelas = parcelasRepository.findByMonthAndYear(month, selectedYear);
-
-            if (!parcelas.isEmpty()) {
-                double totalMensal = parcelas.stream()
-                        .mapToDouble(Parcelas::getValor)
-                        .sum();
-                valoresMensais.set(month - 1, totalMensal); 
-            }
-        }
-
-
+        // Calculando totais por status
         double totalPago = parcelasRepository.findByStatusPago().stream().mapToDouble(Parcelas::getValor).sum();
-        double totalAPagar = parcelasRepository.findByStatusAPagar().stream().mapToDouble(Parcelas::getValor).sum();
+        double totalPendente = parcelasRepository.findByStatusPendente().stream().mapToDouble(Parcelas::getValor).sum();
         double totalAtrasado = parcelasRepository.findByStatusAtrasado().stream().mapToDouble(Parcelas::getValor).sum();
 
+        // Logs para depuração
+        System.out.println("✅ Total Pago: " + totalPago);
+        System.out.println("⚠️ Total Pendente: " + totalPendente);
+        System.out.println("❌ Total Atrasado: " + totalAtrasado);
+        System.out.println("📊 Meses: " + meses);
+        System.out.println("📊 Valores Mensais: " + valoresMensais);
+
+        // Adicionando ao modelo para o Thymeleaf
         model.addAttribute("anosDisponiveis", anosDisponiveis);
-        model.addAttribute("totalNotify", totalNotify);
-        model.addAttribute("notifications", notifications);
         model.addAttribute("selectedYear", selectedYear);
-        model.addAttribute("clientes", clientes);
+        model.addAttribute("totalNotify", totalNotify);
+        model.addAttribute("socios", socios);
         model.addAttribute("meses", meses);
         model.addAttribute("valoresMensais", valoresMensais);
         model.addAttribute("totalPago", totalPago);
-        model.addAttribute("totalAPagar", totalAPagar);
+        model.addAttribute("totalPendente", totalPendente);
         model.addAttribute("totalAtrasado", totalAtrasado);
+        model.addAttribute("clientes", clientes);
+        model.addAttribute("notifications", notifications);
 
         return "analytics";
     }
+
 
     private String getMonthName(int month) {
         String[] meses = {

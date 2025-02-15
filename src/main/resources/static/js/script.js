@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // ================= MODAL DE ADICIONAR EMPRÉSTIMO =================
     const addButton = document.querySelector(".add");
     const modalAdd = document.getElementById("modal-add-emprestimo");
-    const closeAddModalButton = document.getElementById("close-modal");
+    const closeAddModalButton = document.querySelector("#modal-add-emprestimo .close-button");
 
     if (addButton && modalAdd && closeAddModalButton) {
         addButton.addEventListener("click", () => {
@@ -15,13 +15,8 @@ document.addEventListener("DOMContentLoaded", function () {
             modalAdd.classList.add("hide");
             modalAdd.classList.remove("show");
         });
-
-        modalAdd.addEventListener("click", (event) => {
-            if (event.target === modalAdd) {
-                modalAdd.classList.add("hide");
-                modalAdd.classList.remove("show");
-            }
-        });
+    } else {
+        console.error("❌ Verifique se os IDs e classes do modal de empréstimo estão corretos!");
     }
 
     // ================= MODAL DE NOTIFICAÇÕES =================
@@ -184,3 +179,36 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    // ================= MODAL DE ADICIONAR EMPRÉSTIMO =================
+    const addButton = document.querySelector(".add");
+    const modalAdd = document.getElementById("modal-add-emprestimo");
+    const closeAddModalButton = modalAdd?.querySelector(".close-button");
+
+    if (addButton && modalAdd && closeAddModalButton) {
+        // Abrir Modal
+        addButton.addEventListener("click", () => {
+            modalAdd.classList.add("show");
+            modalAdd.classList.remove("hide");
+        });
+
+        // Fechar Modal ao clicar no botão X
+        closeAddModalButton.addEventListener("click", () => {
+            modalAdd.classList.add("hide");
+            modalAdd.classList.remove("show");
+        });
+
+        // Fechar Modal ao clicar fora do conteúdo
+        modalAdd.addEventListener("click", (event) => {
+            if (event.target === modalAdd) {
+                modalAdd.classList.add("hide");
+                modalAdd.classList.remove("show");
+            }
+        });
+    } else {
+        console.error("❌ Verifique se os elementos do modal de empréstimo estão corretos.");
+    }
+});
+

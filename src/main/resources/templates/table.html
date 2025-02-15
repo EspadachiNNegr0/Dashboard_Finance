@@ -100,7 +100,9 @@
 
             <!-- Botão para limpar notificações -->
             <div class="modal-footer">
-                <button id="clear-notifications">Limpar Notificações</button>
+                <form action="/notifications/clear" method="post" target="hidden-frame">
+                    <button type="submit">Limpar Notificações</button>
+                </form>
             </div>
         </div>
 
@@ -245,6 +247,7 @@
                     <button class="add" aria-label="Adicionar empréstimo">Add Emprestimo</button>
                     <div id="modal-add-emprestimo" class="modal hide">
                         <div class="modal-content">
+                            <button class="close-button" aria-label="Fechar">X</button>
                             <div class="modal-headers">
                                 <header>Registro de Empréstimo</header>
                             </div>
@@ -397,7 +400,9 @@
                             <span th:text="${historico.creationF}"></span>
                         </td>
                         <td>
-                            <span th:text="${historico.status} + ' '"></span>
+                            <span th:if="${historico.status.name() == 'PENDENTE'}" style="color: orange;">PENDENTE</span>
+                            <span th:if="${historico.status.name() == 'PAGO'}" style="color: green;">PAGO</span>
+                            <span th:if="${historico.status.name() == 'ATRASADO'}" style="color: red;">ATRASADO</span>
                         </td>
                         <td>
                             <a th:href="@{/histori/{id}(id=${historico.id})}" class="btn btn-info">

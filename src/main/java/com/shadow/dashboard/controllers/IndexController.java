@@ -14,6 +14,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -56,23 +57,22 @@ public class IndexController {
     }
 
     @GetMapping("/")
-    public ModelAndView index(@RequestParam(value = "month", required = false) Integer selectedMonth) {
+    public ModelAndView index(@RequestParam(value = "year", required = false) Integer selectedYear,
+                              @RequestParam(value = "month", required = false) Integer selectedMonth) {
         ModelAndView mv = new ModelAndView("index");
 
-        // 🔹 Se nenhum mês for passado, define automaticamente como Janeiro (1)
+        // Define o ano atual se nenhum for selecionado
+        int currentYear = LocalDate.now().getYear();
+        final int finalSelectedYear = (selectedYear == null) ? currentYear : selectedYear;
+
+        // Define janeiro como padrão se nenhum mês for passado
         final int finalSelectedMonth = (selectedMonth == null || selectedMonth == 0) ? 1 : selectedMonth;
 
-        List<Clientes> clientes = clientRepository.findAll();
-        List<Banco> bancos = bancoRepository.findAll();
-        List<Socios> socios = sociosRepository.findAll();
+        List<Integer> anosDisponiveis = parcelasRepository.findDistinctYears();
+        List<Parcelas> todasParcelas = parcelasRepository.findParcelasByYear(finalSelectedYear);
         List<Notification> notifications = notificationRepository.findAll();
 
-        // 🔹 Atualiza o status das parcelas vencidas ANTES de carregá-las
-        historicoService.atualizarStatusParcelasVencidas();
-
-        List<Parcelas> todasParcelas = parcelasRepository.findAll();
-
-        // 🔹 Filtra apenas as parcelas do mês de janeiro ou do mês selecionado
+        // Filtra apenas as parcelas do mês selecionado
         List<Parcelas> parcelasFiltradas = todasParcelas.stream()
                 .filter(p -> {
                     if (p.getDataPagamento() == null) return false;
@@ -82,27 +82,23 @@ public class IndexController {
                 })
                 .toList();
 
-        int totalNotify = notifications.size();
+        // Informações auxiliares
+        int totalNotify = notificationRepository.findAll().size();
+        double somaDeEmprestimo = parcelasFiltradas.stream().mapToDouble(Parcelas::getValor).sum();
         long emprestimosAtivos = parcelasFiltradas.stream()
                 .filter(parcela -> parcela.getHistorico() != null
                         && !"complete".equalsIgnoreCase(parcela.getHistorico().getStatus().toString()))
                 .count();
 
-        double somaDeEmprestimo = parcelasFiltradas.stream()
-                .mapToDouble(Parcelas::getValor)
-                .sum();
-
-        // 🔹 Adiciona os atributos para a view
-        mv.addObject("ClientesSize", clientes.size());
-        mv.addObject("emprestimosAtivos", emprestimosAtivos);
-        mv.addObject("parcelas", parcelasFiltradas);
+        // Adiciona os atributos para a view
+        mv.addObject("anosDisponiveis", anosDisponiveis);
+        mv.addObject("selectedYear", finalSelectedYear);
         mv.addObject("selectedMonth", finalSelectedMonth);
+        mv.addObject("parcelas", parcelasFiltradas);
         mv.addObject("totalNotify", totalNotify);
-        mv.addObject("notifications", notifications);
         mv.addObject("somaDeEmprestimo", somaDeEmprestimo);
-        mv.addObject("clientes", clientes);
-        mv.addObject("socios", socios);
-        mv.addObject("bancos", bancos);
+        mv.addObject("emprestimosAtivos", emprestimosAtivos);
+        mv.addObject("notifications", notifications);
 
         return mv;
     }
@@ -153,7 +149,11 @@ public class IndexController {
             }
 
             parcela.setPagas(1);
+            parcela.setStatus("PAGO");
             parcelasRepository.save(parcela);
+
+            // ✅ Ajuste de status atualizado corretamente
+            historicoService.atualizarStatusParcelaPaga(id, valorPago);
 
             historicoService.criarNotificacao(historico, valorPago, "Pagamento da Parcela");
 
@@ -162,6 +162,7 @@ public class IndexController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("❌ Erro: " + e.getMessage());
         }
     }
+
 
     @PostMapping("/histori/{id}/pagar-mensal")
     public String pagarParcela(@PathVariable Long id, RedirectAttributes redirectAttributes) {
