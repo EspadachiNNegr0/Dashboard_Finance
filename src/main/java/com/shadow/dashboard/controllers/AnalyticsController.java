@@ -68,6 +68,10 @@ public class AnalyticsController {
         double totalPago = parcelasRepository.findByStatusPago().stream().mapToDouble(Parcelas::getValor).sum();
         double totalPendente = parcelasRepository.findByStatusPendente().stream().mapToDouble(Parcelas::getValor).sum();
         double totalAtrasado = parcelasRepository.findByStatusAtrasado().stream().mapToDouble(Parcelas::getValor).sum();
+        Long quantidadeNaoPagos = historicoRepository.countEmprestimosNaoPagos();
+        Double totalPriceDosHistoricos = historicoRepository.sumTotalPrice();
+        Long totalClientes = clientRepository.countClientes();
+
 
         // Logs para depuração
         System.out.println("✅ Total Pago: " + totalPago);
@@ -75,6 +79,7 @@ public class AnalyticsController {
         System.out.println("❌ Total Atrasado: " + totalAtrasado);
         System.out.println("📊 Meses: " + meses);
         System.out.println("📊 Valores Mensais: " + valoresMensais);
+        System.out.println("📊 Total dos historicos: " + totalPriceDosHistoricos);
 
         // Adicionando ao modelo para o Thymeleaf
         model.addAttribute("anosDisponiveis", anosDisponiveis);
@@ -88,6 +93,10 @@ public class AnalyticsController {
         model.addAttribute("totalAtrasado", totalAtrasado);
         model.addAttribute("clientes", clientes);
         model.addAttribute("notifications", notifications);
+        model.addAttribute("quantidadeNaoPagos", quantidadeNaoPagos);
+        model.addAttribute("totalPriceDosHistoricos", totalPriceDosHistoricos);
+        model.addAttribute("totalClientes", totalClientes);
+
 
         return "analytics";
     }
