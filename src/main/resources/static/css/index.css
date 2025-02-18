@@ -696,22 +696,37 @@ body {
     opacity: 1;
 }
 
+/* Ajusta o fundo escuro (fade) */
 #fade {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    z-index: 999;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6); /* Deixa escuro e translúcido */
+    z-index: 9999; /* Deve ser maior que os botões */
     display: none;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.3s ease-in-out;
 }
+
+/* Quando o fade estiver ativo */
+#fade.show {
+    display: block;
+    opacity: 1;
+}
+
+/* Ajusta os botões para ficarem abaixo do fade */
+.add, .addB {
+    position: relative;
+    z-index: 900; /* Deve ser menor que o fade */
+}
+
 
 .modal {
     display: none;
     opacity: 0;
+    z-index: 10000;
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
 }
@@ -744,7 +759,7 @@ body {
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
-    z-index: 1000;
+    z-index: 99999;
 }
 
 
@@ -801,11 +816,6 @@ body {
     z-index: -1;
     pointer-events: none;
     top: 0;
-}
-
-#fade.show {
-    display: block;
-    opacity: 1;
 }
 
 .table-data  .add{
@@ -915,7 +925,7 @@ body {
     border-radius: 5px;
     background-color: var(--blue);
     margin-top: 20px;
-    margin-left: 120px;
+    margin-left: 20px;
     margin-right: 70px}
 
 .modal {
@@ -950,7 +960,7 @@ body {
     max-width: 900px;
     padding: 20px;
     border-radius: 20px;
-    width: 100%;
+    width: 600px;
     padding: 30px;
     margin: 0 15px;
     background-color: var(--light);
@@ -1475,16 +1485,15 @@ h3 {
 }
 
 .modal-add-cliente .modal-body button {
-    width: 50%;
+    width: 30%;
     padding: 12px;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: bold;
     background: var(--blue);
     color: var(--light);
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin-top: 10px;
     transition: 0.3s;
 }
 
@@ -1754,11 +1763,6 @@ h3 {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 450px;
-    background: var(--light);
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
     z-index: 1000;
     display: none; /* 🔹 Agora começa oculto */
     transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
@@ -1770,6 +1774,12 @@ h3 {
     display: block;
     opacity: 1;
     visibility: visible;
+}
+
+#modal-add-funcionario .modal-content {
+    margin-top: 200px;
+    margin-left: 700px;
+    width: 600px;
 }
 
 #modal-add-funcionario.hide {
@@ -1788,9 +1798,12 @@ h3 {
 
 #modal-add-funcionario .window-header h2 {
     font-family: var(--poppins);
-    font-size: 20px;
-    font-weight: bold;
+    font-size: 15px;
     color: var(--dark);
+}
+
+#modal-add-funcionario .modal-headers {
+    font-size: 15px;
 }
 
 #modal-add-funcionario .close-button {
@@ -1883,6 +1896,19 @@ h3 {
     background-color: #fafafa;
 }
 
+.modal-body button{
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    background: var(--blue);
+    color: var(--light);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: 0.3s;
+}
+
 /* Scroll Customizado */
 .modal-body::-webkit-scrollbar {
     width: 6px;
@@ -1918,8 +1944,42 @@ h3 {
     text-align: center;
 }
 
+.modal-footer button{
+    padding: 10px;
+    border-radius: 10px;
+    background-color: red;
+}
+
 
 /* ===================== ESTILOS DO BOTÃO DE ABRIR MODAL ===================== */
+
+.addB {
+    padding: 10px;
+    background-color: var(--blue); /* Cor azul, igual aos outros botões */
+    margin-right: 20px;
+    color: var(--light);
+    border: none;
+    border-radius: 1000px;
+    cursor: pointer;
+    opacity: .9;
+    font-size: 1rem;
+    font-weight: bold;
+    font-family: var(--poppins);
+    transition: background-color 0.3s ease, opacity 0.3s ease;
+}
+
+.addB:hover {
+    background-color: #2587cc; /* Cor azul escura no hover */
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+.addB:active {
+    transform: scale(0.95);
+}
+
+
+
 .addF {
     padding: 10px;
     background-color: #85ca85;
@@ -1934,6 +1994,7 @@ h3 {
 
 .addF:hover {
     opacity: 1;
+}
 
     .modal-footer {
         padding: 10px;
@@ -1982,7 +2043,7 @@ h3 {
             position: absolute;
             left: 0;
         }
-    }
+
 
 
     @media screen and (max-width: 768px) {

@@ -72,25 +72,38 @@
 
         <!-- Área de fundo (Fade) -->
         <div id="fade" class="hide"></div>
+
         <!-- Modal -->
-        <div id="modal" class="hide">
+        <div id="modal" class="modal-container">
             <div class="modal-header">
-                <h2>Notifications</h2>
+                <h2>Notificações</h2>
                 <button id="close-modal">
                     <span class="material-symbols-sharp">close</span>
                 </button>
             </div>
 
-            <div class="notify-item" th:each="notification : ${notifications}">
-                <div class="notify_img">
-                    <img src="/img/Admin.jpg" alt="" style="width: 50px;">
+            <!-- Área que terá scroll -->
+            <div class="modal-body">
+                <div class="notify-item" th:each="notification : ${notifications}">
+                    <div class="notify_img">
+                        <img src="/img/Admin.jpg" alt="" style="width: 50px;">
+                    </div>
+                    <div class="notify-info">
+                        <p><span th:text="${notification.message}"></span></p>
+                        <p>
+                            <span class="notify-time" th:text="${#temporals.format(notification.createdAt, 'mm')}"></span> minutos atrás.
+                        </p>
+                    </div>
                 </div>
-                <div class="notify-info">
-                    <p><span th:text="${notification.message}"></span></p>
-                    <p>
-                        <span class="notify-time" th:text="${#temporals.format(notification.createdAt, 'mm')}"></span> minutes ago.
-                    </p>
-                </div>
+            </div>
+
+            <!-- Criação do iframe invisível -->
+            <iframe name="hidden-frame" style="display: none;"></iframe>
+
+            <div class="modal-footer">
+                <form action="/notifications/clear" method="post" target="hidden-frame">
+                    <button type="submit">Limpar Notificações</button>
+                </form>
             </div>
         </div>
 
@@ -143,7 +156,7 @@
             <li>
                 <i class='bx bxs-group' ></i>
                 <span class="text">
-						<h3 th:text="${ClientesSize}"></h3>
+						<h3 th:text="${totalClientes}"></h3>
 						<p>Clientes Cadastrados</p>
 					</span>
             </li>
@@ -179,10 +192,22 @@
                                 <option value="11" th:selected="${selectedMonth == 11}">Novembro</option>
                                 <option value="12" th:selected="${selectedMonth == 12}">Dezembro</option>
                             </select>
+                            <!-- 🔹 Mantém o ano selecionado ao mudar o mês -->
+                            <input type="hidden" name="year" th:value="${selectedYear}">
                         </form>
-
                     </div>
 
+                    <div class="ano-navegacao">
+                        <form method="get" action="/">
+                            <label for="year-select">Escolha o Ano: </label>
+                            <select id="year-select" name="year" onchange="this.form.submit()">
+                                <option th:each="ano : ${anosDisponiveis}" th:value="${ano}" th:text="${ano}"
+                                        th:selected="${ano == selectedYear}"></option>
+                            </select>
+                            <!-- 🔹 Mantém o mês selecionado ao mudar o ano -->
+                            <input type="hidden" name="month" th:value="${selectedMonth}">
+                        </form>
+                    </div>
                 </div>
 
                 <!-- Tabela de Dados dos Históricos -->
@@ -208,9 +233,9 @@
                                 <td th:text="${#dates.format(parcela.historico.created, 'dd/MM/yyyy')}"></td>
                                 <td th:text="${#dates.format(parcela.dataPagamento, 'dd/MM/yyyy')}"></td>
                                 <td>
-                                    <span th:if="${parcela.pagas == -1}" style="color: red;">PENDENTE</span>
+                                    <span th:if="${parcela.pagas == -1}" style="color: red;">ATRASADO</span>
                                     <span th:if="${parcela.pagas > 0}" style="color: green;">PAGO</span>
-                                    <span th:if="${parcela.pagas == 0}" style="color: orange;">A PAGAR</span>
+                                    <span th:if="${parcela.pagas == 0}" style="color: orange;">PENDENTE</span>
                                 </td>
                             </tr>
                             </tbody>

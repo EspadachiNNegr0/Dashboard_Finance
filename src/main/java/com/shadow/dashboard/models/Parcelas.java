@@ -40,22 +40,15 @@ public class Parcelas {
         Date hoje = new Date();
 
         if (this.pagas > 0) {
-            // ✅ Pago se já foi pago
             this.status = "PAGO";
         } else if (this.dataPagamento == null) {
-            // ✅ A Pagar se não tem data de pagamento
-            System.out.println("⚠️ Parcela ID " + this.id + ": Sem dataPagamento, status definido como 'A PAGAR'.");
-            this.status = "A PAGAR";
-        } else if (this.dataPagamento.before(hoje) && this.pagas == 0) {
-            // ✅ Atrasado se a data de pagamento é no passado e não foi pago
+            this.status = "PENDENTE"; // ✅ Se não houver data de pagamento, assume que está pendente
+        } else if (this.dataPagamento.before(hoje)) {
             this.status = "ATRASADO";
         } else {
-            // ✅ Caso padrão: Pendente
             this.status = "PENDENTE";
         }
     }
-
-
 
     // Getters e Setters
     public Long getId() { return id; }

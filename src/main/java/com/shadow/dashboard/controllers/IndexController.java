@@ -14,6 +14,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -56,23 +57,20 @@ public class IndexController {
     }
 
     @GetMapping("/")
-    public ModelAndView index(@RequestParam(value = "month", required = false) Integer selectedMonth) {
+    public ModelAndView index(@RequestParam(value = "year", required = false) Integer selectedYear,
+                              @RequestParam(value = "month", required = false) Integer selectedMonth) {
         ModelAndView mv = new ModelAndView("index");
 
-        // 🔹 Se nenhum mês for passado, define automaticamente como Janeiro (1)
+        // Define o ano e mês atuais se nenhum for selecionado
+        int currentYear = LocalDate.now().getYear();
+        final int finalSelectedYear = (selectedYear == null) ? currentYear : selectedYear;
         final int finalSelectedMonth = (selectedMonth == null || selectedMonth == 0) ? 1 : selectedMonth;
 
-        List<Clientes> clientes = clientRepository.findAll();
-        List<Banco> bancos = bancoRepository.findAll();
-        List<Socios> socios = sociosRepository.findAll();
+        List<Integer> anosDisponiveis = parcelasRepository.findDistinctYears();
+        List<Parcelas> todasParcelas = parcelasRepository.findParcelasByYear(finalSelectedYear);
         List<Notification> notifications = notificationRepository.findAll();
 
-        // 🔹 Atualiza o status das parcelas vencidas ANTES de carregá-las
-        historicoService.atualizarStatusParcelasVencidas();
-
-        List<Parcelas> todasParcelas = parcelasRepository.findAll();
-
-        // 🔹 Filtra apenas as parcelas do mês de janeiro ou do mês selecionado
+        // Filtra apenas as parcelas do mês selecionado
         List<Parcelas> parcelasFiltradas = todasParcelas.stream()
                 .filter(p -> {
                     if (p.getDataPagamento() == null) return false;
@@ -82,27 +80,30 @@ public class IndexController {
                 })
                 .toList();
 
-        int totalNotify = notifications.size();
+        // Contagem de clientes com histórico ativo baseado no pagamento de parcelas
+        long totalClientes = historicoRepository.countClientesComHistoricoAtivoPorPagamento(finalSelectedYear, finalSelectedMonth);
+
+        // Logs para depuração
+        System.out.println("📊 Total de Clientes Ativos (com pagamento no período): " + totalClientes);
+
+        // Informações auxiliares
+        int totalNotify = notificationRepository.findAll().size();
+        double somaDeEmprestimo = parcelasFiltradas.stream().mapToDouble(Parcelas::getValor).sum();
         long emprestimosAtivos = parcelasFiltradas.stream()
                 .filter(parcela -> parcela.getHistorico() != null
-                        && !"complete".equalsIgnoreCase(parcela.getHistorico().getStatus().toString()))
+                        && !"COMPLETE".equalsIgnoreCase(parcela.getHistorico().getStatus().toString()))
                 .count();
 
-        double somaDeEmprestimo = parcelasFiltradas.stream()
-                .mapToDouble(Parcelas::getValor)
-                .sum();
-
-        // 🔹 Adiciona os atributos para a view
-        mv.addObject("ClientesSize", clientes.size());
-        mv.addObject("emprestimosAtivos", emprestimosAtivos);
-        mv.addObject("parcelas", parcelasFiltradas);
+        // Adiciona os atributos para a view
+        mv.addObject("anosDisponiveis", anosDisponiveis);
+        mv.addObject("selectedYear", finalSelectedYear);
         mv.addObject("selectedMonth", finalSelectedMonth);
+        mv.addObject("parcelas", parcelasFiltradas);
         mv.addObject("totalNotify", totalNotify);
-        mv.addObject("notifications", notifications);
         mv.addObject("somaDeEmprestimo", somaDeEmprestimo);
-        mv.addObject("clientes", clientes);
-        mv.addObject("socios", socios);
-        mv.addObject("bancos", bancos);
+        mv.addObject("emprestimosAtivos", emprestimosAtivos);
+        mv.addObject("totalClientes", totalClientes);
+        mv.addObject("notifications", notifications);
 
         return mv;
     }

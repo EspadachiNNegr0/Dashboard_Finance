@@ -26,6 +26,7 @@ public class Clientes {
     @Column(nullable = true)
     private String endereco;
 
+
     public Long getId() {
         return id;
     }

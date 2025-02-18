@@ -180,7 +180,9 @@
 
             <!-- Botão para limpar notificações -->
             <div class="modal-footer">
-                <button id="clear-notifications">Limpar Notificações</button>
+                <form action="/notifications/clear" method="post" target="hidden-frame">
+                    <button type="submit">Limpar Notificações</button>
+                </form>
             </div>
         </div>
 

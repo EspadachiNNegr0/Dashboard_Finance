@@ -73,29 +73,38 @@
 
         <!-- Área de fundo (Fade) -->
         <div id="fade" class="hide"></div>
+
         <!-- Modal -->
-        <div id="modal" class="hide">
+        <div id="modal" class="modal-container">
             <div class="modal-header">
-                <h2>Notifications</h2>
+                <h2>Notificações</h2>
                 <button id="close-modal">
                     <span class="material-symbols-sharp">close</span>
                 </button>
             </div>
 
-            <div class="notify-item" th:each="notification : ${notifications}">
-                <div class="notify_img">
-                    <img src="/img/Admin.jpg" alt="" style="width: 50px;">
-                </div>
-                <div class="notify-info">
-                    <p><span th:text="${notification.message}"></span></p>
-                    <p>
-                        <span class="notify-time" th:text="${#temporals.format(notification.createdAt, 'mm')}"></span> minutes ago.
-                    </p>
+            <!-- Área que terá scroll -->
+            <div class="modal-body">
+                <div class="notify-item" th:each="notification : ${notifications}">
+                    <div class="notify_img">
+                        <img src="/img/Admin.jpg" alt="" style="width: 50px;">
+                    </div>
+                    <div class="notify-info">
+                        <p><span th:text="${notification.message}"></span></p>
+                        <p>
+                            <span class="notify-time" th:text="${#temporals.format(notification.createdAt, 'mm')}"></span> minutos atrás.
+                        </p>
+                    </div>
                 </div>
             </div>
+
+            <!-- Botão para limpar notificações -->
+            <div class="modal-footer">
+                <form action="/notifications/clear" method="post" target="hidden-frame">
+                    <button type="submit">Limpar Notificações</button>
+                </form>
+            </div>
         </div>
-
-
 
         <div class="profile" onclick="toggleSubMenu()">
             <div class="profile-photo">
@@ -140,59 +149,32 @@
                 <div class="head">
                     <h3>Recent Orders</h3>
 
-                    <!-- Botão para abrir o modal de adicionar cliente -->
-                    <button class="addC" id="openModalCliente" aria-label="Adicionar Cliente">Add Cliente</button>
-
-                    <!-- Modal de Adicionar Cliente -->
-                    <div id="modal-add-cliente" class="modal-add-cliente hide">
+                    <!-- Botão para abrir o modal -->
+                    <button class="addB" aria-label="Adicionar Banco">Add Banco</button>
+                    <!-- Modal de Adicionar Banco -->
+                    <div id="modal-add-banco" class="modal hide">
                         <div class="modal-content">
+                            <button id="close-modal-add-banco" class="close-button" aria-label="Fechar">X</button>
                             <div class="modal-headers">
-                                <header>Adicionar Cliente</header>
-                                <button class="close" id="closeModalCliente">&times;</button>
+                                <header>Registro de Banco</header>
                             </div>
                             <div class="modal-body">
-                                <!-- Alerta de erro -->
-                                <!-- 🔹 Mensagem de Sucesso -->
-                                <div th:if="${success}" id="mensagem-sucesso" class="alert alert-success">
-                                    <span th:text="${success}"></span>
-                                </div>
-
-                                <!-- 🔹 Mensagem de Erro -->
-                                <div th:if="${error}" id="mensagem-erro" class="alert alert-danger">
-                                    <span th:text="${error}"></span>
-                                </div>
-
-                                <form id="form-cliente" method="post" action="/clientes/adicionar">
-                                    <div class="details-cliente">
-                                        <span class="title">Detalhes do Cliente</span>
+                                <form id="form-add-banco" action="/bancos" method="POST">
+                                    <div class="details-banco">
                                         <div class="fields">
-
-                                            <!-- Nome do Cliente -->
+                                            <!-- Nome do Banco -->
                                             <div class="input-field">
-                                                <label>Nome</label>
-                                                <input type="text" id="nome" name="nome" placeholder="Digite o nome do cliente" required>
+                                                <label for="nome-banco">Nome do Banco</label>
+                                                <input type="text" id="nome-banco" name="nome" placeholder="Digite o nome do banco" required>
                                             </div>
 
-                                            <!-- CPF -->
+                                            <!-- Descrição do Banco -->
                                             <div class="input-field">
-                                                <label>CPF</label>
-                                                <input type="text" id="cpf" name="cpf" placeholder="Digite o CPF" required>
+                                                <label for="descricao-banco">Descrição</label>
+                                                <input type="text" id="descricao-banco" name="descricao" placeholder="Digite a Descrição" required>
                                             </div>
 
-                                            <!-- Contato -->
-                                            <div class="input-field">
-                                                <label>Contato</label>
-                                                <input type="text" id="contato" name="contato" placeholder="Digite o contato do cliente" required>
-                                            </div>
-
-                                            <!-- Endereço -->
-                                            <div class="input-field">
-                                                <label>Endereço</label>
-                                                <input type="text" id="endereco" name="endereco" placeholder="Digite o endereço" required>
-                                            </div>
-
-                                            <!-- Botão de Envio -->
-                                            <button type="submit">Salvar Cliente</button>
+                                            <button type="submit">Salvar</button>
                                         </div>
                                     </div>
                                 </form>
@@ -200,17 +182,86 @@
                         </div>
                     </div>
 
+                    <!-- Botão para abrir o modal de adicionar funcionário -->
+                    <button id="openAddFuncionario" class="addF" aria-label="Adicionar Funcionário">Add Funcionário</button>
+
+                    <!-- Formulário de Adicionar Funcionário Simplificado -->
+                    <div id="modal-overlay" class="modal-overlay hide">
+
+                        <div id="modal-add-funcionario" class="modal hide">
+                            <div class="modal-content">
+                                <div class="modal-headers">
+                                    <button id="closeAddFuncionario" class="close-button">&times;</button>
+                                    <h2>Adicionar Funcionário</h2>
+                                </div>
+                                <div class="modal-body">
+                                    <form action="/Table" method="POST">
+                                        <div class="input-field">
+                                            <label for="name">Nome</label>
+                                            <input id="name" name="name" type="text" placeholder="Digite o nome" required>
+                                        </div>
+                                        <div class="input-field">
+                                            <label for="idade">Idade</label>
+                                            <input id="idade" name="idade" type="number" placeholder="Digite a idade" required>
+                                        </div>
+                                        <div class="input-field">
+                                            <label for="contact">Contato</label>
+                                            <input id="contact" name="contact" type="text" placeholder="Digite o contato" required>
+                                        </div>
+                                        <div class="input-field">
+                                            <label for="address">Endereço</label>
+                                            <input id="address" name="address" type="text" placeholder="Digite o endereço" required>
+                                        </div>
+                                        <button id="btnSaveFuncionario" type="submit">Salvar Funcionário</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botão para abrir o modal de adicionar cliente -->
+                    <button class="addC" id="openModalCliente" aria-label="Adicionar Cliente">Add Cliente</button>
+                    <!-- Modal de Adicionar Cliente -->
+                    <div id="modal-add-cliente" class="modal hide">
+                        <div class="modal-content">
+                            <div class="modal-headers">
+                                <button class="close" id="closeModalCliente">&times;</button>
+                                <header>Adicionar Cliente</header>
+                            </div>
+                            <div class="modal-body">
+                                <form id="form-cliente" method="post" action="/clientes/adicionar">
+                                    <div class="input-field">
+                                        <label>Nome</label>
+                                        <input type="text" id="nome" name="nome" placeholder="Digite o nome do cliente" required>
+                                    </div>
+                                    <div class="input-field">
+                                        <label>CPF</label>
+                                        <input type="text" id="cpf" name="cpf" placeholder="Digite o CPF" required>
+                                    </div>
+                                    <div class="input-field">
+                                        <label>Contato</label>
+                                        <input type="text" id="contato" name="contato" placeholder="Digite o contato do cliente" required>
+                                    </div>
+                                    <div class="input-field">
+                                        <label>Endereço</label>
+                                        <input type="text" id="endereco" name="endereco" placeholder="Digite o endereço" required>
+                                    </div>
+                                    <button type="submit">Salvar Cliente</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
 
                     <button class="add" aria-label="Adicionar empréstimo">Add Emprestimo</button>
                     <div id="modal-add-emprestimo" class="modal hide">
                         <div class="modal-content">
+                            <button class="close-button" aria-label="Fechar">X</button>
                             <div class="modal-headers">
                                 <header>Registro de Empréstimo</header>
                             </div>
                             <div class="modal-body">
                                 <form action="/" method="POST">
                                     <div class="details-emprestimo">
-                                        <span class="title">Detalhes do Empréstimo</span>
                                         <div class="fields">
                                             <!-- Nome do Cliente -->
                                             <div class="input-field">
@@ -244,7 +295,17 @@
 
                                             <!-- Banco -->
                                             <div class="input-field">
-                                                <label>Banco</label>
+                                                <label>Banco Saida</label>
+                                                <select name="banco.id" required>
+                                                    <option value="" disabled selected>Escolha um Banco</option>
+                                                    <option th:each="banco : ${bancos}"
+                                                            th:value="${banco.id}"
+                                                            th:text="${banco.nome}"></option>
+                                                </select>
+                                            </div>
+
+                                            <div class="input-field">
+                                                <label>Banco Entrada</label>
                                                 <select name="banco.id" required>
                                                     <option value="" disabled selected>Escolha um Banco</option>
                                                     <option th:each="banco : ${bancos}"
@@ -255,7 +316,7 @@
 
                                             <!-- Socio -->
                                             <div class="input-field">
-                                                <label>Socio</label>
+                                                <label>Funcionario</label>
                                                 <select name="socios.id" required> <!-- Alterado de banco.id para socios.id -->
                                                     <option value="" disabled selected>Escolha quem emprestou</option>
                                                     <option th:each="socio : ${socios}"
@@ -317,13 +378,15 @@
                     </div>
 
                 </div>
-                <table id="example" class="table table-striped" style="width:100%">
+
+                <!-- TABELA -->
+                <table id="example" class="table table-striped">
                     <thead>
                     <tr>
                         <th>Name</th>
                         <th>Price</th>
                         <th>Porcent</th>
-                        <th>Valor mensal</th>
+                        <th>Valor Mensal</th>
                         <th>Parcelamento</th>
                         <th>Start date</th>
                         <th>End date</th>
@@ -332,51 +395,20 @@
                     </thead>
                     <tbody>
                     <tr th:each="historico: ${historias}">
+                        <td><a th:href="@{/historico/{id}(id=${historico.cliente.id})}" th:text="${historico.cliente.nome}"></a></td>
+                        <td th:text="${historico.price}"></td>
+                        <td th:text="${historico.percentage} + '%'"></td>
+                        <td>$<span th:text="${historico.valorMensal}"></span></td>
+                        <td th:text="${historico.parcelamento}"></td>
+                        <td th:text="${historico.created}"></td>
+                        <td th:text="${historico.creationF}"></td>
                         <td>
-                            <a th:href="@{/historico/{id}(id=${historico.cliente.id})}"
-                               th:text="${historico.cliente.nome}"></a>
-                        </td>
-                        <td>
-                        <span th:text="${historico.price} + ' '"></span>
-                        </td>
-                        <td>
-                            <span th:text="${historico.percentage} + ' '"></span>%
-                        </td>
-                        <td>
-                            $<span th:text="${historico.valorMensal}"></span>
-                        </td>
-                        <td>
-                            <span th:text="${historico.parcelamento} + ' '"></span>
-                        </td>
-                        <td>
-                            <span th:text="${historico.created} + ' '"></span>
-
-                        </td>
-                        <td>
-                            <span th:text="${historico.creationF}"></span>
-                        </td>
-                        <td>
-                            <span th:text="${historico.status} + ' '"></span>
-                        </td>
-                        <td>
-                            <a th:href="@{/histori/{id}(id=${historico.id})}" class="btn btn-info">
-                                <span class="material-symbols-sharp">file_open</span>
-                            </a>
+                            <span th:if="${historico.status.name() == 'ATRASADO'}" style="color: red;">ATRASADO</span>
+                            <span th:if="${historico.status.name() == 'PAGO'}" style="color: green;">PAGO</span>
+                            <span th:if="${historico.status.name() == 'PENDENTE'}" style="color: orange;">PENDENTE</span>
                         </td>
                     </tr>
                     </tbody>
-                    <tfoot>
-                    <tr>
-                        <th>Name</th>
-                        <th>Price</th>
-                        <th>Porcent</th>
-                        <th>PriceTotal</th>
-                        <th>Parcelamento</th>
-                        <th>Start date</th>
-                        <th>End date</th>
-                        <th>Status</th>
-                    </tr>
-                    </tfoot>
                 </table>
             </div>
         </div>

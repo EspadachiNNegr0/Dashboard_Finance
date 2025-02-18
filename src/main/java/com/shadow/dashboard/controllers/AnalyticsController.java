@@ -3,6 +3,7 @@ package com.shadow.dashboard.controllers;
 import com.shadow.dashboard.models.Clientes;
 import com.shadow.dashboard.models.Notification;
 import com.shadow.dashboard.models.Parcelas;
+import com.shadow.dashboard.models.Socios;
 import com.shadow.dashboard.repository.ClientRepository;
 import com.shadow.dashboard.repository.HistoricoRepository;
 import com.shadow.dashboard.repository.NotificationRepository;
@@ -47,6 +48,8 @@ public class AnalyticsController {
         List<String> meses = new ArrayList<>();
         List<Double> valoresMensais = new ArrayList<>();
         List<Notification> notifications = notificationRepository.findAll();
+        int totalNotify = notificationRepository.findAll().size();
+        List<Socios> socios = sociosRepository.findAll();
         List<Clientes> clientes = clientRepository.findAll();
 
         // Gerando os meses e valores de vendas mensais
@@ -76,6 +79,8 @@ public class AnalyticsController {
         // Adicionando ao modelo para o Thymeleaf
         model.addAttribute("anosDisponiveis", anosDisponiveis);
         model.addAttribute("selectedYear", selectedYear);
+        model.addAttribute("totalNotify", totalNotify);
+        model.addAttribute("socios", socios);
         model.addAttribute("meses", meses);
         model.addAttribute("valoresMensais", valoresMensais);
         model.addAttribute("totalPago", totalPago);

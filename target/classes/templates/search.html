@@ -79,25 +79,36 @@
 
         <!-- Área de fundo (Fade) -->
         <div id="fade" class="hide"></div>
+
         <!-- Modal -->
-        <div id="modal" class="hide">
+        <div id="modal" class="modal-container">
             <div class="modal-header">
-                <h2>Notifications</h2>
+                <h2>Notificações</h2>
                 <button id="close-modal">
                     <span class="material-symbols-sharp">close</span>
                 </button>
             </div>
 
-            <div class="notify-item" th:each="notification : ${notifications}">
-                <div class="notify_img">
-                    <img src="/img/Admin.jpg" alt="" style="width: 50px;">
+            <!-- Área que terá scroll -->
+            <div class="modal-body">
+                <div class="notify-item" th:each="notification : ${notifications}">
+                    <div class="notify_img">
+                        <img src="/img/Admin.jpg" alt="" style="width: 50px;">
+                    </div>
+                    <div class="notify-info">
+                        <p><span th:text="${notification.message}"></span></p>
+                        <p>
+                            <span class="notify-time" th:text="${#temporals.format(notification.createdAt, 'mm')}"></span> minutos atrás.
+                        </p>
+                    </div>
                 </div>
-                <div class="notify-info">
-                    <p><span th:text="${notification.message}"></span></p>
-                    <p>
-                        <span class="notify-time" th:text="${#temporals.format(notification.createdAt, 'mm')}"></span> minutes ago.
-                    </p>
-                </div>
+            </div>
+
+            <!-- Botão para limpar notificações -->
+            <div class="modal-footer">
+                <form action="/notifications/clear" method="post" target="hidden-frame">
+                    <button type="submit">Limpar Notificações</button>
+                </form>
             </div>
         </div>
 

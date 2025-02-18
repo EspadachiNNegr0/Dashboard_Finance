@@ -30,6 +30,15 @@ public interface HistoricoRepository extends JpaRepository<Historico, Long> {
     @Query("SELECT h.socios.name, SUM(h.price) FROM Historico h GROUP BY h.socios.name")
     List<Object[]> sumLoansBySocio();
 
+    @Query("""
+    SELECT COUNT(DISTINCT h.cliente.id) 
+    FROM Historico h
+    JOIN h.parcelas p
+    WHERE YEAR(p.dataPagamento) = :ano 
+      AND MONTH(p.dataPagamento) = :mes 
+      AND h.status <> 'COMPLETE'
+""")
+    long countClientesComHistoricoAtivoPorPagamento(@Param("ano") int ano, @Param("mes") int mes);
 
 
     List<Historico> findByStatus(String status);
