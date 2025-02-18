@@ -29,22 +29,26 @@
                 <table class="history-table">
                     <thead>
                     <tr>
+                        <th>Código</th>
                         <th>Valor</th>
                         <th>Parcelas</th>
                         <th>Data</th>
                         <th>Porcentagem</th>
-                        <th>Código</th>
                         <th>Status</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="historico : ${historicos}">
+                        <td th:text="${historico.id}"></td>
                         <td th:text="${historico.price}"></td>
                         <td th:text="${historico.parcelamento} + 'x'"></td>
                         <td th:text="${#dates.format(historico.created, 'dd/MM/yyyy')}"></td>
                         <td th:text="${historico.percentage} + '%'"></td>
-                        <td th:text="${historico.id}"></td>
-                        <td th:text="${historico.status}"></td>
+                        <td>
+                            <span th:if="${historico.status.name() == 'ATRASADO'}" style="color: red;">ATRASADO</span>
+                            <span th:if="${historico.status.name() == 'PAGO'}" style="color: green;">PAGO</span>
+                            <span th:if="${historico.status.name() == 'PENDENTE'}" style="color: orange;">PENDENTE</span>
+                        </td>
                     </tr>
                     </tbody>
                 </table>

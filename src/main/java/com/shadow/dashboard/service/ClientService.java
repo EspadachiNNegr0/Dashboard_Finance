@@ -64,7 +64,6 @@ public class ClientService {
 
 
     public Clientes saveClienteAndCreateNotification(Clientes cliente) {
-        // Validações básicas
         if (cliente.getNome() == null || cliente.getNome().trim().isEmpty()) {
             throw new IllegalArgumentException("O campo 'nome' é obrigatório.");
         }
@@ -75,14 +74,16 @@ public class ClientService {
         // Verificar se o CPF já existe
         Optional<Clientes> clienteExistente = clientRepository.findByCpf(cliente.getCpf());
         if (clienteExistente.isPresent()) {
+            criarNotificacao(clienteExistente.get(), "❌ Cliente não foi cadastrado. O CPF digitado já está em uso.");
             throw new RuntimeException("O CPF já está cadastrado no sistema.");
+        } else {
+            // Salvar cliente
+            cliente = clientRepository.save(cliente);
+
+            // Criar notificação
+            criarNotificacao(cliente, "✅ Cliente "+ cliente.getNome() +" cadastrado com sucesso!");
         }
 
-        // Salvar cliente
-        cliente = clientRepository.save(cliente);
-
-        // Criar notificação
-        criarNotificacao(cliente, "✅ Cliente "+ cliente.getNome() +" cadastrado com sucesso!");
 
         return cliente;
     }

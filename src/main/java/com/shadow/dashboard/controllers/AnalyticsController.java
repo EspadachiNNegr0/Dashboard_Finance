@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class AnalyticsController {
@@ -47,7 +49,10 @@ public class AnalyticsController {
 
         List<String> meses = new ArrayList<>();
         List<Double> valoresMensais = new ArrayList<>();
-        List<Notification> notifications = notificationRepository.findAll();
+        List<Notification> notifications = notificationRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Notification::getCreatedAt).reversed()) // 🔥 Ordena pela data mais recente primeiro
+                .collect(Collectors.toList());
         int totalNotify = notificationRepository.findAll().size();
         List<Socios> socios = sociosRepository.findAll();
         List<Clientes> clientes = clientRepository.findAll();

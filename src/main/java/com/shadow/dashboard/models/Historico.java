@@ -17,10 +17,10 @@ public class Historico {
     private double price; // Valor do empréstimo atual
 
     @Column(nullable = false)
-    private double valorTotal; // Novo: Valor total do empréstimo antes de qualquer pagamento
+    private double valorTotal; // Valor total do empréstimo antes de qualquer pagamento
 
     @Column(nullable = false)
-    private double valorMensal; // Novo: Valor da parcela mensal
+    private double valorMensal; // Valor da parcela mensal
 
     @Column(nullable = false)
     private int percentage;
@@ -49,8 +49,15 @@ public class Historico {
     @Column(nullable = true)
     private Date creationF;
 
+    // 🔹 Adicionando Banco de Entrada e Banco de Saída
     @ManyToOne
-    private Banco banco;
+    @JoinColumn(name = "banco_saida_id", nullable = false) // 🔹 Banco de onde o dinheiro sai
+    private Banco bancoSaida;
+
+    @ManyToOne
+    @JoinColumn(name = "banco_entrada_id", nullable = false) // 🔹 Banco para onde o dinheiro vai
+    private Banco bancoEntrada;
+
 
     @Column(nullable = false)
     private int parcelamento;
@@ -159,12 +166,20 @@ public class Historico {
         calcularValorMensal(); // Atualiza automaticamente o valor da parcela
     }
 
-    public Banco getBanco() {
-        return banco;
+    public Banco getBancoEntrada() {
+        return bancoEntrada;
     }
 
-    public void setBanco(Banco banco) {
-        this.banco = banco;
+    public void setBancoEntrada(Banco bancoEntrada) {
+        this.bancoEntrada = bancoEntrada;
+    }
+
+    public Banco getBancoSaida() {
+        return bancoSaida;
+    }
+
+    public void setBancoSaida(Banco bancoSaida) {
+        this.bancoSaida = bancoSaida;
     }
 
     public List<Parcelas> getParcelas() {

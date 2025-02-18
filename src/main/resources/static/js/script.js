@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // ================= MODAL DE ADICIONAR EMPRÉSTIMO =================
     const addButton = document.querySelector(".add");
     const modalAdd = document.getElementById("modal-add-emprestimo");
-    const closeAddModalButton = document.querySelector("#modal-add-emprestimo .close-button");
+    const closeAddModalButton = modalAdd?.querySelector(".close-button");
 
     if (addButton && modalAdd && closeAddModalButton) {
         addButton.addEventListener("click", () => {
@@ -15,8 +15,15 @@ document.addEventListener("DOMContentLoaded", function () {
             modalAdd.classList.add("hide");
             modalAdd.classList.remove("show");
         });
+
+        modalAdd.addEventListener("click", (event) => {
+            if (event.target === modalAdd) {
+                modalAdd.classList.add("hide");
+                modalAdd.classList.remove("show");
+            }
+        });
     } else {
-        console.error("❌ Verifique se os IDs e classes do modal de empréstimo estão corretos!");
+        console.error("❌ Verifique se os elementos do modal de empréstimo estão corretos.");
     }
 
     // ================= MODAL DE NOTIFICAÇÕES =================
@@ -74,41 +81,23 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // ================= TOGGLE DO MENU DO PERFIL =================
-    const profile = document.querySelector(".profile");
-    const subMenu = document.getElementById("subMenu");
+    // ================= EXIBIR MENSAGEM DE SUCESSO/ERRO NO MODAL DE CLIENTE =================
+    const mensagemSucesso = "[[${success}]]";
+    const mensagemErro = "[[${error}]]";
+    const alertBox = document.getElementById("cliente-mensagem");
+    const alertText = document.getElementById("cliente-alert-text");
 
-    if (profile && subMenu) {
-        profile.addEventListener("click", function (event) {
-            event.stopPropagation();
-            subMenu.classList.toggle("show");
-        });
-
-        document.addEventListener("click", function (event) {
-            if (!profile.contains(event.target) && !subMenu.contains(event.target)) {
-                subMenu.classList.remove("show");
-            }
-        });
-    } else {
-        console.error("❌ Elemento 'profile' ou 'subMenu' não encontrado!");
+    if (alertBox && alertText) {
+        if (mensagemSucesso && mensagemSucesso !== "null") {
+            alertBox.classList.remove("hide");
+            alertBox.classList.add("alert-success");
+            alertText.textContent = mensagemSucesso;
+        } else if (mensagemErro && mensagemErro !== "null") {
+            alertBox.classList.remove("hide");
+            alertBox.classList.add("alert-danger");
+            alertText.textContent = mensagemErro;
+        }
     }
-
-    // =================== PAGAMENTO DE PARCELA ===================
-    document.querySelectorAll(".pagar-parcela").forEach(button => {
-        button.addEventListener("click", function () {
-            const parcelaId = this.getAttribute("data-id");
-
-            fetch(`/pagar-parcela/${parcelaId}`, {
-                method: "POST"
-            })
-                .then(response => response.text())
-                .then(message => {
-                    alert(message);
-                    location.reload();
-                })
-                .catch(error => console.error("Erro ao pagar parcela:", error));
-        });
-    });
 
     // =================== MODAL LISTA DE CLIENTES ===================
     const clientsListWindow = document.getElementById('clientsListWindow');
@@ -181,109 +170,81 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
+    // ================= TOGGLE DO MENU DO PERFIL =================
+    const profile = document.querySelector(".profile");
+    const subMenu = document.getElementById("subMenu");
 
-    // ================= MODAL DE ADICIONAR EMPRÉSTIMO =================
-    const addButton = document.querySelector(".add");
-    const modalAdd = document.getElementById("modal-add-emprestimo");
-    const closeAddModalButton = modalAdd?.querySelector(".close-button");
-
-    if (addButton && modalAdd && closeAddModalButton) {
-        // Abrir Modal
-        addButton.addEventListener("click", () => {
-            modalAdd.classList.add("show");
-            modalAdd.classList.remove("hide");
+    if (profile && subMenu) {
+        profile.addEventListener("click", function (event) {
+            event.stopPropagation(); // Impede o fechamento imediato
+            subMenu.classList.toggle("show"); // Alterna a exibição do submenu
         });
 
-        // Fechar Modal ao clicar no botão X
-        closeAddModalButton.addEventListener("click", () => {
-            modalAdd.classList.add("hide");
-            modalAdd.classList.remove("show");
-        });
-
-        // Fechar Modal ao clicar fora do conteúdo
-        modalAdd.addEventListener("click", (event) => {
-            if (event.target === modalAdd) {
-                modalAdd.classList.add("hide");
-                modalAdd.classList.remove("show");
+        // Fecha o submenu ao clicar fora dele
+        document.addEventListener("click", function (event) {
+            if (!profile.contains(event.target) && !subMenu.contains(event.target)) {
+                subMenu.classList.remove("show");
             }
         });
+
+        console.log("🔹 Submenu configurado com sucesso!"); // Debug no console
     } else {
-        console.error("❌ Verifique se os elementos do modal de empréstimo estão corretos.");
+        console.error("❌ Elemento 'profile' ou 'subMenu' não encontrado!");
+    }
+});
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const clearNotificationsButton = document.getElementById("clear-notifications");
+
+    if (clearNotificationsButton) {
+        clearNotificationsButton.addEventListener("click", function () {
+            if (confirm("Tem certeza que deseja apagar todas as notificações?")) {
+                fetch("/notifications/clear", {
+                    method: "DELETE"
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            location.reload(); // 🔄 Recarrega a página após apagar as notificações
+                        } else {
+                            alert("Erro ao apagar notificações.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Erro ao apagar notificações:", error);
+                        alert("Erro ao apagar notificações. Verifique o console para mais detalhes.");
+                    });
+            }
+        });
     }
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-    const modal = document.getElementById("modal-add-banco");
-    const openButton = document.querySelector(".addB");
-    const closeButton = modal?.querySelector(".close-button");
+    const openModalBanco = document.querySelector(".addB"); // Botão de abrir modal
+    const closeModalBanco = document.getElementById("close-modal-add-banco"); // Botão de fechar modal
+    const modalBanco = document.getElementById("modal-add-banco"); // Modal
 
-    if (modal && openButton && closeButton) {
+    if (openModalBanco && closeModalBanco && modalBanco) {
         // Abrir o modal ao clicar no botão "Add Banco"
-        openButton.addEventListener("click", function () {
-            modal.classList.add("show");
-            modal.classList.remove("hide");
+        openModalBanco.addEventListener("click", function () {
+            modalBanco.classList.add("show");
+            modalBanco.classList.remove("hide");
         });
 
-        // Fechar o modal ao clicar no botão de fechar (X)
-        closeButton.addEventListener("click", function () {
-            modal.classList.add("hide");
-            modal.classList.remove("show");
+        // Fechar o modal ao clicar no botão "X"
+        closeModalBanco.addEventListener("click", function () {
+            modalBanco.classList.add("hide");
+            modalBanco.classList.remove("show");
         });
 
         // Fechar o modal ao clicar fora dele
         window.addEventListener("click", function (event) {
-            if (event.target === modal) {
-                modal.classList.add("hide");
-                modal.classList.remove("show");
+            if (event.target === modalBanco) {
+                modalBanco.classList.add("hide");
+                modalBanco.classList.remove("show");
             }
         });
     } else {
         console.error("❌ O modal de adicionar banco ou seus botões não foram encontrados!");
     }
-});
-
-
-document.addEventListener("DOMContentLoaded", () => {
-    const modalBanco = document.getElementById("modal-add-banco");
-    const closeModalBanco = document.getElementById("close-modal-add-banco");
-    const formBanco = document.getElementById("form-add-banco");
-
-    // Fecha o modal ao clicar no botão de fechar
-    closeModalBanco.addEventListener("click", () => {
-        modalBanco.classList.add("hide");
-    });
-
-    // Intercepta o envio do formulário e faz uma requisição AJAX
-    formBanco.addEventListener("submit", async (event) => {
-        event.preventDefault(); // Impede o envio tradicional do formulário
-
-        const formData = new FormData(formBanco);
-        const jsonData = {
-            nome: formData.get("nome"),
-            descricao: formData.get("descricao")
-        };
-
-        try {
-            const response = await fetch("/bancos", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(jsonData)
-            });
-
-            if (response.ok) {
-                alert("Banco cadastrado com sucesso!");
-                formBanco.reset(); // Limpa o formulário
-                modalBanco.classList.add("hide"); // Fecha o modal
-                window.location.reload(); // 🔄 Recarrega a página automaticamente
-            } else {
-                const errorText = await response.text();
-                alert(`Erro: ${errorText}`);
-            }
-        } catch (error) {
-            console.error("Erro ao salvar banco:", error);
-            alert("Erro ao cadastrar banco. Tente novamente.");
-        }
-    });
 });

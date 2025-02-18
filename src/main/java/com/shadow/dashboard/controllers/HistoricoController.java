@@ -52,7 +52,10 @@ public class HistoricoController {
 
         List<Clientes> clientes = clientRepository.findAll();
         List<Historico> historias = historicoRepository.findAll();
-        List<Notification> notifications = notificationRepository.findAll();
+        List<Notification> notifications = notificationRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Notification::getCreatedAt).reversed()) // 🔥 Ordena pela data mais recente primeiro
+                .collect(Collectors.toList());
         List<Socios> socios = sociosRepository.findAll();
         List<Banco> bancos = bancoRepository.findAll();
 
@@ -78,7 +81,10 @@ public class HistoricoController {
         List<Historico> historias = historicoRepository.findAll();
         List<Banco> bancos = bancoRepository.findAll();
         List<Socios> socios = sociosRepository.findAll();
-        List<Notification> notifications = notificationRepository.findAll();
+        List<Notification> notifications = notificationRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Notification::getCreatedAt).reversed()) // 🔥 Ordena pela data mais recente primeiro
+                .collect(Collectors.toList());
 
         // Total de notificações
         int totalNotify = notifications.size();

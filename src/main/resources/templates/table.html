@@ -100,9 +100,7 @@
 
             <!-- Botão para limpar notificações -->
             <div class="modal-footer">
-                <form action="/notifications/clear" method="post" target="hidden-frame">
-                    <button type="submit">Limpar Notificações</button>
-                </form>
+                <button id="clear-notifications">Limpar Notificações</button>
             </div>
         </div>
 
@@ -230,6 +228,9 @@
                             </div>
                             <div class="modal-body">
                                 <form id="form-cliente" method="post" action="/clientes/adicionar">
+                                    <div id="cliente-mensagem" class="alert hide">
+                                        <p id="cliente-alert-text"></p>
+                                    </div>
                                     <div class="input-field">
                                         <label>Nome</label>
                                         <input type="text" id="nome" name="nome" placeholder="Digite o nome do cliente" required>
@@ -294,23 +295,22 @@
                                             </div>
 
                                             <!-- Banco -->
+
+                                            <!-- Banco Entrada -->
                                             <div class="input-field">
-                                                <label>Banco Saida</label>
-                                                <select name="banco.id" required>
+                                                <label>Banco Entrada</label>
+                                                <select name="bancoEntrada.id" required>
                                                     <option value="" disabled selected>Escolha um Banco</option>
-                                                    <option th:each="banco : ${bancos}"
-                                                            th:value="${banco.id}"
-                                                            th:text="${banco.nome}"></option>
+                                                    <option th:each="banco : ${bancos}" th:value="${banco.id}" th:text="${banco.nome}"></option>
                                                 </select>
                                             </div>
 
+                                            <!-- Banco Saída -->
                                             <div class="input-field">
-                                                <label>Banco Entrada</label>
-                                                <select name="banco.id" required>
+                                                <label>Banco Saída</label>
+                                                <select name="bancoSaida.id" required>
                                                     <option value="" disabled selected>Escolha um Banco</option>
-                                                    <option th:each="banco : ${bancos}"
-                                                            th:value="${banco.id}"
-                                                            th:text="${banco.nome}"></option>
+                                                    <option th:each="banco : ${bancos}" th:value="${banco.id}" th:text="${banco.nome}"></option>
                                                 </select>
                                             </div>
 
@@ -386,6 +386,7 @@
                         <th>Name</th>
                         <th>Price</th>
                         <th>Porcent</th>
+                        <th>Valor Total</th>
                         <th>Valor Mensal</th>
                         <th>Parcelamento</th>
                         <th>Start date</th>
@@ -398,14 +399,20 @@
                         <td><a th:href="@{/historico/{id}(id=${historico.cliente.id})}" th:text="${historico.cliente.nome}"></a></td>
                         <td th:text="${historico.price}"></td>
                         <td th:text="${historico.percentage} + '%'"></td>
-                        <td>$<span th:text="${historico.valorMensal}"></span></td>
+                        <td th:text="${#numbers.formatDecimal(historico.valorTotal, 1, 2)}"></td>
+                        <td th:text="${#numbers.formatDecimal(historico.valorMensal, 1, 2)}"></td>
                         <td th:text="${historico.parcelamento}"></td>
-                        <td th:text="${historico.created}"></td>
-                        <td th:text="${historico.creationF}"></td>
+                        <td th:text="${#dates.format(historico.created, 'dd/MM/yyyy')}"></td>
+                        <td th:text="${#dates.format(historico.creationF, 'dd/MM/yyyy')}"></td>
                         <td>
                             <span th:if="${historico.status.name() == 'ATRASADO'}" style="color: red;">ATRASADO</span>
                             <span th:if="${historico.status.name() == 'PAGO'}" style="color: green;">PAGO</span>
                             <span th:if="${historico.status.name() == 'PENDENTE'}" style="color: orange;">PENDENTE</span>
+                        </td>
+                        <td>
+                            <a th:href="@{/histori/{id}(id=${historico.id})}" class="btn btn-info">
+                                <span class="material-symbols-sharp">file_open</span>
+                            </a>
                         </td>
                     </tr>
                     </tbody>

@@ -68,7 +68,10 @@ public class IndexController {
 
         List<Integer> anosDisponiveis = parcelasRepository.findDistinctYears();
         List<Parcelas> todasParcelas = parcelasRepository.findParcelasByYear(finalSelectedYear);
-        List<Notification> notifications = notificationRepository.findAll();
+        List<Notification> notifications = notificationRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Notification::getCreatedAt).reversed()) // 🔥 Ordena pela data mais recente primeiro
+                .collect(Collectors.toList());
 
         // Filtra apenas as parcelas do mês selecionado
         List<Parcelas> parcelasFiltradas = todasParcelas.stream()
@@ -112,7 +115,7 @@ public class IndexController {
     public String saveEmprestimo(@ModelAttribute Historico historia, RedirectAttributes redirectAttributes) {
         // Verifica se o status está vazio ou é diferente de COMPLETE e FAILED
         if (historia.getStatus() == null || (historia.getStatus() != Status.PAGO && historia.getStatus() != Status.PENDENTE)) {
-            historia.setStatus(Status.PENDENTE); // Define o status como PROCESSING (ativo)
+            historia.setStatus(Status.PENDENTE); // Define o status como PENDENTE (ativo)
         }
 
         // Salva o histórico no banco de dados e cria a notificação
@@ -198,7 +201,7 @@ public class IndexController {
         }
 
         // 🔹 Obtém o valor da parcela mensal
-        double valorParcela = historico.getPrice() / historico.getParcelamento();
+        double valorParcela = historico.getValorMensal();
 
         // 🔹 Registra o pagamento no log
         PagamentoLog log = new PagamentoLog();

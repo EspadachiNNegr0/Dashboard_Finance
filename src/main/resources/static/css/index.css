@@ -1788,6 +1788,53 @@ h3 {
     visibility: hidden;
 }
 
+/* Estilização do alerta */
+#cliente-mensagem {
+    display: none; /* Oculta o alerta por padrão */
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 400px;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: 'Poppins', sans-serif;
+    text-align: center;
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: opacity 0.3s ease-in-out;
+    z-index: 9999;
+}
+
+/* Aparece quando necessário */
+#cliente-mensagem.show {
+    display: block;
+    opacity: 1;
+}
+
+/* Oculta suavemente */
+#cliente-mensagem.hide {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Estilos para mensagens de sucesso */
+.alert-success {
+    background-color: #4CAF50;
+    color: white;
+    border-left: 5px solid #2E7D32;
+}
+
+/* Estilos para mensagens de erro */
+.alert-danger {
+    background-color: #F44336;
+    color: white;
+    border-left: 5px solid #C62828;
+}
+
+
 #modal-add-funcionario .window-header {
     display: flex;
     justify-content: space-between;
@@ -2018,7 +2065,51 @@ h3 {
         background: darkred;
     }
 
-    /* Responsividade */
+.navegacao-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 15px;
+    border: 1px solid var(--lights);
+    border-radius: 8px;
+    background: var(--light);
+}
+
+.navegacao-container legend {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--dark);
+}
+
+.mes-navegacao, .ano-navegacao {
+    flex: 1;
+    min-width: 180px;
+}
+
+.navegacao-container label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--dark);
+    display: block;
+    margin-bottom: 5px;
+}
+
+.navegacao-container select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid var(--lights);
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.navegacao-container select:focus {
+    border-color: var(--blue);
+    outline: none;
+}
+
+
+/* Responsividade */
     @media (max-width: 768px) {
         .todo {
             margin: 10px;
