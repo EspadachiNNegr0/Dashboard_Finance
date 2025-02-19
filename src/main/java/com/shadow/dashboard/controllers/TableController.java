@@ -16,24 +16,20 @@ public class TableController {
     @PostMapping("/bancos")
     public String saveBanco(
             @RequestParam("nome") String nome,
-            @RequestParam("descricao") String descricao) {  // 🔹 Agora aceita dados como String (formulário)
+            @RequestParam("descricao") String descricao) {
 
         // Verifica se os campos estão preenchidos corretamente
-        if (nome == null || nome.trim().isEmpty()) {
-            return "redirect:/Table?error=O nome do banco não pode estar vazio!"; // 🔹 Redireciona com mensagem de erro
+        if (nome == null || nome.trim().isEmpty() || descricao == null || descricao.trim().isEmpty()) {
+            return "redirect:/Table?error=Campos obrigatórios não preenchidos!";
         }
 
-        if (descricao == null || descricao.trim().isEmpty()) {
-            return "redirect:/Table?error=A descrição do banco não pode estar vazia!"; // 🔹 Redireciona com mensagem de erro
-        }
-
-        // Cria um objeto Banco e salva no banco de dados
         Banco banco = new Banco();
         banco.setNome(nome);
         banco.setDescricao(descricao);
 
         bancoService.saveBancoAndNotification(banco);
 
-        return "redirect:/Table"; // 🔹 Redireciona para a página desejada
+        return "redirect:/Table";
     }
+
 }

@@ -223,8 +223,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const openModalBanco = document.querySelector(".addB"); // Botão de abrir modal
     const closeModalBanco = document.getElementById("close-modal-add-banco"); // Botão de fechar modal
     const modalBanco = document.getElementById("modal-add-banco"); // Modal
+    const formBanco = document.getElementById("form-add-banco"); // Formulário
 
-    if (openModalBanco && closeModalBanco && modalBanco) {
+    if (openModalBanco && closeModalBanco && modalBanco && formBanco) {
         // Abrir o modal ao clicar no botão "Add Banco"
         openModalBanco.addEventListener("click", function () {
             modalBanco.classList.add("show");
@@ -244,7 +245,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 modalBanco.classList.remove("show");
             }
         });
+
+        // Confirmação de envio do formulário
+        formBanco.addEventListener("submit", function (event) {
+            const nome = document.getElementById("nome-banco").value;
+            const descricao = document.getElementById("descricao-banco").value;
+
+            console.log("Enviando formulário...");
+            console.log("Nome:", nome);
+            console.log("Descrição:", descricao);
+        });
     } else {
         console.error("❌ O modal de adicionar banco ou seus botões não foram encontrados!");
     }
 });
+

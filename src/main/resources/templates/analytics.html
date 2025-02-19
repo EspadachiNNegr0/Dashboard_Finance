@@ -224,21 +224,21 @@
             <li>
                 <i class='bx bxs-calendar-check'></i>
                 <span class="text">
-                    <h3>1020</h3>
-                    <p>New Order</p>
+                    <h3><span th:text="${quantidadeNaoPagos}"></span></h3>
+                    <p>Total de Empréstimos ativos</p>
                 </span>
             </li>
             <li>
                 <i class='bx bxs-group'></i>
                 <span class="text">
-                    <h3>2834</h3>
-                    <p>Visitors</p>
+                    <h3><span th:text="${totalClientes}"></span></h3>
+                    <p>Clientes Cadastrados</p>
                 </span>
             </li>
             <li>
                 <i class='bx bxs-dollar-circle'></i>
                 <span class="text">
-                    <h3>$<span th:text="${somaDeEmprestimo}"></span></h3>
+                    <h3>R$ <span th:text="${totalPriceDosHistoricos}"></span></h3>
                     <p>Total de Emprestimos (S/J)</p>
                 </span>
             </li>
@@ -345,7 +345,7 @@
 
         const statusLabels = ["PAGO", "PENDENTE", "ATRASADO"];
         const statusValues = [totalPago, totalPendente, totalAtrasado];
-        const statusColors = ['#0e6b13', '#FFCE56', '#FF6384'];
+        const statusColors = ['#076209', '#FFCE56', '#FF6384'];
 
         // Gráfico de Pizza
         const pieChart = new Chart(document.getElementById('pieChart'), {
@@ -391,7 +391,7 @@
         });
         /*]]>*/
     </script>
-    
+
 
 </section>
 

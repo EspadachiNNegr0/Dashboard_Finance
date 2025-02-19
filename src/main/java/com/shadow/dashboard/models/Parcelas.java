@@ -19,7 +19,7 @@ public class Parcelas {
     private int parcelas;
 
     @Column(nullable = false)
-    private int pagas; // 🔹 0 = A PAGAR, -1 = PENDENTE, >0 = PAGO
+    private int pagas; // 🔹 0 = A PAGAR, -1 = ATRASADO, 1 = PAGO
 
     @Temporal(TemporalType.DATE)
     @Column(nullable = false)
@@ -28,11 +28,10 @@ public class Parcelas {
     @Column(nullable = false)
     private double valor;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private StatusParcela status;
 
-    @Column(length = 20) // 🔹 Adiciona a coluna status diretamente na tabela
-    private String status;
-
-    // 🔹 Construtor padrão
     public Parcelas() {}
 
     // 🔹 Método que atualiza o status automaticamente
@@ -40,13 +39,13 @@ public class Parcelas {
         Date hoje = new Date();
 
         if (this.pagas > 0) {
-            this.status = "PAGO";
+            this.status = StatusParcela.PAGO;
         } else if (this.dataPagamento == null) {
-            this.status = "PENDENTE"; // ✅ Se não houver data de pagamento, assume que está pendente
+            this.status = StatusParcela.PENDENTE;
         } else if (this.dataPagamento.before(hoje)) {
-            this.status = "ATRASADO";
+            this.status = StatusParcela.ATRASADO;
         } else {
-            this.status = "PENDENTE";
+            this.status = StatusParcela.PENDENTE;
         }
     }
 
@@ -78,7 +77,7 @@ public class Parcelas {
 
     public void setValor(double valor) { this.valor = valor; }
 
-    public String getStatus() { return status; }
+    public StatusParcela getStatus() { return status; }
 
-    public void setStatus(String status) { this.status = status; }
+    public void setStatus(StatusParcela status) { this.status = status; }
 }

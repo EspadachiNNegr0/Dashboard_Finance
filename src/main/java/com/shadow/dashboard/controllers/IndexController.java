@@ -168,7 +168,7 @@ public class IndexController {
                 historicoService.criarNovaParcelaComValorRestante(parcela, valorPago, valorMensal);
             } else {
                 parcela.setPagas(1);
-                parcela.setStatus("PAGO");
+                parcela.setStatus(StatusParcela.PAGO);
                 parcelasRepository.save(parcela);
             }
 
