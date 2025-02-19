@@ -64,14 +64,20 @@
                         </div>
                     </div>
                     <div class="fields-group">
+                        <!-- Banco Saída -->
                         <div class="field">
-                            <label>Banco Saida:</label>
-                            <input type="text" name="banco" th:value="${histori.bancoSaida.nome}" readonly />
+                            <label>Banco Saída:</label>
+                            <input type="text" name="banco"
+                                   th:value="${histori.bancoSaida != null ? histori.bancoSaida.nome : 'Não disponível'}" readonly />
                         </div>
+
+                        <!-- Banco Entrada -->
                         <div class="field">
                             <label>Banco Entrada:</label>
-                            <input type="text" name="banco" th:value="${histori.bancoEntrada.nome}" readonly />
+                            <input type="text" name="banco"
+                                   th:value="${histori.bancoEntrada != null ? histori.bancoEntrada.nome : 'Não disponível'}" readonly />
                         </div>
+
                         <div class="field">
                             <label>Descrição:</label>
                             <input type="text" name="description" th:value="${histori.description}" readonly />

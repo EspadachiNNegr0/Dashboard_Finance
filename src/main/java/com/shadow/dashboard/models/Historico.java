@@ -51,11 +51,11 @@ public class Historico {
 
     // 🔹 Adicionando Banco de Entrada e Banco de Saída
     @ManyToOne
-    @JoinColumn(name = "banco_saida_id", nullable = false) // 🔹 Banco de onde o dinheiro sai
+    @JoinColumn(name = "banco_saida", nullable = false) // 🔹 Banco de onde o dinheiro sai
     private Banco bancoSaida;
 
     @ManyToOne
-    @JoinColumn(name = "banco_entrada_id", nullable = false) // 🔹 Banco para onde o dinheiro vai
+    @JoinColumn(name = "banco_entrada", nullable = false) // 🔹 Banco para onde o dinheiro vai
     private Banco bancoEntrada;
 
 

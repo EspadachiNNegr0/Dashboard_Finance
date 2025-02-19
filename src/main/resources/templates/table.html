@@ -299,7 +299,7 @@
                                             <!-- Banco Entrada -->
                                             <div class="input-field">
                                                 <label>Banco Entrada</label>
-                                                <select name="bancoEntrada.id" required>
+                                                <select name="bancoEntrada" required>
                                                     <option value="" disabled selected>Escolha um Banco</option>
                                                     <option th:each="banco : ${bancos}" th:value="${banco.id}" th:text="${banco.nome}"></option>
                                                 </select>
@@ -308,7 +308,7 @@
                                             <!-- Banco Saída -->
                                             <div class="input-field">
                                                 <label>Banco Saída</label>
-                                                <select name="bancoSaida.id" required>
+                                                <select name="bancoSaida" required>
                                                     <option value="" disabled selected>Escolha um Banco</option>
                                                     <option th:each="banco : ${bancos}" th:value="${banco.id}" th:text="${banco.nome}"></option>
                                                 </select>

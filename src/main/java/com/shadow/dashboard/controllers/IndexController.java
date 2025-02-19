@@ -112,21 +112,32 @@ public class IndexController {
     }
 
     @PostMapping("/")
-    public String saveEmprestimo(@ModelAttribute Historico historia, RedirectAttributes redirectAttributes) {
-        // Verifica se o status está vazio ou é diferente de COMPLETE e FAILED
+    public String saveEmprestimo(@ModelAttribute Historico historia,
+                                 @RequestParam("bancoEntrada") Long bancoEntradaId,
+                                 @RequestParam("bancoSaida") Long bancoSaidaId,
+                                 RedirectAttributes redirectAttributes) {
         if (historia.getStatus() == null || (historia.getStatus() != Status.PAGO && historia.getStatus() != Status.PENDENTE)) {
-            historia.setStatus(Status.PENDENTE); // Define o status como PENDENTE (ativo)
+            historia.setStatus(Status.PENDENTE);
         }
 
-        // Salva o histórico no banco de dados e cria a notificação
+        // 🔹 Ensure that bancoEntrada and bancoSaida are not null
+        Banco bancoEntrada = bancoRepository.findById(bancoEntradaId)
+                .orElseThrow(() -> new RuntimeException("Banco de Entrada não encontrado"));
+
+        Banco bancoSaida = bancoRepository.findById(bancoSaidaId)
+                .orElseThrow(() -> new RuntimeException("Banco de Saída não encontrado"));
+
+        // 🔹 Set the retrieved Banco objects in the Historico entity
+        historia.setBancoEntrada(bancoEntrada);
+        historia.setBancoSaida(bancoSaida);
+
+        // Save the Historico entity
         historicoService.saveHistoryAndCreateNotification(historia);
 
-        // Adiciona mensagem de sucesso
         redirectAttributes.addFlashAttribute("message", "Empréstimo registrado com sucesso!");
-
-        // Redireciona para a página inicial
         return "redirect:/Table";
     }
+
 
     @GetMapping("/histori/{id}")
     public String detalhesVenda(@PathVariable("id") Long id, Model model) {
@@ -152,17 +163,19 @@ public class IndexController {
             Historico historico = parcela.getHistorico();
             double valorMensal = historico.getValorMensal();
 
+            // 🔹 Se o pagamento for menor que o valor mensal, criar uma nova parcela para o valor restante
             if (valorPago < valorMensal) {
                 historicoService.criarNovaParcelaComValorRestante(parcela, valorPago, valorMensal);
+            } else {
+                parcela.setPagas(1);
+                parcela.setStatus("PAGO");
+                parcelasRepository.save(parcela);
             }
 
-            parcela.setPagas(1);
-            parcela.setStatus("PAGO");
-            parcelasRepository.save(parcela);
+            // 🔹 Atualiza o status do histórico após pagamento
+            historicoService.atualizarStatusHistorico(historico);
 
-            // ✅ Ajuste de status atualizado corretamente
-            historicoService.atualizarStatusParcelaPaga(id, valorPago);
-
+            // 🔹 Criar notificação sobre o pagamento
             historicoService.criarNotificacao(historico, valorPago, "Pagamento da Parcela");
 
             return ResponseEntity.ok("✅ Pagamento registrado com sucesso!");
@@ -170,7 +183,6 @@ public class IndexController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("❌ Erro: " + e.getMessage());
         }
     }
-
 
     @PostMapping("/histori/{id}/pagar-mensal")
     public String pagarParcela(@PathVariable Long id, RedirectAttributes redirectAttributes) {
@@ -258,50 +270,31 @@ public class IndexController {
 
         // 🔹 Calcula o valor dos juros
         double valorJuros = historico.getValorTotal() * (historico.getPercentage() / 100.0);
-
-        // 🔹 Obtém o valor mensal esperado
         double valorMensal = historico.getValorMensal();
 
-        // 🔹 Seleciona a primeira parcela pendente (em vez da última)
+        // 🔹 Seleciona a primeira parcela pendente (ainda não paga)
         Parcelas primeiraParcelaPendente = parcelasList.stream()
-                .filter(p -> p.getPagas() == 0) // Pegamos a primeira parcela ainda não paga
+                .filter(p -> p.getPagas() == 0)
                 .min(Comparator.comparing(Parcelas::getId))
                 .orElse(null);
-
-        if (primeiraParcelaPendente == null) {
-            // 🔹 Se não houver mais parcelas pendentes, pegamos a última parcela paga com `2`
-            primeiraParcelaPendente = parcelasList.stream()
-                    .filter(p -> p.getPagas() == 2)
-                    .max(Comparator.comparing(Parcelas::getId))
-                    .orElse(null);
-        }
 
         if (primeiraParcelaPendente == null) {
             redirectAttributes.addFlashAttribute("error", "Nenhuma parcela disponível para pagamento.");
             return "redirect:/histori/" + id;
         }
 
-        // 🔹 Se apenas os juros forem pagos, marcamos a parcela como "2"
-        if (valorJuros < valorMensal) {
-            primeiraParcelaPendente.setPagas(2);
-            System.out.println("⚠️ Apenas os juros foram pagos! Criando nova parcela para o valor restante.");
-        } else {
-            primeiraParcelaPendente.setPagas(1);
-            System.out.println("✅ Parcela quitada.");
-        }
-
+        // 🔹 Marca a parcela como PAGA (1), mesmo que tenha sido pago apenas o juros
+        primeiraParcelaPendente.setPagas(1);
         parcelasRepository.save(primeiraParcelaPendente);
 
-        // 🔹 Verifica se existem parcelas ainda não pagas (`pagas == 0`)
-        boolean existemParcelasNaoPagas = parcelasList.stream().anyMatch(p -> p.getPagas() == 0);
-
-        // 🔹 Criar nova parcela SOMENTE se todas as parcelas já estiverem pagas (`pagas != 0`) e a última for `2`
-        if (!existemParcelasNaoPagas && primeiraParcelaPendente.getPagas() == 2) {
-            System.out.println("⚠️ Criando nova parcela pois todas as outras já foram pagas!");
+        // 🔹 Se o valor pago for menor que o valor da parcela, o restante será adicionado à próxima parcela
+        double valorRestante = valorMensal - valorJuros;
+        if (valorRestante > 0) {
+            System.out.println("⚠️ Apenas os juros foram pagos. Criando nova parcela com o restante: R$ " + valorRestante);
             historicoService.criarNovaParcelaComValorRestante(primeiraParcelaPendente, valorJuros, valorMensal);
         }
 
-        // 🔹 Atualiza o histórico com o novo valor total, incluindo juros pagos
+        // 🔹 Atualiza o histórico com o novo valor total
         historico.setValorTotal(historico.getValorTotal() + valorJuros);
         historicoRepository.save(historico);
 
@@ -327,5 +320,6 @@ public class IndexController {
         redirectAttributes.addFlashAttribute("success", "Pagamento de juros registrado com sucesso! Novo valor de juros: R$ " + valorJuros);
         return "redirect:/histori/" + id;
     }
+
 
 }

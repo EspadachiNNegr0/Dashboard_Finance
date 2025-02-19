@@ -174,52 +174,52 @@
             <div class="order">
                 <div class="head">
 
-                        <!-- Navegação entre os meses e anos -->
-                        <fieldset class="navegacao-container">
-                            <legend>Filtrar por Mês e Ano</legend>
+                    <!-- Navegação entre os meses e anos -->
+                    <fieldset class="navegacao-container">
+                        <legend>Filtrar por Mês e Ano</legend>
 
-                            <div class="mes-navegacao">
-                                <form method="get" action="/">
-                                    <label for="month-select">Escolha o Mês:</label>
-                                    <select id="month-select" name="month" onchange="this.form.submit()">
-                                        <option value="" disabled selected>Selecione o mês</option>
-                                        <option value="1" th:selected="${selectedMonth == 1}">Janeiro</option>
-                                        <option value="2" th:selected="${selectedMonth == 2}">Fevereiro</option>
-                                        <option value="3" th:selected="${selectedMonth == 3}">Março</option>
-                                        <option value="4" th:selected="${selectedMonth == 4}">Abril</option>
-                                        <option value="5" th:selected="${selectedMonth == 5}">Maio</option>
-                                        <option value="6" th:selected="${selectedMonth == 6}">Junho</option>
-                                        <option value="7" th:selected="${selectedMonth == 7}">Julho</option>
-                                        <option value="8" th:selected="${selectedMonth == 8}">Agosto</option>
-                                        <option value="9" th:selected="${selectedMonth == 9}">Setembro</option>
-                                        <option value="10" th:selected="${selectedMonth == 10}">Outubro</option>
-                                        <option value="11" th:selected="${selectedMonth == 11}">Novembro</option>
-                                        <option value="12" th:selected="${selectedMonth == 12}">Dezembro</option>
-                                    </select>
-                                    <input type="hidden" name="year" th:value="${selectedYear}">
-                                </form>
-                            </div>
+                        <div class="mes-navegacao">
+                            <form method="get" action="/">
+                                <label for="month-select">Escolha o Mês:</label>
+                                <select id="month-select" name="month" onchange="this.form.submit()">
+                                    <option value="" disabled selected>Selecione o mês</option>
+                                    <option value="1" th:selected="${selectedMonth == 1}">Janeiro</option>
+                                    <option value="2" th:selected="${selectedMonth == 2}">Fevereiro</option>
+                                    <option value="3" th:selected="${selectedMonth == 3}">Março</option>
+                                    <option value="4" th:selected="${selectedMonth == 4}">Abril</option>
+                                    <option value="5" th:selected="${selectedMonth == 5}">Maio</option>
+                                    <option value="6" th:selected="${selectedMonth == 6}">Junho</option>
+                                    <option value="7" th:selected="${selectedMonth == 7}">Julho</option>
+                                    <option value="8" th:selected="${selectedMonth == 8}">Agosto</option>
+                                    <option value="9" th:selected="${selectedMonth == 9}">Setembro</option>
+                                    <option value="10" th:selected="${selectedMonth == 10}">Outubro</option>
+                                    <option value="11" th:selected="${selectedMonth == 11}">Novembro</option>
+                                    <option value="12" th:selected="${selectedMonth == 12}">Dezembro</option>
+                                </select>
+                                <input type="hidden" name="year" th:value="${selectedYear}">
+                            </form>
+                        </div>
 
-                            <div class="ano-navegacao">
-                                <form method="get" action="/">
-                                    <label for="year-select">Escolha o Ano:</label>
-                                    <select id="year-select" name="year" onchange="this.form.submit()">
-                                        <option value="" disabled selected>Selecione o ano</option>
-                                        <option th:each="ano : ${anosDisponiveis}" th:value="${ano}" th:text="${ano}" th:selected="${ano == selectedYear}"></option>
-                                    </select>
-                                    <input type="hidden" name="month" th:value="${selectedMonth}">
-                                </form>
-                            </div>
-                        </fieldset>
+                        <div class="ano-navegacao">
+                            <form method="get" action="/">
+                                <label for="year-select">Escolha o Ano:</label>
+                                <select id="year-select" name="year" onchange="this.form.submit()">
+                                    <option value="" disabled selected>Selecione o ano</option>
+                                    <option th:each="ano : ${anosDisponiveis}" th:value="${ano}" th:text="${ano}" th:selected="${ano == selectedYear}"></option>
+                                </select>
+                                <input type="hidden" name="month" th:value="${selectedMonth}">
+                            </form>
+                        </div>
+                    </fieldset>
 
-                    </div>
+                </div>
 
-                    <!-- Tabela de Dados dos Históricos -->
+                <!-- Tabela de Dados dos Históricos -->
                 <!-- Tabela de Dados dos Históricos -->
                 <div class="tabelas-mes">
                     <div th:each="dia : ${#numbers.sequence(1, 31)}">
-                    <h3 th:text="|Dia ${dia}|"></h3>
-                    <table class="tabela-historico">
+                        <h3 th:text="|Dia ${dia}|"></h3>
+                        <table class="tabela-historico">
                             <thead>
                             <tr>
                                 <th>Cliente</th>
@@ -243,7 +243,7 @@
                                 </td>
                             </tr>
                             </tbody>
-                        <tfoot>
+                            <tfoot>
                             <tr>
                                 <th>Cliente</th>
                                 <th>Valor Mensal</th>

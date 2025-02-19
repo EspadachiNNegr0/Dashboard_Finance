@@ -190,14 +190,14 @@ public class HistoricoService {
         parcelasRepository.save(parcela);
 
         // ✅ Atualiza o status do histórico se não houver mais parcelas atrasadas
-        atualizarStatusHistoricoAoPagar(historico);
+        atualizarStatusHistorico(historico);
 
         // ✅ Cria uma notificação informando que a parcela foi paga
         criarNotificacao(historico.getCliente(),
                 "✅ Pagamento de R$ " + valorPago + " realizado na parcela #" + parcela.getId());
     }
 
-    @Scheduled(fixedRate = 60000) // Executa a cada 60 segundos (1 minuto)
+    @Scheduled(fixedRate = 30000) // Executa a cada 60 segundos (1 minuto)
     public void verificarParcelasAtrasadasEAtualizarStatus() {
         List<Parcelas> parcelasAtrasadas = parcelasRepository.findByStatusAtrasado();
 
@@ -225,86 +225,110 @@ public class HistoricoService {
         }
     }
 
-    /**
-     * Verifica se ainda existem parcelas atrasadas e ajusta o status do histórico
-     */
-    public void atualizarStatusHistoricoAoPagar(Historico historico) {
+
+    public void atualizarStatusHistorico(Historico historico) {
         if (historico == null) return;
 
-        // Verifica se ainda existem parcelas atrasadas (-1)
-        boolean temParcelasAtrasadas = parcelasRepository.findByHistorico(historico)
-                .stream().anyMatch(parcela -> parcela.getPagas() == -1);
+        // 🔹 Obtém todas as parcelas associadas ao histórico
+        List<Parcelas> parcelas = parcelasRepository.findByHistorico(historico);
 
-        // Se não houver mais parcelas atrasadas, retorna o status do histórico para PENDENTE
-        if (!temParcelasAtrasadas && historico.getStatus() == Status.ATRASADO) {
-            historico.setStatus(Status.PENDENTE);
-            historicoRepository.save(historico);
+        // 🔹 Se não houver parcelas, mantém o status atual
+        if (parcelas.isEmpty()) return;
 
-            // Criar notificação de alteração de status
-            criarNotificacao(historico.getCliente(),
-                    "⚠️ Seu empréstimo #" + historico.getId() + " voltou para PENDENTE.");
+        // 🔹 Verifica se existem parcelas atrasadas (-1)
+        boolean temParcelasAtrasadas = parcelas.stream().anyMatch(parcela -> parcela.getPagas() == -1);
+
+        // 🔹 Verifica se existem parcelas pendentes (0)
+        boolean temParcelasPendentes = parcelas.stream().anyMatch(parcela -> parcela.getPagas() == 0);
+
+        // 🔹 Obtém a última parcela registrada
+        Parcelas ultimaParcela = parcelas.stream()
+                .max(Comparator.comparing(Parcelas::getId))
+                .orElse(null);
+
+        // ✅ Se houver parcelas atrasadas, o status do histórico será ATRASADO
+        if (temParcelasAtrasadas) {
+            historico.setStatus(Status.ATRASADO);
         }
+        // ✅ Se a última parcela foi paga e não há parcelas pendentes, o histórico fica como PAGO
+        else if (ultimaParcela != null && ultimaParcela.getPagas() == 1 && !temParcelasPendentes) {
+            historico.setStatus(Status.PAGO);
+            System.out.println("✅ Histórico #" + historico.getId() + " foi atualizado para PAGO.");
+        }
+        // ✅ Se ainda houver parcelas a serem pagas, mantém como PENDENTE
+        else {
+            historico.setStatus(Status.PENDENTE);
+        }
+
+        historicoRepository.save(historico);
     }
+
 
     public void criarNovaParcelaComValorRestante(Parcelas ultimaParcela, double valorPago, double valorMensal) {
         double valorRestante = valorMensal - valorPago;
 
-        if (valorRestante > 0) {
+        // 🔹 Só cria uma nova parcela se houver valor restante maior que 0.01 para evitar erro de arredondamento
+        if (valorRestante > 0.01) {
             Parcelas novaParcela = new Parcelas();
-            novaParcela.setHistorico(ultimaParcela.getHistorico());
-            novaParcela.setParcelas(1);
-            novaParcela.setPagas(0); // 🔹 Nova parcela precisa ser paga
-            novaParcela.setValor(valorRestante);
+            Historico historico = ultimaParcela.getHistorico();
 
+            // ✅ Define corretamente a nova parcela dentro do mesmo histórico
+            novaParcela.setHistorico(historico);
+            novaParcela.setValor(valorRestante);
+            novaParcela.setPagas(0); // 🔹 Nova parcela deve ser paga
+
+            // ✅ Atualiza o número total de parcelas no histórico e na nova parcela
+            historico.setParcelamento(historico.getParcelamento() + 1);
+            historicoRepository.save(historico); // 🔹 Salva o histórico atualizado
+
+            novaParcela.setParcelas(historico.getParcelamento());
+
+            // ✅ Define a data da nova parcela como o mês seguinte
             Calendar calendar = Calendar.getInstance();
-            calendar.setTime(ultimaParcela.getDataPagamento() != null ? ultimaParcela.getDataPagamento() : new Date());
+            if (ultimaParcela.getDataPagamento() != null) {
+                calendar.setTime(ultimaParcela.getDataPagamento());
+            } else {
+                calendar.setTime(new Date());
+            }
             calendar.add(Calendar.MONTH, 1);
             novaParcela.setDataPagamento(calendar.getTime());
 
+            // ✅ Salva a nova parcela no banco de dados
             parcelasRepository.save(novaParcela);
-            System.out.println("✅ Nova parcela criada com valor restante de R$ " + valorRestante);
+            System.out.println("✅ Nova parcela criada: ID " + novaParcela.getId() + " com valor restante de R$ " + valorRestante);
 
-            // 🔹 Atualiza o histórico para refletir o aumento do número de parcelas
-            Historico historico = ultimaParcela.getHistorico();
-            historico.setParcelamento(historico.getParcelamento() + 1);
-            historico.setValorTotal(historico.getValorTotal() + valorRestante); // 🔹 Atualiza o valor total
-            historicoRepository.save(historico);
-
-            // 🔹 Atualiza o novo valor mensal das parcelas pendentes
-            List<Parcelas> parcelasList = parcelasRepository.findByHistorico(historico);
-            atualizarProximasParcelasEValorMensal(historico, parcelasList);
+            // ✅ Atualiza o status do histórico após a criação da nova parcela
+            atualizarStatusHistorico(historico);
+        } else {
+            System.out.println("⚠️ Nenhuma nova parcela foi criada. Motivos possíveis:");
+            System.out.println("   🔸 O valor restante é zero ou muito pequeno: " + valorRestante);
+            System.out.println("   🔸 A última parcela pode já ter sido paga.");
         }
     }
+
 
     /**
      * Atualiza automaticamente o status de parcelas vencidas a cada 1 minuto.
      */
 
-    @Scheduled(fixedRate = 60000) // Executa a cada 60 segundos (1 min)
+    @Scheduled(fixedRate = 30000) // Executa a cada 60 segundos (1 min)
     public void atualizarStatusParcelasVencidas() {
         List<Parcelas> parcelas = parcelasRepository.findAll();
         Date hoje = new Date();
 
         for (Parcelas parcela : parcelas) {
-            // ✅ Verifica se `dataPagamento` não é nula antes de comparar
-            if (parcela.getDataPagamento() == null) {
-                System.out.println("⚠️ AVISO: Parcela ID " + parcela.getId() + " possui dataPagamento NULL. Definindo como data atual.");
-                parcela.setDataPagamento(hoje); // Define uma data para evitar erro
+            if (parcela.getDataPagamento() == null) continue;
+
+            if (parcela.getDataPagamento().before(hoje) && parcela.getPagas() == 0) {
+                parcela.setPagas(-1);
+                parcela.setStatus("ATRASADO");
                 parcelasRepository.save(parcela);
-                continue; // Passa para a próxima parcela
-            }
 
-            if (parcela.getDataPagamento().before(hoje)) {
-                if (parcela.getPagas() == 0) {
-                    parcela.setPagas(-1); // 🔹 Define como ATRASADO (-1)
-                    parcela.setStatus("ATRASADO");
-                    parcelasRepository.save(parcela);
-
-                    // 🔹 Verificação extra para evitar NullPointerException
-                    Optional.ofNullable(parcela.getHistorico())
-                            .map(Historico::getCliente)
-                            .ifPresent(cliente -> criarNotificacao(cliente,
-                                    "❌ Sua parcela de R$ " + parcela.getValor() + " venceu e está PENDENTE!"));
+                Historico historico = parcela.getHistorico();
+                if (historico != null) {
+                    atualizarStatusHistorico(historico); // ✅ Atualiza status do histórico
+                    criarNotificacao(historico.getCliente(),
+                            "❌ Sua parcela de R$ " + parcela.getValor() + " venceu e está ATRASADA!");
                 }
             }
         }
