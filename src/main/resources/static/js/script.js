@@ -1,4 +1,52 @@
 document.addEventListener("DOMContentLoaded", function () {
+    const openModalButton = document.getElementById("open-modal");
+    const closeModalButton = document.getElementById("close-modal");
+    const fade = document.getElementById("fade");
+    const modal = document.getElementById("modal");
+    const clearNotificationsButton = document.getElementById("clear-notifications");
+
+    // Função para abrir o modal
+    const openModal = () => {
+        modal.classList.remove("hide");
+        fade.classList.remove("hide");
+    };
+
+    // Função para fechar o modal
+    const closeModal = () => {
+        modal.classList.add("hide");
+        fade.classList.add("hide");
+    };
+
+    // Eventos para abrir e fechar o modal
+    openModalButton.addEventListener("click", openModal);
+    closeModalButton.addEventListener("click", closeModal);
+    fade.addEventListener("click", closeModal);
+
+    // Requisição DELETE para limpar notificações
+    if (clearNotificationsButton) {
+        clearNotificationsButton.addEventListener("click", function () {
+            if (confirm("Tem certeza que deseja apagar todas as notificações?")) {
+                fetch("/notifications/clear", {
+                    method: "DELETE",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => {
+                            alert("Notificações apagadas com sucesso!");
+                            location.reload(); // Recarrega a página após apagar as notificações
+
+                    })
+                    .catch(error => {
+                        console.error("Erro ao apagar notificações:", error);
+                        alert("Erro ao apagar notificações. Verifique o console para mais detalhes.");
+                    });
+            }
+        });
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
 
     // ================= MODAL DE ADICIONAR EMPRÉSTIMO =================
     const addButton = document.querySelector(".add");
@@ -193,31 +241,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-
-document.addEventListener("DOMContentLoaded", function () {
-    const clearNotificationsButton = document.getElementById("clear-notifications");
-
-    if (clearNotificationsButton) {
-        clearNotificationsButton.addEventListener("click", function () {
-            if (confirm("Tem certeza que deseja apagar todas as notificações?")) {
-                fetch("/notifications/clear", {
-                    method: "DELETE"
-                })
-                    .then(response => {
-                        if (response.ok) {
-                            location.reload(); // 🔄 Recarrega a página após apagar as notificações
-                        } else {
-                            alert("Erro ao apagar notificações.");
-                        }
-                    })
-                    .catch(error => {
-                        console.error("Erro ao apagar notificações:", error);
-                        alert("Erro ao apagar notificações. Verifique o console para mais detalhes.");
-                    });
-            }
-        });
-    }
-});
 
 document.addEventListener("DOMContentLoaded", function () {
     const openModalBanco = document.querySelector(".addB"); // Botão de abrir modal
