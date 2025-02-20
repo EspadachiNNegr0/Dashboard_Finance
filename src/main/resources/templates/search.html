@@ -41,12 +41,6 @@
                 <span class="text">Analytics</span>
             </a>
         </li>
-        <li>
-            <a href="#">
-                <i class='bx bxs-message-dots' ></i>
-                <span class="text">Message</span>
-            </a>
-        </li>
     </ul>
 </section>
 <!-- SIDEBAR -->
@@ -155,7 +149,7 @@
         <div class="table-data">
             <div class="order">
                 <div class="head">
-                    <h3>Recent Orders</h3>
+                    <h3>Pesquisado:</h3>
 
                     <i class='bx bx-filter' id="openModalFiltro"></i>
 
@@ -191,6 +185,7 @@
                     <thead>
                     <tr>
                         <th>Name</th>
+                        <th>Cod</th>
                         <th>Price</th>
                         <th>Porcent</th>
                         <th>Valor Mensal</th>
@@ -203,7 +198,8 @@
                     </thead>
                     <tbody>
                     <tr th:each="historico: ${listHistorico}">
-                        <td th:text="${historico.cliente.nome}"></td>
+                        <td><a th:href="@{/historico/{id}(id=${historico.cliente.id})}" th:text="${historico.cliente.nome}"></a></td>
+                        <td th:text="${historico.codigo}"></td>
                         <td>
                             <span th:text="${historico.price} + ' '"></span>
                         </td>
@@ -230,6 +226,7 @@
                     <tfoot>
                     <tr>
                         <th>Name</th>
+                        <th>Cod</th>
                         <th>Price</th>
                         <th>Porcent</th>
                         <th>Valor Mensal</th>

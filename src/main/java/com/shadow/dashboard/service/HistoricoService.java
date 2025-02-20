@@ -33,6 +33,11 @@ public class HistoricoService {
             throw new IllegalArgumentException("Os campos 'created' e 'parcelamento' são obrigatórios.");
         }
 
+        // 🔹 Gerar código único antes de salvar
+        if (historico.getCodigo() == 0) { // Se ainda não tiver código, gera um novo
+            historico.setCodigo(gerarCodigoUnico());
+        }
+
         // 🔹 Calcular o valor total do empréstimo considerando os juros
         double valorTotalComJuros = calcularValorTotalComJuros(historico);
         historico.setValorTotal(valorTotalComJuros);
@@ -55,6 +60,18 @@ public class HistoricoService {
 
         return historico;
     }
+
+    private int gerarCodigoUnico() {
+        Random random = new Random();
+        int codigo;
+
+        do {
+            codigo = random.nextInt(900000) + 100000; // Gera um número entre 100000 e 999999
+        } while (historicoRepository.existsByCodigo(codigo));
+
+        return codigo;
+    }
+
 
     public void atualizarProximasParcelasEValorMensal(Historico historico, List<Parcelas> parcelasList) {
         // 🔹 Filtra as parcelas que ainda não foram pagas

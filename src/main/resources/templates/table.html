@@ -385,6 +385,7 @@
                     <thead>
                     <tr>
                         <th>Name</th>
+                        <th>Cod</th>
                         <th>Price</th>
                         <th>Porcent</th>
                         <th>Valor Total</th>
@@ -398,6 +399,7 @@
                     <tbody>
                     <tr th:each="historico: ${historias}">
                         <td><a th:href="@{/historico/{id}(id=${historico.cliente.id})}" th:text="${historico.cliente.nome}"></a></td>
+                        <td th:text="${historico.codigo}"></td>
                         <td th:text="${historico.price}"></td>
                         <td th:text="${historico.percentage} + '%'"></td>
                         <td th:text="${#numbers.formatDecimal(historico.valorTotal, 1, 2)}"></td>

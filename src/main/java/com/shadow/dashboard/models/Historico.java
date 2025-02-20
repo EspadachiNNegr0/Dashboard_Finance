@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 @Entity
 @Table(name = "Tb_History")
@@ -12,6 +13,9 @@ public class Historico {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, unique = true)
+    private int codigo;
 
     @Column(nullable = false)
     private double price; // Valor do empréstimo atual
@@ -188,6 +192,14 @@ public class Historico {
 
     public void setParcelas(List<Parcelas> parcelas) {
         this.parcelas = parcelas;
+    }
+
+    public int getCodigo() {
+        return codigo;
+    }
+
+    public void setCodigo(int codigo) {
+        this.codigo = codigo;
     }
 
     /**

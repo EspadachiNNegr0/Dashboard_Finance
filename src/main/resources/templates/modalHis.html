@@ -39,7 +39,7 @@
                     </thead>
                     <tbody>
                     <tr th:each="historico : ${historicos}">
-                        <td th:text="${historico.id}"></td>
+                        <td th:text="${historico.codigo}"></td>
                         <td th:text="${historico.price}"></td>
                         <td th:text="${historico.parcelamento} + 'x'"></td>
                         <td th:text="${#dates.format(historico.created, 'dd/MM/yyyy')}"></td>
