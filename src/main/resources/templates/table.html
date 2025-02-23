@@ -361,6 +361,17 @@
                             <h2>Selecione os filtros desejados</h2>
 
                             <form id="form-filtro">
+                                <!-- Filtro: Data de Início do Empréstimo -->
+                                <div class="input-group">
+                                    <label for="data-inicio">Data de Início do Empréstimo:</label>
+                                    <input type="date" id="data-inicio" name="dataInicio">
+                                </div>
+
+                                <!-- Filtro: Data de Pagamento do Empréstimo -->
+                                <div class="input-group">
+                                    <label for="data-pagamento">Data de Pagamento do Empréstimo:</label>
+                                    <input type="date" id="data-pagamento" name="dataPagamento">
+                                </div>
 
                                 <!-- Filtro: Valor do Empréstimo -->
                                 <div class="input-group">
@@ -371,7 +382,6 @@
                                         <input type="number" id="valor-max" name="valorMax" placeholder="Até" step="0.01">
                                     </div>
                                 </div>
-
                                 <!-- Botão de envio -->
                                 <button id="btn-modal-filtro" type="submit">Filtrar</button>
                             </form>

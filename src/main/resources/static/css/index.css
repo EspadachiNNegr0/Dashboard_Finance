@@ -1543,6 +1543,7 @@ h3 {
     opacity: 0;
     transition: visibility 0s, opacity 0.3s;
     font-family: Poppins;
+    z-index: 99999;
 }
 
 .modal-filtro.show {
@@ -1570,7 +1571,12 @@ h3 {
     font-family: Poppins;
     text-align: left;
 }
-
+#openModalFiltro {
+    cursor: pointer;
+}
+.modal-filtro.active {
+    display: block;
+}
 /* Estilo dos grupos de entrada */
 .input-group {
     margin-bottom: 15px;

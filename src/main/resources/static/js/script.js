@@ -283,3 +283,84 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
+document.addEventListener("DOMContentLoaded", () => {
+    // ================= MODAL DE FILTRO =================
+    const openModalFiltro = document.getElementById("openModalFiltro");
+    const modalFiltro = document.getElementById("modalFiltro");
+    const btnFecharModalFiltro = document.getElementById("btnFecharModal");
+    const btnAplicarFiltro = document.getElementById("btn-modal-filtro");
+    const formFiltro = document.getElementById("form-filtro");
+    const tabela = document.querySelector("#example tbody");
+
+    if (openModalFiltro && modalFiltro && btnFecharModalFiltro) {
+        openModalFiltro.addEventListener("click", () => {
+            modalFiltro.classList.add("show");
+        });
+
+        btnFecharModalFiltro.addEventListener("click", () => {
+            modalFiltro.classList.remove("show");
+        });
+    }
+
+    // ================= FILTRAR A TABELA =================
+    if (btnAplicarFiltro && formFiltro && tabela) {
+        btnAplicarFiltro.addEventListener("click", (event) => {
+            event.preventDefault(); // Evita o envio do formulário
+
+            // Obter valores dos filtros
+            let dataInicio = document.getElementById("data-inicio").value;
+            let dataPagamento = document.getElementById("data-pagamento").value;
+            let valorMin = parseFloat(document.getElementById("valor-min").value) || 0;
+            let valorMax = parseFloat(document.getElementById("valor-max").value) || Number.MAX_VALUE;
+
+            console.log("Filtros aplicados:", { dataInicio, dataPagamento, valorMin, valorMax });
+
+            // Percorrer todas as linhas da tabela e ocultar as que não correspondem aos filtros
+            Array.from(tabela.getElementsByTagName("tr")).forEach((linha) => {
+                let dataInicioLinha = linha.cells[7]?.innerText.trim(); // Data de Início (coluna 8)
+                let dataPagamentoLinha = linha.cells[8]?.innerText.trim(); // Data de Pagamento (coluna 9)
+                let valorLinha = parseFloat(linha.cells[4]?.innerText.replace(",", ".")) || 0; // Valor Total (coluna 5)
+
+                let mostrar = true;
+
+                // Comparação de data de início
+                if (dataInicio) {
+                    let dataInicioFormatada = formatarDataParaComparacao(dataInicioLinha);
+                    if (dataInicioFormatada < dataInicio) {
+                        mostrar = false;
+                    }
+                }
+
+                // Comparação de data de pagamento
+                if (dataPagamento) {
+                    let dataPagamentoFormatada = formatarDataParaComparacao(dataPagamentoLinha);
+                    console.log(`Comparando: ${dataPagamentoFormatada} >= ${dataPagamento}`);
+                    if (dataPagamentoFormatada > dataPagamento) {
+                        mostrar = false;
+                    }
+                }
+
+                // Comparação de valor mínimo e máximo
+                if (valorLinha < valorMin || valorLinha > valorMax) {
+                    mostrar = false;
+                }
+
+                // Exibir ou ocultar a linha com base nos filtros
+                linha.style.display = mostrar ? "" : "none";
+            });
+
+            // Fechar o modal após aplicar o filtro
+            modalFiltro.classList.remove("show");
+        });
+    }
+
+    // Função para formatar data (de dd/MM/yyyy para yyyy-MM-dd para comparação)
+    function formatarDataParaComparacao(data) {
+        if (!data) return "";
+        let partes = data.split("/");
+        if (partes.length === 3) {
+            return `${partes[2]}-${partes[1]}-${partes[0]}`; // Converte para yyyy-MM-dd
+        }
+        return data;
+    }
+});
