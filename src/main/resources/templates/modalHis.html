@@ -74,7 +74,7 @@
             }).then(response => {
                 if (response.ok) {
                     alert("Histórico excluído com sucesso!");
-                    location.reload();
+                    window.location.href = "/Table"; // ✅ Redireciona para a página /Table
                 } else {
                     alert("Erro ao excluir histórico.");
                 }

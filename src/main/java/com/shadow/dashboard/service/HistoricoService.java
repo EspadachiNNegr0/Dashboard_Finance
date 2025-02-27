@@ -238,6 +238,26 @@ public class HistoricoService {
         System.out.println("✅ Parcelas recalculadas com sucesso!");
     }
 
+    public boolean quitarEmprestimoSeNecessario(Historico historico, double valorPago, double valorRestante) {
+        if (valorPago == valorRestante) {
+            List<Parcelas> parcelasDoHistorico = parcelasRepository.findByHistoricoId(historico.getId());
+
+            for (Parcelas p : parcelasDoHistorico) {
+                p.setPagas(1);
+                p.setStatus(StatusParcela.PAGO);
+                p.setValorPago(Optional.ofNullable(p.getValorPago()).orElse(0.0));
+            }
+
+            parcelasRepository.saveAll(parcelasDoHistorico);
+
+            // ✅ Atualiza o status do histórico como "QUITADO"
+            historico.setStatus(Status.PAGO);
+            atualizarStatusHistorico(historico);
+            return true; // Retorna true se o empréstimo foi quitado
+        }
+        return false; // Retorna false se ainda restam pagamentos
+    }
+
 
     /**
      * Atualiza automaticamente o status de parcelas vencidas a cada 1 minuto.

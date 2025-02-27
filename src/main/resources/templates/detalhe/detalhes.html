@@ -121,8 +121,11 @@
         </div>
 
         <div class="modal-body">
-            <form id="pagamentoForm" th:action="@{/pagar-parcela/{id}(id=${parcelaSelecionada.id})}" method="POST">
-                <input type="hidden" name="id" th:value="${parcelaSelecionada.id}" />
+            <form id="pagamentoForm"
+                  th:action="${parcelaSelecionada != null ? '/pagar-parcela/' + parcelaSelecionada.id : '#'}"
+                  method="POST">
+                <input type="hidden" name="id" th:value="${parcelaSelecionada != null ? parcelaSelecionada.id : ''}" />
+
 
                 <!-- Campo para inserir o valor -->
                 <div class="field">

@@ -36,5 +36,9 @@ public interface ParcelasRepository extends JpaRepository<Parcelas, Long> {
     // 🔹 Busca a próxima parcela PENDENTE (pagas = 0), ordenada pelo ID ASC
     Optional<Parcelas> findFirstByHistoricoAndPagasOrderByDataPagamentoAsc(Historico historico, int pagas);
 
+    @Query("SELECT COALESCE(SUM(p.valorPago), 0) FROM Parcelas p WHERE p.historico.id = :historicoId")
+    double somarPagamentosPorHistorico(@Param("historicoId") Long historicoId);
 
+
+    List<Parcelas> findByHistoricoId(Long id);
 }

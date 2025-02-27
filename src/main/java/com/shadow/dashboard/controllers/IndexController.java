@@ -197,6 +197,7 @@ public class IndexController {
                     .orElseThrow(() -> new RuntimeException("Parcela não encontrada"));
 
             Historico historico = parcela.getHistorico();
+            double valorRestante = historico.getPrice() - valorPago;
             double valorMensal = historico.getPrice() / historico.getParcelamento();
             double juros = (historico.getPercentage() / 100.0) * historico.getPrice(); // Calcula os juros
 
@@ -205,6 +206,13 @@ public class IndexController {
                 redirectAttributes.addFlashAttribute("error",
                         "❌ O valor pago não pode ser menor que os juros da parcela! Juros mínimo: "
                                 + String.format("%.2f", juros));
+                return "redirect:/histori/" + historico.getId();
+            }
+            // 🔹 Verifica se o valor pago ultrapassa o total do empréstimo
+            if (valorPago > valorRestante) {
+                redirectAttributes.addFlashAttribute("error",
+                        "❌ O valor pago não pode ser maior que o valor restante do empréstimo! Restante: "
+                                + String.format("%.2f", valorRestante));
                 return "redirect:/histori/" + historico.getId();
             }
 
@@ -225,8 +233,14 @@ public class IndexController {
             parcela.setValorSobra(valorSobra);
             parcelasRepository.save(parcela); // Salvar a parcela atualizada
 
-            // ✅ Agora adiciona esse `valorSobra` na próxima parcela
-            historicoService.adicionarValorSobraNaProximaParcela(parcela, valorSobra);
+            // ✅ Verifica se o empréstimo pode ser quitado
+            if (historicoService.quitarEmprestimoSeNecessario(historico, valorPago, valorRestante)) {
+                redirectAttributes.addFlashAttribute("success", "✅ Empréstimo quitado com sucesso!");
+            } else {
+                // ✅ Se não foi quitado, continua o fluxo normal e repassa a sobra
+                historicoService.adicionarValorSobraNaProximaParcela(parcela, valorSobra);
+                historicoService.atualizarStatusHistorico(historico);
+            }
 
             // 🔹 Atualiza o status do histórico após pagamento
             historicoService.atualizarStatusHistorico(historico);
@@ -242,8 +256,6 @@ public class IndexController {
             return "redirect:/histori/" + id;
         }
     }
-
-
 
 
 }
