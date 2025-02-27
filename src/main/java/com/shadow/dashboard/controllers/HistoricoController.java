@@ -8,6 +8,9 @@ import com.shadow.dashboard.service.SocioService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.hibernate.mapping.Table;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -127,17 +130,94 @@ public class HistoricoController {
         return mv;
     }
 
-    @GetMapping("/historico/{id}")
+    @GetMapping("/cliente/{id}")
     public String exibirHistoricoCliente(@PathVariable("id") Long id, Model model) {
         Clientes cliente = clientRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado para o ID: " + id));
 
         List<Historico> historicos = historicoRepository.findByCliente(cliente);
 
+        if (historicos.isEmpty()) {
+            throw new RuntimeException("Nenhum histórico encontrado para o cliente ID: " + id);
+        }
+
+        Historico historico = historicos.get(0); // Pegando o primeiro histórico apenas como exemplo
+
         model.addAttribute("cliente", cliente);
         model.addAttribute("historicos", historicos);
+        model.addAttribute("historico", historico); // ✅ Adicionando um histórico ao Model
 
         return "modalHis"; // Nome do arquivo modalHis.html dentro da pasta templates/detalhe/
+    }
+
+    // Buscar histórico pelo código do empréstimo
+    @GetMapping("/emprestimo/{codigo}")
+    public String exibirHistorico(@PathVariable("codigo") int codigo, Model model) {
+
+        // Buscar o histórico pelo código
+        Historico historico = historicoRepository.findByCodigo(codigo)
+                .orElseThrow(() -> new RuntimeException("Código não encontrado: " + codigo));
+
+        // Buscar as parcelas associadas a esse histórico
+        List<Parcelas> parcelas = historico.getParcelas();
+
+        // Adicionar os dados ao modelo para a view
+        model.addAttribute("historico", historico);
+        model.addAttribute("parcelas", parcelas); // Enviar as parcelas para a página
+
+        return "His"; // Nome do arquivo modalHis.html dentro de templates/detalhe/
+    }
+
+    @GetMapping("/emprestimo/{codigo}/editar")
+    public String editarHistorico(@PathVariable("codigo") int codigo, Model model) {
+        // Buscar o histórico pelo código
+        Historico historico = historicoRepository.findByCodigo(codigo)
+                .orElseThrow(() -> new RuntimeException("Histórico não encontrado para o código: " + codigo));
+
+        model.addAttribute("histori", historico);
+        return "editarHistorico"; // Nome da página de edição
+    }
+
+    @PostMapping("/emprestimo/{codigo}/salvar")
+    public String salvarEdicaoHistorico(
+            @PathVariable("codigo") int codigo,
+            @RequestParam("price") double novoPrice,
+            @RequestParam("percentage") int percentage,
+            @RequestParam("description") String description) {
+
+        Historico historico = historicoRepository.findByCodigo(codigo)
+                .orElseThrow(() -> new RuntimeException("Histórico não encontrado para o código: " + codigo));
+
+        // 🔹 Verifica se o valor do empréstimo foi alterado
+        boolean valorAlterado = historico.getPrice() != novoPrice;
+
+        // Atualizar os dados do histórico
+        historico.setPrice(novoPrice);
+        historico.setPercentage(percentage);
+        historico.setDescription(description);
+
+        // 🔹 Salvar histórico atualizado
+        historicoRepository.save(historico);
+
+        // ✅ Se houve alteração, recalcula parcelas
+        if (valorAlterado) {
+            historicoService.recalcularParcelas(historico);
+        }
+
+        return "redirect:/histori/" + historico.getId(); // ✅ Redireciona para os detalhes
+    }
+
+
+
+    @DeleteMapping("/historico/delete/{id}")
+    public ResponseEntity<String> excluirHistorico(@PathVariable Long id) {
+        try {
+            historicoRepository.deleteById(id);
+            return ResponseEntity.ok("✅ Histórico excluído com sucesso!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("❌ Erro ao excluir histórico: " + e.getMessage());
+        }
     }
 
     @PostMapping("/Table")

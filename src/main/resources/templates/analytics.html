@@ -292,7 +292,9 @@
                         <tbody>
                         <tr th:each="cliente : ${clientes}">
                             <td th:text="${cliente.id}"></td>
-                            <td th:text="${cliente.nome}"></td>
+                            <td>
+                                <a th:href="@{/cliente/{id}(id=${cliente.id})}" th:text="${cliente.nome}"></a>
+                            </td>
                             <td th:text="${cliente.cpf}"></td>
                             <td th:text="${cliente.contato}"></td>
                             <td th:text="${cliente.endereco}"></td>

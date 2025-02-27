@@ -1560,6 +1560,7 @@ h3 {
     text-align: center;
     font-family: Poppins;
     font-weight: bold;
+    z-index: 999999;
 }
 
 /* Estilo do cabeçalho */
@@ -1599,6 +1600,34 @@ h3 {
 
 .input-group input::placeholder{
     font-size: .7rem;
+}
+
+/* ✅ Inputs e selects */
+.input-group input,
+.input-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+/* 🟢 Estilizando selects para parecerem mais modernos */
+.input-group select {
+    appearance: none; /* Remove a aparência padrão do sistema */
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><polygon points="5,6 10,12 15,6" fill="%23000"/></svg>') no-repeat;
+    background-position: right 10px center;
+    background-size: 10px;
+    cursor: pointer;
+}
+
+/* ✅ Foco nos inputs e selects */
+.input-group input:focus,
+.input-group select:focus {
+    outline: none;
+    border-color: #007BFF;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
 }
 
 /* Estilo para o intervalo de valores */

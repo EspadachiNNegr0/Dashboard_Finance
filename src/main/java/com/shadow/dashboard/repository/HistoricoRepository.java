@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface HistoricoRepository extends JpaRepository<Historico, Long> {
@@ -16,6 +17,9 @@ public interface HistoricoRepository extends JpaRepository<Historico, Long> {
     public List<Historico> findAll(String keyword);
 
     boolean existsByCodigo(int codigo);
+
+    Optional<Historico> findByCodigo(int codigo);
+
 
     List<Historico> findByCliente(Clientes cliente);
 
@@ -49,4 +53,5 @@ public interface HistoricoRepository extends JpaRepository<Historico, Long> {
 
     @Query("SELECT COALESCE(SUM(h.price), 0) FROM Historico h")
     Double sumTotalPrice();
+
 }

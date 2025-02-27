@@ -24,8 +24,12 @@
     <div class="modal-content">
         <div class="modal-headers">
             <header>Detalhes do Empréstimo</header>
-            <button class="buy" onclick="openReceberModal()">
+            <button class="buy" onclick="openReceberModal()"
+                    th:disabled="${parcelaSelecionada == null}">
                 <a>Receber</a>
+            </button>
+            <button class="edit">
+                <a th:href="@{/emprestimo/{codigo}/editar(codigo=${histori.codigo})}">Editar</a>
             </button>
             <button class="back">
                 <a href="/Table">Voltar</a>
@@ -37,8 +41,12 @@
                 <div class="details-emprestimo">
                     <div class="fields-group">
                         <div class="field">
-                            <label>ID:</label>
-                            <input type="text" name="id" th:value="${histori.id}" readonly />
+                            <label>Código:</label>
+                            <input type="text" name="codigo"
+                                   th:value="${histori.codigo}"
+                                   readonly
+                                   onclick="window.location.href='/emprestimo/' + this.value"
+                                   style="cursor: pointer; text-decoration: none; color: black;" />
                         </div>
                         <div class="field">
                             <label>Nome do Cliente:</label>
@@ -59,23 +67,17 @@
                             <input type="text" name="percentage" th:value="${histori.percentage}" readonly />
                         </div>
                         <div class="field">
+                            <label>Parcelamento:</label>
+                            <input type="text" name="percentage" th:value="${histori.parcelamento}" readonly />
+                        </div>
+                        <div class="field">
                             <label>Funcionario:</label>
                             <input type="text" name="socio" th:value="${histori.socios.name}" readonly />
                         </div>
-                    </div>
-                    <div class="fields-group">
-                        <!-- Banco Saída -->
                         <div class="field">
                             <label>Banco Saída:</label>
-                            <input type="text" name="banco"
+                            <input type="text" name="bancoSaida"
                                    th:value="${histori.bancoSaida != null ? histori.bancoSaida.nome : 'Não disponível'}" readonly />
-                        </div>
-
-                        <!-- Banco Entrada -->
-                        <div class="field">
-                            <label>Banco Entrada:</label>
-                            <input type="text" name="banco"
-                                   th:value="${histori.bancoEntrada != null ? histori.bancoEntrada.nome : 'Não disponível'}" readonly />
                         </div>
 
                         <div class="field">
@@ -114,21 +116,37 @@
 <div id="modal-receber" class="modal-receber hide">
     <div class="modal-content">
         <div class="modal-headers">
-            <header>Escolha uma Opção de Pagamento</header>
+            <header>Coloque o valor: </header>
             <button class="close" onclick="closeReceberModal()">&times;</button>
         </div>
+
         <div class="modal-body">
-            <form th:action="@{/histori/{id}/pagar-mensal(id=${histori.id})}" method="POST">
-                <input type="hidden" name="id" th:value="${histori.id}" />
-                <button class="option" type="submit">Pagar Mensal (Valor Completo)</button>
-            </form>
-            <form th:action="@{/histori/{id}/pagar-juros(id=${histori.id})}" method="POST">
-                <input type="hidden" name="id" th:value="${histori.id}" />
-                <button class="option" type="submit">Pagar Apenas os Juros</button>
+            <form id="pagamentoForm" th:action="@{/pagar-parcela/{id}(id=${parcelaSelecionada.id})}" method="POST">
+                <input type="hidden" name="id" th:value="${parcelaSelecionada.id}" />
+
+                <!-- Campo para inserir o valor -->
+                <div class="field">
+                    <label for="valor">Valor a Receber:</label>
+                    <input type="number" id="valor" name="valorPago" step="0.01" placeholder="Digite o valor" required />
+                </div>
+
+                <!-- Select para escolher o banco de entrada -->
+                <div class="field">
+                    <label for="bancoEntrada">Banco de Entrada:</label>
+                    <select id="bancoEntrada" name="bancoEntradaId" required>
+                        <option value="" disabled selected>Escolha um banco</option>
+                        <option th:each="banco : ${bancos}" th:value="${banco.id}" th:text="${banco.nome}"></option>
+                    </select>
+                </div>
+
+                <!-- Botão para confirmar o pagamento -->
+                <button class="option" type="submit">Confirmar Pagamento</button>
             </form>
         </div>
     </div>
 </div>
+
+
 
 <h3>Pagamentos Realizados</h3>
 <table class="tabela-historico">

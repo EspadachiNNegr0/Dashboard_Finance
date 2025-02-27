@@ -1,9 +1,6 @@
 package com.shadow.dashboard.controllers;
 
-import com.shadow.dashboard.models.Clientes;
-import com.shadow.dashboard.models.Notification;
-import com.shadow.dashboard.models.Parcelas;
-import com.shadow.dashboard.models.Socios;
+import com.shadow.dashboard.models.*;
 import com.shadow.dashboard.repository.ClientRepository;
 import com.shadow.dashboard.repository.HistoricoRepository;
 import com.shadow.dashboard.repository.NotificationRepository;
@@ -56,6 +53,8 @@ public class AnalyticsController {
         int totalNotify = notificationRepository.findAll().size();
         List<Socios> socios = sociosRepository.findAll();
         List<Clientes> clientes = clientRepository.findAll();
+        List<Historico> historicos = historicoRepository.findAll();
+
 
         // Gerando os meses e valores de vendas mensais
         for (int mes = 1; mes <= 12; mes++) {
@@ -97,6 +96,7 @@ public class AnalyticsController {
         model.addAttribute("clientes", clientes);
         model.addAttribute("notifications", notifications);
         model.addAttribute("quantidadeNaoPagos", quantidadeNaoPagos);
+        model.addAttribute("historicos", historicos);
         model.addAttribute("totalPriceDosHistoricos", totalPriceDosHistoricos);
         model.addAttribute("totalClientes", totalClientes);
 

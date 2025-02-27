@@ -1,139 +1,162 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const openModalButton = document.getElementById("open-modal");
-    const closeModalButton = document.getElementById("close-modal");
-    const fade = document.getElementById("fade");
-    const modal = document.getElementById("modal");
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("🚀 Script carregado!");
+
+    // =================== MODAIS ===================
+    function configurarModal(openButton, modal, closeButton) {
+        if (openButton && modal && closeButton) {
+            openButton.addEventListener("click", () => {
+                modal.classList.add("show");
+                modal.classList.remove("hide");
+            });
+
+            closeButton.addEventListener("click", () => {
+                modal.classList.add("hide");
+                modal.classList.remove("show");
+            });
+
+            modal.addEventListener("click", (event) => {
+                if (event.target === modal) {
+                    modal.classList.add("hide");
+                    modal.classList.remove("show");
+                }
+            });
+        } else {
+            console.error(`❌ Elementos do modal não encontrados para ${modal?.id || "desconhecido"}`);
+        }
+    }
+
+    configurarModal(document.getElementById("openModalFiltro"), document.getElementById("modalFiltro"), document.getElementById("btnFecharModal"));
+    configurarModal(document.getElementById("open-modal"), document.getElementById("modal"), document.getElementById("close-modal"));
+    configurarModal(document.querySelector(".add"), document.getElementById("modal-add-emprestimo"), document.querySelector("#modal-add-emprestimo .close-button"));
+    configurarModal(document.querySelector(".addC"), document.getElementById("modal-add-cliente"), document.querySelector("#modal-add-cliente .close"));
+    configurarModal(document.querySelector(".addB"), document.getElementById("modal-add-banco"), document.getElementById("close-modal-add-banco"));
+    configurarModal(document.getElementById("openAddFuncionario"), document.getElementById("modal-add-funcionario"), document.getElementById("closeAddFuncionario"));
+
+    // =================== FILTRAR A TABELA ===================
+    const btnAplicarFiltro = document.getElementById("btn-modal-filtro");
+    const tabela = document.querySelector("#example tbody");
+
+    if (btnAplicarFiltro && tabela) {
+        btnAplicarFiltro.addEventListener("click", (event) => {
+            event.preventDefault();
+
+            let dataInicio = document.getElementById("data-inicio").value;
+            let dataPagamento = document.getElementById("data-pagamento").value;
+            let valorMin = parseFloat(document.getElementById("valor-min").value) || 0;
+            let valorMax = parseFloat(document.getElementById("valor-max").value) || Number.MAX_VALUE;
+            let funcionarioSelecionado = document.getElementById("funcionario").value.trim().toLowerCase();
+            let bancoSaidaSelecionado = document.getElementById("bancoSaida").value.trim().toLowerCase();
+
+            console.log("📝 Filtros aplicados:", { dataInicio, dataPagamento, valorMin, valorMax, funcionarioSelecionado, bancoSaidaSelecionado });
+
+            Array.from(tabela.getElementsByTagName("tr")).forEach((linha) => {
+                let dataInicioLinha = linha.cells[6]?.innerText.trim(); // Data de Empréstimo
+                let dataPagamentoLinha = linha.cells[7]?.innerText.trim(); // Data Final
+                let valorLinha = parseFloat(linha.cells[1]?.innerText.replace(",", ".")) || 0;
+                let funcionarioLinha = linha.cells[5]?.innerText.trim().toLowerCase(); // Funcionário
+                let bancoSaidaLinha = linha.cells[4]?.innerText.trim().toLowerCase(); // Banco de Saída
+
+                let mostrar = true;
+
+                // Filtro por Data de Início
+                if (dataInicio) {
+                    let dataInicioFormatada = formatarDataParaComparacao(dataInicioLinha);
+                    let filtroDataInicio = new Date(dataInicio);
+                    if (dataInicioFormatada < filtroDataInicio) mostrar = false;
+                }
+
+                // Filtro por Data de Pagamento
+                if (dataPagamento) {
+                    let dataPagamentoFormatada = formatarDataParaComparacao(dataPagamentoLinha);
+                    let filtroDataPagamento = new Date(dataPagamento);
+                    if (dataPagamentoFormatada > filtroDataPagamento) mostrar = false;
+                }
+
+                // Filtro por Valor
+                if (valorLinha < valorMin || valorLinha > valorMax) {
+                    mostrar = false;
+                }
+
+                // Filtro por Funcionário
+                if (funcionarioSelecionado && funcionarioLinha !== funcionarioSelecionado) {
+                    mostrar = false;
+                }
+
+                // Filtro por Banco de Saída
+                if (bancoSaidaSelecionado && bancoSaidaLinha !== bancoSaidaSelecionado) {
+                    mostrar = false;
+                }
+
+                linha.style.display = mostrar ? "" : "none";
+            });
+
+            console.log("✅ Filtro aplicado!");
+            document.getElementById("modalFiltro")?.classList.remove("show");
+        });
+    } else {
+        console.error("❌ Elementos do filtro não encontrados!");
+    }
+
+    // =================== TOGGLE DO MENU DO PERFIL ===================
+    const profile = document.querySelector(".profile");
+    const subMenu = document.getElementById("subMenu");
+
+    if (profile && subMenu) {
+        profile.addEventListener("click", function (event) {
+            event.stopPropagation();
+            subMenu.classList.toggle("show");
+        });
+
+        document.addEventListener("click", function (event) {
+            if (!profile.contains(event.target) && !subMenu.contains(event.target)) {
+                subMenu.classList.remove("show");
+            }
+        });
+
+        console.log("🔹 Submenu configurado com sucesso!");
+    } else {
+        console.error("❌ Elemento 'profile' ou 'subMenu' não encontrado!");
+    }
+
+    // =================== LISTA DE CLIENTES E SÓCIOS ===================
+    function configurarListaDeModal(janela, abrirBotao, fecharBotao) {
+        if (janela && abrirBotao && fecharBotao) {
+            abrirBotao.addEventListener("click", () => janela.style.display = 'block');
+            fecharBotao.addEventListener("click", () => janela.style.display = 'none');
+
+            window.addEventListener("click", (e) => {
+                if (e.target === janela) janela.style.display = 'none';
+            });
+        }
+    }
+
+    configurarListaDeModal(document.getElementById('clientsListWindow'), document.getElementById('openClientsModal'), document.getElementById('closeClientsList'));
+    configurarListaDeModal(document.getElementById('sociosListWindow'), document.getElementById('openEmployeesModal'), document.getElementById('closeSociosList'));
+
+    // =================== LIMPAR NOTIFICAÇÕES ===================
     const clearNotificationsButton = document.getElementById("clear-notifications");
 
-    // Função para abrir o modal
-    const openModal = () => {
-        modal.classList.remove("hide");
-        fade.classList.remove("hide");
-    };
-
-    // Função para fechar o modal
-    const closeModal = () => {
-        modal.classList.add("hide");
-        fade.classList.add("hide");
-    };
-
-    // Eventos para abrir e fechar o modal
-    openModalButton.addEventListener("click", openModal);
-    closeModalButton.addEventListener("click", closeModal);
-    fade.addEventListener("click", closeModal);
-
-    // Requisição DELETE para limpar notificações
     if (clearNotificationsButton) {
         clearNotificationsButton.addEventListener("click", function () {
             if (confirm("Tem certeza que deseja apagar todas as notificações?")) {
-                fetch("/notifications/clear", {
-                    method: "DELETE",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                    .then(response => {
-                            alert("Notificações apagadas com sucesso!");
-                            location.reload(); // Recarrega a página após apagar as notificações
-
+                fetch("/notifications/clear", { method: "DELETE", headers: { 'Content-Type': 'application/json' } })
+                    .then(() => {
+                        alert("Notificações apagadas com sucesso!");
+                        location.reload();
                     })
                     .catch(error => {
                         console.error("Erro ao apagar notificações:", error);
-                        alert("Erro ao apagar notificações. Verifique o console para mais detalhes.");
+                        alert("Erro ao apagar notificações.");
                     });
             }
         });
     }
-});
 
-document.addEventListener("DOMContentLoaded", function () {
-
-    // ================= MODAL DE ADICIONAR EMPRÉSTIMO =================
-    const addButton = document.querySelector(".add");
-    const modalAdd = document.getElementById("modal-add-emprestimo");
-    const closeAddModalButton = modalAdd?.querySelector(".close-button");
-
-    if (addButton && modalAdd && closeAddModalButton) {
-        addButton.addEventListener("click", () => {
-            modalAdd.classList.add("show");
-            modalAdd.classList.remove("hide");
-        });
-
-        closeAddModalButton.addEventListener("click", () => {
-            modalAdd.classList.add("hide");
-            modalAdd.classList.remove("show");
-        });
-
-        modalAdd.addEventListener("click", (event) => {
-            if (event.target === modalAdd) {
-                modalAdd.classList.add("hide");
-                modalAdd.classList.remove("show");
-            }
-        });
-    } else {
-        console.error("❌ Verifique se os elementos do modal de empréstimo estão corretos.");
-    }
-
-    // ================= MODAL DE NOTIFICAÇÕES =================
-    const openModalButton = document.querySelector("#open-modal .notification");
-    const modalNotification = document.getElementById("modal");
-    const fade = document.getElementById("fade");
-    const closeModalButton = document.getElementById("close-modal");
-
-    if (openModalButton && modalNotification && fade && closeModalButton) {
-        openModalButton.addEventListener("click", function () {
-            modalNotification.classList.add("show");
-            modalNotification.classList.remove("hide");
-            fade.classList.add("show");
-            fade.classList.remove("hide");
-        });
-
-        closeModalButton.addEventListener("click", function () {
-            modalNotification.classList.add("hide");
-            modalNotification.classList.remove("show");
-            fade.classList.add("hide");
-            fade.classList.remove("show");
-        });
-
-        fade.addEventListener("click", function () {
-            modalNotification.classList.add("hide");
-            modalNotification.classList.remove("show");
-            fade.classList.add("hide");
-            fade.classList.remove("show");
-        });
-    } else {
-        console.error("❌ Elementos do modal de notificações não encontrados!");
-    }
-
-    // ================= MODAL DE ADICIONAR CLIENTE =================
-    const addClienteButton = document.querySelector(".addC");
-    const modalCliente = document.getElementById("modal-add-cliente");
-    const closeClienteButton = modalCliente?.querySelector(".close");
-
-    if (addClienteButton && modalCliente && closeClienteButton) {
-        addClienteButton.addEventListener("click", () => {
-            modalCliente.classList.add("show");
-            modalCliente.classList.remove("hide");
-        });
-
-        closeClienteButton.addEventListener("click", () => {
-            modalCliente.classList.add("hide");
-            modalCliente.classList.remove("show");
-        });
-
-        modalCliente.addEventListener("click", (event) => {
-            if (event.target === modalCliente) {
-                modalCliente.classList.add("hide");
-                modalCliente.classList.remove("show");
-            }
-        });
-    }
-
-    // ================= EXIBIR MENSAGEM DE SUCESSO/ERRO NO MODAL DE CLIENTE =================
-    const mensagemSucesso = "[[${success}]]";
-    const mensagemErro = "[[${error}]]";
+    // =================== EXIBIR MENSAGEM DE SUCESSO/ERRO ===================
     const alertBox = document.getElementById("cliente-mensagem");
     const alertText = document.getElementById("cliente-alert-text");
+    const mensagemSucesso = "[[${success}]]";
+    const mensagemErro = "[[${error}]]";
 
     if (alertBox && alertText) {
         if (mensagemSucesso && mensagemSucesso !== "null") {
@@ -147,220 +170,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // =================== MODAL LISTA DE CLIENTES ===================
-    const clientsListWindow = document.getElementById('clientsListWindow');
-    const openClientsButton = document.getElementById('openClientsModal');
-    const closeClientsButton = document.getElementById('closeClientsList');
-
-    if (clientsListWindow && openClientsButton && closeClientsButton) {
-        openClientsButton.addEventListener('click', () => {
-            clientsListWindow.style.display = 'block';
-        });
-
-        closeClientsButton.addEventListener('click', () => {
-            clientsListWindow.style.display = 'none';
-        });
-
-        window.addEventListener('click', (e) => {
-            if (e.target === clientsListWindow) {
-                clientsListWindow.style.display = 'none';
-            }
-        });
-    }
-
-    // =================== MODAL LISTA DE SÓCIOS ===================
-    const sociosListWindow = document.getElementById('sociosListWindow');
-    const openSociosButton = document.getElementById('openEmployeesModal');
-    const closeSociosButton = document.getElementById('closeSociosList');
-
-    if (sociosListWindow && openSociosButton && closeSociosButton) {
-        openSociosButton.addEventListener('click', () => {
-            sociosListWindow.style.display = 'block';
-        });
-
-        closeSociosButton.addEventListener('click', () => {
-            sociosListWindow.style.display = 'none';
-        });
-
-        window.addEventListener('click', (e) => {
-            if (e.target === sociosListWindow) {
-                sociosListWindow.style.display = 'none';
-            }
-        });
-    }
-
-    // ================= MODAL DE ADICIONAR FUNCIONÁRIO =================
-    const openModalFuncionario = document.getElementById("openAddFuncionario");
-    const closeModalFuncionario = document.getElementById("closeAddFuncionario");
-    const modalFuncionario = document.getElementById("modal-add-funcionario");
-
-    if (openModalFuncionario && closeModalFuncionario && modalFuncionario) {
-        openModalFuncionario.addEventListener("click", function () {
-            modalFuncionario.classList.add("show");
-            modalFuncionario.classList.remove("hide");
-        });
-
-        closeModalFuncionario.addEventListener("click", function () {
-            modalFuncionario.classList.add("hide");
-            modalFuncionario.classList.remove("show");
-        });
-
-        window.addEventListener("click", function (event) {
-            if (event.target === modalFuncionario) {
-                modalFuncionario.classList.add("hide");
-                modalFuncionario.classList.remove("show");
-            }
-        });
-    } else {
-        console.error("❌ Elementos do modal de funcionário não foram encontrados!");
-    }
-
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-    // ================= TOGGLE DO MENU DO PERFIL =================
-    const profile = document.querySelector(".profile");
-    const subMenu = document.getElementById("subMenu");
-
-    if (profile && subMenu) {
-        profile.addEventListener("click", function (event) {
-            event.stopPropagation(); // Impede o fechamento imediato
-            subMenu.classList.toggle("show"); // Alterna a exibição do submenu
-        });
-
-        // Fecha o submenu ao clicar fora dele
-        document.addEventListener("click", function (event) {
-            if (!profile.contains(event.target) && !subMenu.contains(event.target)) {
-                subMenu.classList.remove("show");
-            }
-        });
-
-        console.log("🔹 Submenu configurado com sucesso!"); // Debug no console
-    } else {
-        console.error("❌ Elemento 'profile' ou 'subMenu' não encontrado!");
-    }
-});
-
-
-document.addEventListener("DOMContentLoaded", function () {
-    const openModalBanco = document.querySelector(".addB"); // Botão de abrir modal
-    const closeModalBanco = document.getElementById("close-modal-add-banco"); // Botão de fechar modal
-    const modalBanco = document.getElementById("modal-add-banco"); // Modal
-    const formBanco = document.getElementById("form-add-banco"); // Formulário
-
-    if (openModalBanco && closeModalBanco && modalBanco && formBanco) {
-        // Abrir o modal ao clicar no botão "Add Banco"
-        openModalBanco.addEventListener("click", function () {
-            modalBanco.classList.add("show");
-            modalBanco.classList.remove("hide");
-        });
-
-        // Fechar o modal ao clicar no botão "X"
-        closeModalBanco.addEventListener("click", function () {
-            modalBanco.classList.add("hide");
-            modalBanco.classList.remove("show");
-        });
-
-        // Fechar o modal ao clicar fora dele
-        window.addEventListener("click", function (event) {
-            if (event.target === modalBanco) {
-                modalBanco.classList.add("hide");
-                modalBanco.classList.remove("show");
-            }
-        });
-
-        // Confirmação de envio do formulário
-        formBanco.addEventListener("submit", function (event) {
-            const nome = document.getElementById("nome-banco").value;
-            const descricao = document.getElementById("descricao-banco").value;
-
-            console.log("Enviando formulário...");
-            console.log("Nome:", nome);
-            console.log("Descrição:", descricao);
-        });
-    } else {
-        console.error("❌ O modal de adicionar banco ou seus botões não foram encontrados!");
-    }
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-    // ================= MODAL DE FILTRO =================
-    const openModalFiltro = document.getElementById("openModalFiltro");
-    const modalFiltro = document.getElementById("modalFiltro");
-    const btnFecharModalFiltro = document.getElementById("btnFecharModal");
-    const btnAplicarFiltro = document.getElementById("btn-modal-filtro");
-    const formFiltro = document.getElementById("form-filtro");
-    const tabela = document.querySelector("#example tbody");
-
-    if (openModalFiltro && modalFiltro && btnFecharModalFiltro) {
-        openModalFiltro.addEventListener("click", () => {
-            modalFiltro.classList.add("show");
-        });
-
-        btnFecharModalFiltro.addEventListener("click", () => {
-            modalFiltro.classList.remove("show");
-        });
-    }
-
-    // ================= FILTRAR A TABELA =================
-    if (btnAplicarFiltro && formFiltro && tabela) {
-        btnAplicarFiltro.addEventListener("click", (event) => {
-            event.preventDefault(); // Evita o envio do formulário
-
-            // Obter valores dos filtros
-            let dataInicio = document.getElementById("data-inicio").value;
-            let dataPagamento = document.getElementById("data-pagamento").value;
-            let valorMin = parseFloat(document.getElementById("valor-min").value) || 0;
-            let valorMax = parseFloat(document.getElementById("valor-max").value) || Number.MAX_VALUE;
-
-            console.log("Filtros aplicados:", { dataInicio, dataPagamento, valorMin, valorMax });
-
-            // Percorrer todas as linhas da tabela e ocultar as que não correspondem aos filtros
-            Array.from(tabela.getElementsByTagName("tr")).forEach((linha) => {
-                let dataInicioLinha = linha.cells[7]?.innerText.trim(); // Data de Início (coluna 8)
-                let dataPagamentoLinha = linha.cells[8]?.innerText.trim(); // Data de Pagamento (coluna 9)
-                let valorLinha = parseFloat(linha.cells[4]?.innerText.replace(",", ".")) || 0; // Valor Total (coluna 5)
-
-                let mostrar = true;
-
-                // Comparação de data de início
-                if (dataInicio) {
-                    let dataInicioFormatada = formatarDataParaComparacao(dataInicioLinha);
-                    if (dataInicioFormatada < dataInicio) {
-                        mostrar = false;
-                    }
-                }
-
-                // Comparação de data de pagamento
-                if (dataPagamento) {
-                    let dataPagamentoFormatada = formatarDataParaComparacao(dataPagamentoLinha);
-                    console.log(`Comparando: ${dataPagamentoFormatada} >= ${dataPagamento}`);
-                    if (dataPagamentoFormatada > dataPagamento) {
-                        mostrar = false;
-                    }
-                }
-
-                // Comparação de valor mínimo e máximo
-                if (valorLinha < valorMin || valorLinha > valorMax) {
-                    mostrar = false;
-                }
-
-                // Exibir ou ocultar a linha com base nos filtros
-                linha.style.display = mostrar ? "" : "none";
-            });
-
-            // Fechar o modal após aplicar o filtro
-            modalFiltro.classList.remove("show");
-        });
-    }
-
-    // Função para formatar data (de dd/MM/yyyy para yyyy-MM-dd para comparação)
+    // =================== FORMATAÇÃO DE DATA ===================
     function formatarDataParaComparacao(data) {
-        if (!data) return "";
+        if (!data) return null;
         let partes = data.split("/");
         if (partes.length === 3) {
-            return `${partes[2]}-${partes[1]}-${partes[0]}`; // Converte para yyyy-MM-dd
+            return new Date(`${partes[2]}-${partes[1]}-${partes[0]}`);
         }
-        return data;
+        return null;
     }
 });

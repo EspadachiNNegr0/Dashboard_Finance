@@ -199,6 +199,17 @@ body {
     border-radius: 10px;
 
 }
+.modal-headers .edit a{
+    text-decoration: none;
+    margin: 10px;
+    color: white;
+    font-size: 17px;
+    background-color: #cdb223;
+    padding: 7px;
+    border-radius: 10px;
+
+}
+
 
 .modal-headers button:hover {
     color: var(--primary-blue);

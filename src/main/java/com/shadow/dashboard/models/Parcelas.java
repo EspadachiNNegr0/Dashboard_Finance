@@ -28,6 +28,12 @@ public class Parcelas {
     @Column(nullable = false)
     private double valor;
 
+    private double valorPago;
+
+    private double valorSobra;
+
+    private String BancoEntrada;
+
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private StatusParcela status;
@@ -77,7 +83,32 @@ public class Parcelas {
 
     public void setValor(double valor) { this.valor = valor; }
 
+    public String getBancoEntrada() {
+        return BancoEntrada;
+    }
+
+    public void setBancoEntrada(String bancoEntrada) {
+        BancoEntrada = bancoEntrada;
+    }
+
     public StatusParcela getStatus() { return status; }
 
     public void setStatus(StatusParcela status) { this.status = status; }
+
+    public double getValorPago() {
+        return valorPago;
+    }
+
+    public void setValorPago(double valorPago) {
+        this.valorPago = valorPago;
+    }
+
+    public double getValorSobra() {
+        return valorSobra;
+    }
+
+    public void setValorSobra(double valorSobra) {
+        this.valorSobra = valorSobra;
+    }
+
 }

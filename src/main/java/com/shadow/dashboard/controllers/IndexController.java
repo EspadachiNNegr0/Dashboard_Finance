@@ -113,64 +113,120 @@ public class IndexController {
 
     @PostMapping("/")
     public String saveEmprestimo(@ModelAttribute Historico historia,
-                                 @RequestParam("bancoEntrada") Long bancoEntradaId,
                                  @RequestParam("bancoSaida") Long bancoSaidaId,
                                  RedirectAttributes redirectAttributes) {
-        if (historia.getStatus() == null || (historia.getStatus() != Status.PAGO && historia.getStatus() != Status.PENDENTE)) {
-            historia.setStatus(Status.PENDENTE);
+        try {
+            // 🔹 Validação para evitar valores nulos
+            if (historia.getPrice() == null || historia.getPrice() <= 0) {
+                redirectAttributes.addFlashAttribute("error", "O valor do empréstimo deve ser maior que zero!");
+                return "redirect:/Table";
+            }
+
+            if (historia.getParcelamento() == null || historia.getParcelamento() <= 0) {
+                redirectAttributes.addFlashAttribute("error", "O parcelamento deve ser maior que zero!");
+                return "redirect:/Table";
+            }
+
+            if (historia.getPercentage() == null) {
+                historia.setPercentage(0); // ✅ Define 0% como padrão se não informado
+            }
+
+            // 🔹 Definir status padrão caso não esteja definido
+            if (historia.getStatus() == null) {
+                historia.setStatus(Status.PENDENTE);
+            }
+
+            // 🔹 Buscar o banco de saída no banco de dados
+            Banco bancoSaida = bancoRepository.findById(bancoSaidaId)
+                    .orElseThrow(() -> new RuntimeException("Banco de Saída não encontrado"));
+
+            historia.setBancoSaida(bancoSaida);
+
+            // 🔹 Salvar o histórico no banco
+            Historico historicoSalvo = historicoService.saveHistoryAndCreateNotification(historia);
+
+            // ✅ Criar Parcelas automaticamente
+            historicoService.criarParcela(historicoSalvo);
+
+            redirectAttributes.addFlashAttribute("success", "Empréstimo registrado com sucesso!");
+            return "redirect:/Table";
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Erro ao salvar empréstimo: " + e.getMessage());
+            return "redirect:/Table";
         }
-
-        // 🔹 Ensure that bancoEntrada and bancoSaida are not null
-        Banco bancoEntrada = bancoRepository.findById(bancoEntradaId)
-                .orElseThrow(() -> new RuntimeException("Banco de Entrada não encontrado"));
-
-        Banco bancoSaida = bancoRepository.findById(bancoSaidaId)
-                .orElseThrow(() -> new RuntimeException("Banco de Saída não encontrado"));
-
-        // 🔹 Set the retrieved Banco objects in the Historico entity
-        historia.setBancoEntrada(bancoEntrada);
-        historia.setBancoSaida(bancoSaida);
-
-        // Save the Historico entity
-        historicoService.saveHistoryAndCreateNotification(historia);
-
-        redirectAttributes.addFlashAttribute("message", "Empréstimo registrado com sucesso!");
-        return "redirect:/Table";
     }
 
 
     @GetMapping("/histori/{id}")
-    public String detalhesVenda(@PathVariable("id") Long id, Model model) {
+    public String detalhesHistorico(@PathVariable Long id, Model model) {
+        // 🔹 Buscar histórico pelo ID
         Historico histori = historicoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Histórico não encontrado para o ID: " + id));
 
-        // 🔹 Buscar parcelas associadas
-        List<Parcelas> parcelasList = parcelasRepository.findByHistoricoId(id);
+        // 🔹 Buscar todas as parcelas relacionadas
+        List<Parcelas> parcelas = parcelasRepository.findByHistorico(histori);
 
+        // 🔹 Buscar parcelas pendentes (para pagamento)
+        Parcelas parcelaSelecionada = parcelas.stream()
+                .filter(p -> p.getPagas() == 0) // Seleciona a primeira pendente
+                .findFirst()
+                .orElse(null);
 
+        // 🔹 Buscar os bancos cadastrados
+        List<Banco> bancos = bancoRepository.findAll();
 
+        // ✅ Adicionar atributos ao modelo para o Thymeleaf
         model.addAttribute("histori", histori);
-        model.addAttribute("parcelas", parcelasList);
-        return "detalhe/detalhes";
+        model.addAttribute("parcelas", parcelas);
+        model.addAttribute("parcelaSelecionada", parcelaSelecionada);
+        model.addAttribute("bancos", bancos);
+
+        return "detalhe/detalhes"; // Nome do arquivo HTML dentro de `templates/`
     }
 
+
     @PostMapping("/pagar-parcela/{id}")
-    public ResponseEntity<String> pagarParcela(@PathVariable Long id, @RequestParam double valorPago) {
+    public String pagarParcela(@PathVariable Long id,
+                               @RequestParam double valorPago,
+                               @RequestParam Long bancoEntradaId,
+                               RedirectAttributes redirectAttributes) {
         try {
+            // 🔹 Buscar a parcela pelo ID
             Parcelas parcela = parcelasRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Parcela não encontrada"));
 
             Historico historico = parcela.getHistorico();
-            double valorMensal = historico.getValorMensal();
+            double valorMensal = historico.getPrice() / historico.getParcelamento();
+            double juros = (historico.getPercentage() / 100.0) * historico.getPrice(); // Calcula os juros
 
-            // 🔹 Se o pagamento for menor que o valor mensal, criar uma nova parcela para o valor restante
-            if (valorPago < valorMensal) {
-                historicoService.criarNovaParcelaComValorRestante(parcela, valorPago, valorMensal);
-            } else {
-                parcela.setPagas(1);
-                parcela.setStatus(StatusParcela.PAGO);
-                parcelasRepository.save(parcela);
+            // 🔹 Se o pagamento for menor que os juros, impede o pagamento
+            if (valorPago < juros) {
+                redirectAttributes.addFlashAttribute("error",
+                        "❌ O valor pago não pode ser menor que os juros da parcela! Juros mínimo: "
+                                + String.format("%.2f", juros));
+                return "redirect:/histori/" + historico.getId();
             }
+
+            // 🔹 Buscar o banco de entrada selecionado
+            Banco bancoEntrada = bancoRepository.findById(bancoEntradaId)
+                    .orElseThrow(() -> new RuntimeException("Banco de Entrada não encontrado"));
+
+            // 🔹 Salvar o banco de entrada e valor pago na parcela
+            parcela.setBancoEntrada(bancoEntrada.getNome());
+            parcela.setValorPago(valorPago);
+            parcela.setPagas(1); // ✅ Marca a parcela como PAGA
+            parcela.setStatus(StatusParcela.PAGO);
+
+            // 🔹 Calcular o valor restante (sobra)
+            double valorSobra = valorMensal - valorPago;
+
+            // ✅ Atualiza `valorSobra` da parcela paga
+            parcela.setValorSobra(valorSobra);
+            parcelasRepository.save(parcela); // Salvar a parcela atualizada
+
+            // ✅ Agora adiciona esse `valorSobra` na próxima parcela
+            historicoService.adicionarValorSobraNaProximaParcela(parcela, valorSobra);
 
             // 🔹 Atualiza o status do histórico após pagamento
             historicoService.atualizarStatusHistorico(historico);
@@ -178,148 +234,16 @@ public class IndexController {
             // 🔹 Criar notificação sobre o pagamento
             historicoService.criarNotificacao(historico, valorPago, "Pagamento da Parcela");
 
-            return ResponseEntity.ok("✅ Pagamento registrado com sucesso!");
+            redirectAttributes.addFlashAttribute("success", "✅ Pagamento registrado com sucesso!");
+            return "redirect:/histori/" + historico.getId(); // ✅ Redireciona para a página de detalhes
+
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("❌ Erro: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "❌ Erro: " + e.getMessage());
+            return "redirect:/histori/" + id;
         }
     }
 
-    @PostMapping("/histori/{id}/pagar-mensal")
-    public String pagarParcela(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        Optional<Historico> optionalHistorico = historicoRepository.findById(id);
 
-        if (optionalHistorico.isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "Histórico não encontrado.");
-            return "redirect:/Table";
-        }
-
-        Historico historico = optionalHistorico.get();
-        List<Parcelas> parcelasList = parcelasRepository.findByHistorico(historico);
-
-        if (parcelasList.isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "Nenhuma parcela encontrada.");
-            return "redirect:/Table";
-        }
-
-        // 🔹 Seleciona a primeira parcela com pagas == 0 ou -1 (ATRASADA)
-        Parcelas parcelaPendente = parcelasList.stream()
-                .filter(p -> p.getPagas() == 0 || p.getPagas() == -1)
-                .min(Comparator.comparing(Parcelas::getId))
-                .orElse(null);
-
-        if (parcelaPendente == null) {
-            redirectAttributes.addFlashAttribute("error", "Todas as parcelas já foram pagas.");
-            return "redirect:/histori/" + id;
-        }
-
-        // 🔹 Obtém o valor da parcela mensal
-        double valorParcela = historico.getValorMensal();
-
-        // 🔹 Registra o pagamento no log
-        PagamentoLog log = new PagamentoLog();
-        log.setHistorico(historico);
-        log.setDataPagamento(LocalDateTime.now());
-        log.setValorPago(valorParcela);
-
-        try {
-            pagamentoLogRepository.save(log);
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Erro ao registrar pagamento.");
-            return "redirect:/histori/" + id;
-        }
-
-        // 🔹 Atualiza a parcela como PAGA (1)
-        parcelaPendente.setPagas(1);
-        parcelasRepository.save(parcelaPendente);
-
-        // 🔹 Verifica se todas as parcelas foram quitadas
-        boolean todasPagas = parcelasList.stream().allMatch(p -> p.getPagas() == 1);
-
-        if (todasPagas) {
-            historico.setStatus(Status.PAGO);
-        } else {
-            // 🔹 Se ainda houver parcelas a pagar, o histórico volta para PENDENTE
-            historico.setStatus(Status.PENDENTE);
-        }
-
-        historicoRepository.save(historico);
-
-        // ✅ Criar Notificação do Pagamento Mensal
-        historicoService.criarNotificacao(historico, valorParcela, "Pagamento Mensal");
-
-        redirectAttributes.addFlashAttribute("success", "Pagamento mensal registrado com sucesso!");
-        return "redirect:/histori/" + id;
-    }
-
-    @PostMapping("/histori/{id}/pagar-juros")
-    public String pagarJuros(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-        Optional<Historico> optionalHistorico = historicoRepository.findById(id);
-
-        if (optionalHistorico.isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "Histórico não encontrado.");
-            return "redirect:/Table";
-        }
-
-        Historico historico = optionalHistorico.get();
-        List<Parcelas> parcelasList = parcelasRepository.findByHistorico(historico);
-
-        if (parcelasList.isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "Nenhuma parcela encontrada.");
-            return "redirect:/Table";
-        }
-
-        // 🔹 Calcula o valor dos juros
-        double valorJuros = historico.getValorTotal() * (historico.getPercentage() / 100.0);
-        double valorMensal = historico.getValorMensal();
-
-        // 🔹 Seleciona a primeira parcela pendente (ainda não paga)
-        Parcelas primeiraParcelaPendente = parcelasList.stream()
-                .filter(p -> p.getPagas() == 0)
-                .min(Comparator.comparing(Parcelas::getId))
-                .orElse(null);
-
-        if (primeiraParcelaPendente == null) {
-            redirectAttributes.addFlashAttribute("error", "Nenhuma parcela disponível para pagamento.");
-            return "redirect:/histori/" + id;
-        }
-
-        // 🔹 Marca a parcela como PAGA (1), mesmo que tenha sido pago apenas o juros
-        primeiraParcelaPendente.setPagas(1);
-        parcelasRepository.save(primeiraParcelaPendente);
-
-        // 🔹 Se o valor pago for menor que o valor da parcela, o restante será adicionado à próxima parcela
-        double valorRestante = valorMensal - valorJuros;
-        if (valorRestante > 0) {
-            System.out.println("⚠️ Apenas os juros foram pagos. Criando nova parcela com o restante: R$ " + valorRestante);
-            historicoService.criarNovaParcelaComValorRestante(primeiraParcelaPendente, valorJuros, valorMensal);
-        }
-
-        // 🔹 Atualiza o histórico com o novo valor total
-        historico.setValorTotal(historico.getValorTotal() + valorJuros);
-        historicoRepository.save(historico);
-
-        // 🔹 Atualiza o novo valor mensal das parcelas pendentes
-        historicoService.atualizarProximasParcelasEValorMensal(historico, parcelasList);
-
-        // 🔹 Registra o pagamento no log
-        PagamentoLog log = new PagamentoLog();
-        log.setHistorico(historico);
-        log.setValorPago(valorJuros);
-        log.setDataPagamento(LocalDateTime.now());
-
-        try {
-            pagamentoLogRepository.save(log);
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Erro ao registrar pagamento de juros.");
-            return "redirect:/histori/" + id;
-        }
-
-        // ✅ Criar Notificação do Pagamento de Juros
-        historicoService.criarNotificacao(historico, valorJuros, "Pagamento de Juros");
-
-        redirectAttributes.addFlashAttribute("success", "Pagamento de juros registrado com sucesso! Novo valor de juros: R$ " + valorJuros);
-        return "redirect:/histori/" + id;
-    }
 
 
 }

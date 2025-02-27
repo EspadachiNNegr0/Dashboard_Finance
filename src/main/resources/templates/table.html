@@ -145,7 +145,7 @@
         <div class="table-data">
             <div class="order">
                 <div class="head">
-                    <h3>Recent Orders</h3>
+                    <h3>Tabela Emprestimos</h3>
 
                     <!-- Botão para abrir o modal -->
                     <button class="addB" aria-label="Adicionar Banco">Add Banco</button>
@@ -295,17 +295,6 @@
                                                 <input type="number" name="parcelamento" placeholder="Digite o número de parcelas" required>
                                             </div>
 
-                                            <!-- Banco -->
-
-                                            <!-- Banco Entrada -->
-                                            <div class="input-field">
-                                                <label>Banco Entrada</label>
-                                                <select name="bancoEntrada" required>
-                                                    <option value="" disabled selected>Escolha um Banco</option>
-                                                    <option th:each="banco : ${bancos}" th:value="${banco.id}" th:text="${banco.nome}"></option>
-                                                </select>
-                                            </div>
-
                                             <!-- Banco Saída -->
                                             <div class="input-field">
                                                 <label>Banco Saída</label>
@@ -382,6 +371,24 @@
                                         <input type="number" id="valor-max" name="valorMax" placeholder="Até" step="0.01">
                                     </div>
                                 </div>
+
+                                <!-- Filtro: Funcionário -->
+                                <div class="input-group">
+                                    <label for="funcionario">Funcionário:</label>
+                                    <select id="funcionario">
+                                        <option value="" selected>Todos</option>
+                                        <option th:each="socio : ${socios}" th:value="${socio.name}" th:text="${socio.name}"></option>
+                                    </select>
+                                </div>
+
+                                <!-- Filtro: Banco de Saída -->
+                                <div class="input-group">
+                                    <label for="bancoSaida">Banco de Saída:</label>
+                                    <select id="bancoSaida">
+                                        <option value="" selected>Todos</option>
+                                        <option th:each="banco : ${bancos}" th:value="${banco.nome}" th:text="${banco.nome}"></option>
+                                    </select>
+                                </div>
                                 <!-- Botão de envio -->
                                 <button id="btn-modal-filtro" type="submit">Filtrar</button>
                             </form>
@@ -394,27 +401,25 @@
                 <table id="example" class="table table-striped">
                     <thead>
                     <tr>
-                        <th>Name</th>
                         <th>Cod</th>
-                        <th>Price</th>
-                        <th>Porcent</th>
-                        <th>Valor Total</th>
-                        <th>Valor Mensal</th>
+                        <th>Valor</th>
+                        <th>Porcentagem</th>
                         <th>Parcelamento</th>
-                        <th>Start date</th>
-                        <th>End date</th>
+                        <th>Banco Saida</th>
+                        <th>Funcionario</th>
+                        <th>Data do Emp.</th>
+                        <th>Data final</th>
                         <th>Status</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="historico: ${historias}">
-                        <td><a th:href="@{/historico/{id}(id=${historico.cliente.id})}" th:text="${historico.cliente.nome}"></a></td>
-                        <td th:text="${historico.codigo}"></td>
+                        <td><a th:href="@{/emprestimo/{codigo}(codigo=${historico.codigo})}" th:text="${historico.codigo}"></a></td>
                         <td th:text="${historico.price}"></td>
                         <td th:text="${historico.percentage} + '%'"></td>
-                        <td th:text="${#numbers.formatDecimal(historico.valorTotal, 1, 2)}"></td>
-                        <td th:text="${#numbers.formatDecimal(historico.valorMensal, 1, 2)}"></td>
                         <td th:text="${historico.parcelamento}"></td>
+                        <td th:text="${historico.bancoSaida.nome}"></td>
+                        <td th:text="${historico.socios.name}"></td>
                         <td th:text="${#dates.format(historico.created, 'dd/MM/yyyy')}"></td>
                         <td th:text="${#dates.format(historico.creationF, 'dd/MM/yyyy')}"></td>
                         <td>

@@ -8,11 +8,10 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ParcelasRepository extends JpaRepository<Parcelas, Long> {
-    
-    List<Parcelas> findByHistoricoId(Long historicoId);
 
     List<Parcelas> findByHistorico(Historico historico);
 
@@ -34,6 +33,8 @@ public interface ParcelasRepository extends JpaRepository<Parcelas, Long> {
     @Query("SELECT p FROM Parcelas p WHERE YEAR(p.dataPagamento) = :ano")
     List<Parcelas> findParcelasByYear(@Param("ano") int ano);
 
+    // 🔹 Busca a próxima parcela PENDENTE (pagas = 0), ordenada pelo ID ASC
+    Optional<Parcelas> findFirstByHistoricoAndPagasOrderByDataPagamentoAsc(Historico historico, int pagas);
 
 
 }

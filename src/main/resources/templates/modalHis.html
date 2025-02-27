@@ -49,8 +49,15 @@
                             <span th:if="${historico.status.name() == 'PAGO'}" style="color: green;">PAGO</span>
                             <span th:if="${historico.status.name() == 'PENDENTE'}" style="color: orange;">PENDENTE</span>
                         </td>
+                        <td>
+                            <button class="delete-btn"
+                                    th:attr="onclick=|deletarHistorico('${historico.id}')|">
+                                🗑️
+                            </button>
+                        </td>
                     </tr>
                     </tbody>
+
                 </table>
             </div>
         </div>
@@ -59,6 +66,25 @@
 
     </div>
 </div>
+<script>
+    function deletarHistorico(id) {
+        if (confirm("Tem certeza que deseja excluir este histórico?")) {
+            fetch(`/historico/delete/${id}`, {
+                method: "DELETE"
+            }).then(response => {
+                if (response.ok) {
+                    alert("Histórico excluído com sucesso!");
+                    location.reload();
+                } else {
+                    alert("Erro ao excluir histórico.");
+                }
+            }).catch(error => {
+                console.error("Erro:", error);
+                alert("Erro ao excluir histórico.");
+            });
+        }
+    }
+</script>
 
 </body>
 </html>

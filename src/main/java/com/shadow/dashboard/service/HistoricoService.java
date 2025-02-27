@@ -2,6 +2,7 @@ package com.shadow.dashboard.service;
 
 import com.shadow.dashboard.models.*;
 import com.shadow.dashboard.repository.*;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -38,22 +39,11 @@ public class HistoricoService {
             historico.setCodigo(gerarCodigoUnico());
         }
 
-        // 🔹 Calcular o valor total do empréstimo considerando os juros
-        double valorTotalComJuros = calcularValorTotalComJuros(historico);
-        historico.setValorTotal(valorTotalComJuros);
-
-        // 🔹 Calcular o valor mensal das parcelas
-        double valorParcelaMensal = calcularValorMensal(historico);
-        historico.setValorMensal(valorParcelaMensal);
-
         // 🔹 Calcular a data final do empréstimo
         historico.setCreationF(calculaDataFinal(historico));
 
         // 🔹 Salvar o histórico antes de criar as parcelas
         historico = historicoRepository.save(historico);
-
-        // 🔹 Criar parcelas vinculadas às datas de pagamento
-        criarParcelas(historico);
 
         // 🔹 Criar notificação
         createNotification(historico);
@@ -72,42 +62,6 @@ public class HistoricoService {
         return codigo;
     }
 
-
-    public void atualizarProximasParcelasEValorMensal(Historico historico, List<Parcelas> parcelasList) {
-        // 🔹 Filtra as parcelas que ainda não foram pagas
-        List<Parcelas> parcelasNaoPagas = parcelasList.stream()
-                .filter(p -> p.getPagas() == 0)
-                .sorted(Comparator.comparing(Parcelas::getId))
-                .toList();
-
-        if (!parcelasNaoPagas.isEmpty()) {
-            // 🔹 Recalcula o valor das próximas parcelas com base no saldo devedor atualizado
-            double novoValorMensal = historico.getValorTotal() / parcelasNaoPagas.size();
-            historico.setValorMensal(novoValorMensal); // ✅ Atualiza o `valorMensal` do `Historico`
-
-            for (Parcelas parcela : parcelasNaoPagas) {
-                parcela.setValor(novoValorMensal);
-                parcelasRepository.save(parcela);
-            }
-        }
-    }
-
-    /**
-     * Calcula o valor total do empréstimo considerando os juros
-     */
-    private double calcularValorTotalComJuros(Historico historico) {
-        double juros = historico.getPrice() * (historico.getPercentage() / 100.0);
-        return historico.getPrice() + juros;
-    }
-
-    /**
-     * Calcula o valor mensal da parcela com base no total corrigido com juros
-     */
-    private double calcularValorMensal(Historico historico) {
-        double totalComJuros = calcularValorTotalComJuros(historico);
-        return totalComJuros / historico.getParcelamento();
-    }
-
     /**
      * Calcula a data final do empréstimo
      */
@@ -116,44 +70,6 @@ public class HistoricoService {
         calendar.setTime(historico.getCreated());
         calendar.add(Calendar.MONTH, historico.getParcelamento());
         return calendar.getTime();
-    }
-
-    /**
-     * Cria as parcelas com os valores corretos e datas ajustadas
-     */
-    private void criarParcelas(Historico historico) {
-        Calendar calendar = Calendar.getInstance();
-
-        // 🔹 Garante que a data de criação do histórico esteja definida
-        if (historico.getCreated() == null) {
-            System.out.println("❌ Erro: O campo 'created' do histórico está NULL. Usando a data atual.");
-            historico.setCreated(new Date());
-        }
-
-        calendar.setTime(historico.getCreated());
-
-        double valorMensal = historico.getValorMensal();
-
-        for (int i = 0; i < historico.getParcelamento(); i++) {
-            calendar.add(Calendar.MONTH, 1); // Adiciona um mês para cada parcela
-
-            Parcelas parcela = new Parcelas();
-            parcela.setHistorico(historico);
-            parcela.setParcelas(historico.getParcelamento());
-            parcela.setPagas(0);
-            parcela.setValor(valorMensal);
-
-            // ✅ Garante que `dataPagamento` nunca seja NULL
-            Date dataParcela = calendar.getTime();
-            if (dataParcela == null) {
-                System.out.println("⚠️ AVISO: Data gerada é NULL. Usando a data atual.");
-                dataParcela = new Date();
-            }
-            parcela.setDataPagamento(dataParcela);
-
-            parcelasRepository.save(parcela);
-            System.out.println("✅ Parcela salva com data: " + dataParcela);
-        }
     }
 
     /**
@@ -275,77 +191,53 @@ public class HistoricoService {
         historicoRepository.save(historico);
     }
 
+    @Transactional
+    public void recalcularParcelas(Historico historico) {
+        List<Parcelas> parcelas = parcelasRepository.findByHistorico(historico);
 
-    public void criarNovaParcelaComValorRestante(Parcelas ultimaParcela, double valorPago, double valorMensal) {
-        double valorRestante = valorMensal - valorPago;
-        Historico historico = ultimaParcela.getHistorico();
+        // ✅ Novo valor de cada parcela
+        double novoValorParcela = historico.getPrice() / historico.getParcelamento();
 
-        // 🔹 Verifica se a última parcela é realmente a última do parcelamento original
-        boolean isUltimaParcelaDoParcelamento = ultimaParcela.getParcelas() == historico.getParcelamento();
+        // 🔹 Verifica se o número de parcelas diminuiu ou aumentou
+        int diferencaParcelas = historico.getParcelamento() - parcelas.size();
 
-        System.out.println("📊 Verificação de criação de nova parcela:");
-        System.out.println("   🔸 Valor Restante: " + valorRestante);
-        System.out.println("   🔸 Última Parcela no Histórico: " + ultimaParcela.getParcelas());
-        System.out.println("   🔸 Parcelamento Original do Histórico: " + historico.getParcelamento());
-        System.out.println("   🔸 É a Última Parcela do Parcelamento? " + isUltimaParcelaDoParcelamento);
-
-        // ✅ Define a data de vencimento da nova parcela para o próximo mês
-        Calendar calendar = Calendar.getInstance();
-        if (ultimaParcela.getDataPagamento() != null) {
-            calendar.setTime(ultimaParcela.getDataPagamento());
-        } else {
-            calendar.setTime(new Date());
+        // 🔹 Atualiza as parcelas existentes
+        for (int i = 0; i < Math.min(historico.getParcelamento(), parcelas.size()); i++) {
+            Parcelas parcela = parcelas.get(i);
+            parcela.setValor(novoValorParcela);
+            parcelasRepository.save(parcela);
         }
-        calendar.add(Calendar.MONTH, 1);
-        Date proximaDataPagamento = calendar.getTime();
 
-        // 🔍 Verifica se já existe uma parcela com a data esperada
-        boolean existeParcelaFutura = parcelasRepository.findByHistorico(historico).stream()
-                .anyMatch(parcela -> parcela.getDataPagamento() != null
-                        && parcela.getDataPagamento().equals(proximaDataPagamento));
+        // 🔹 Se o número de parcelas aumentou, cria novas parcelas
+        if (diferencaParcelas > 0) {
+            for (int i = parcelas.size(); i < historico.getParcelamento(); i++) {
+                Parcelas novaParcela = new Parcelas();
+                novaParcela.setHistorico(historico);
+                novaParcela.setValor(novoValorParcela);
+                novaParcela.setParcelas(i + 1);
+                novaParcela.setPagas(0);
+                novaParcela.setStatus(StatusParcela.PENDENTE);
 
-        System.out.println("📅 Próxima Data Esperada: " + proximaDataPagamento);
-        System.out.println("❓ Existe uma parcela futura já registrada? " + existeParcelaFutura);
+                // 🔹 Define a data de pagamento da nova parcela (mês seguinte)
+                Calendar dataPagamento = Calendar.getInstance();
+                dataPagamento.setTime(historico.getCreated());
+                dataPagamento.add(Calendar.MONTH, i);
 
-        // ✅ Só cria uma nova parcela se:
-        // 1. O valor restante for significativo (maior que 0.01 para evitar problemas de arredondamento)
-        // 2. A última parcela atual for realmente a última do parcelamento original
-        // 3. Não existir uma parcela futura já registrada na data esperada
-        if (valorRestante > 0.01 && isUltimaParcelaDoParcelamento && !existeParcelaFutura) {
-            Parcelas novaParcela = new Parcelas();
+                novaParcela.setDataPagamento(dataPagamento.getTime());
 
-            // ✅ Configura a nova parcela no mesmo histórico
-            novaParcela.setHistorico(historico);
-            novaParcela.setValor(valorRestante);
-            novaParcela.setPagas(0); // 🔹 Nova parcela deve ser paga
-            novaParcela.setStatus(StatusParcela.PENDENTE);
-
-            // ✅ Incrementa o número de parcelas no histórico e define na nova parcela
-            historico.setParcelamento(historico.getParcelamento() + 1);
-            historicoRepository.save(historico); // 🔹 Salva o histórico atualizado
-
-            novaParcela.setParcelas(historico.getParcelamento());
-            novaParcela.setDataPagamento(proximaDataPagamento);
-
-            // ✅ Salva a nova parcela no banco de dados
-            parcelasRepository.save(novaParcela);
-            System.out.println("✅ Nova parcela criada: ID " + novaParcela.getId() + " com valor restante de R$ " + valorRestante);
-
-            // ✅ Atualiza o status do histórico após a criação da nova parcela
-            atualizarStatusHistorico(historico);
-        } else {
-            System.out.println("⚠️ Nenhuma nova parcela foi criada. Motivos possíveis:");
-            if (valorRestante <= 0.01) {
-                System.out.println("   🔸 O valor restante é zero ou muito pequeno: " + valorRestante);
-            }
-            if (!isUltimaParcelaDoParcelamento) {
-                System.out.println("   🔸 A parcela atual não é a última do parcelamento original.");
-            }
-            if (existeParcelaFutura) {
-                System.out.println("   🔸 Já existe uma parcela registrada para a próxima data esperada.");
+                parcelasRepository.save(novaParcela);
             }
         }
+
+        // 🔹 Se o número de parcelas diminuiu, remove as parcelas excedentes
+        else if (diferencaParcelas < 0) {
+            List<Parcelas> parcelasParaRemover = parcelas.subList(historico.getParcelamento(), parcelas.size());
+            parcelasRepository.deleteAll(parcelasParaRemover);
+        }
+
+        System.out.println("✅ Parcelas recalculadas com sucesso!");
     }
+
 
     /**
      * Atualiza automaticamente o status de parcelas vencidas a cada 1 minuto.
@@ -377,9 +269,6 @@ public class HistoricoService {
     }
 
 
-    /**
-     * Cria uma notificação associada ao cliente.
-     */
     private void criarNotificacao(Clientes cliente, String mensagem) {
         if (cliente == null) return;
 
@@ -389,6 +278,55 @@ public class HistoricoService {
         notificacao.setRead(false);
 
         notificationRepository.save(notificacao);
+    }
+
+    public void criarParcela(Historico historicoSalvo) {
+        int totalParcelas = historicoSalvo.getParcelamento(); // Número de parcelas
+        double valorParcela = historicoSalvo.getPrice() / totalParcelas; // Valor de cada parcela
+
+        Calendar calendario = Calendar.getInstance(); // Obtem a data atual
+        calendario.setTime(historicoSalvo.getCreated()); // Usa a data do empréstimo como referência
+
+        for (int i = 1; i <= totalParcelas; i++) {
+            calendario.add(Calendar.MONTH, 1); // Adiciona um mês para cada parcela
+
+            Parcelas parcela = new Parcelas();
+            parcela.setHistorico(historicoSalvo);
+            parcela.setParcelas(i); // Número da parcela (1, 2, 3...)
+            parcela.setValor(valorParcela);
+            parcela.setDataPagamento(calendario.getTime()); // Define a data futura
+            parcela.setStatus(StatusParcela.PENDENTE); // Inicialmente, a parcela está pendente
+            parcela.setPagas(0); // Nenhuma parcela foi paga ainda
+            parcela.setBancoEntrada(null); // Banco de Entrada será definido apenas no pagamento
+
+            parcelasRepository.save(parcela); // Salva a parcela no banco
+        }
+    }
+
+    public void adicionarValorSobraNaProximaParcela(Parcelas parcela, double valorSobra) {
+        if (valorSobra <= 0) return; // Se não houver sobra, não faz nada
+
+        // 🔹 Buscar a próxima parcela pendente dentro do mesmo histórico
+        Optional<Parcelas> proximaParcelaOptional = parcelasRepository
+                .findFirstByHistoricoAndPagasOrderByDataPagamentoAsc(parcela.getHistorico(), 0);
+
+        if (proximaParcelaOptional.isPresent()) {
+            Parcelas proximaParcela = proximaParcelaOptional.get();
+
+            // 🔹 Somar `valorSobra` ao valor já presente na próxima parcela
+            double novoValor = proximaParcela.getValor() + valorSobra;
+            proximaParcela.setValor(novoValor);
+
+            // 🔹 Atualizar a sobra para continuar acumulando corretamente
+            double novaSobra = proximaParcela.getValorSobra() + valorSobra;
+            proximaParcela.setValorSobra(novaSobra);
+
+            parcelasRepository.save(proximaParcela); // ✅ Salvar no banco
+
+            System.out.println("✅ Valor sobrando de " + valorSobra + " foi adicionado à próxima parcela ID: " + proximaParcela.getId());
+        } else {
+            System.out.println("⚠️ Não há mais parcelas pendentes para adicionar o valor sobrando.");
+        }
     }
 }
 

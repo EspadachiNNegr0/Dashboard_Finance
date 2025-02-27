@@ -16,4 +16,6 @@ public interface BancoRepository extends JpaRepository<Banco, Long> {
     Optional<Banco> findById(Long aLong);
 
     Long id(Long id);
+
+    Optional<Banco> findByNome(String nome);
 }

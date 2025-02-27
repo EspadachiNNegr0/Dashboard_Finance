@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/modalHis.css">
+    <title>Histórico do Empréstimo</title>
+</head>
+<body>
+<div class="container">
+    <div class="modal-body">
+        <!-- Lado esquerdo com informações do cliente -->
+        <div class="modal-left-side">
+            <div class="perfil-image">
+                <img src="/img/Admin.jpg" alt="" class="img-placeholder">
+            </div>
+            <div class="data-clients">
+                <span class="span-modal"><strong>Codigo do Emprestimo:</strong> <span th:text="${historico.codigo}"></span></span>
+                <span class="span-modal"><strong>Nome do Cliente:</strong> <td><a th:href="@{/cliente/{id}(id=${historico.cliente.id})}" th:text="${historico.cliente.nome}"></a></td></span>
+                <span class="span-modal"><strong>Valor:</strong> <span th:text="${historico.price}"></span></span>
+                <span class="span-modal"><strong>Data Inicial:</strong> <span th:text="${#dates.format(historico.created, 'dd/MM/yyyy')}"></span></span>
+                <span class="span-modal"><strong>Status:</strong> <span th:if="${historico.status.name() == 'ATRASADO'}" style="color: red;">ATRASADO</span>
+                                                                    <span th:if="${historico.status.name() == 'PAGO'}" style="color: green;">PAGO</span>
+                                                                    <span th:if="${historico.status.name() == 'PENDENTE'}" style="color: orange;">PENDENTE</span>
+                </span>
+            </div>
+        </div>
+        <!-- Lado direito com histórico -->
+        <div class="modal-right-side">
+            <h2 id="title-modal-historico">Detalhes das Parcelas</h2>
+            <div class="table-container">
+                <table class="history-table">
+                    <thead>
+                    <tr>
+                        <th>Número da Parcela</th>
+                        <th>ValorMensal</th>
+                        <th>ValorPago</th>
+                        <th>BancoEntrada</th>
+                        <th>DataPagamento</th>
+                        <th>Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="parcela : ${parcelas}">
+                        <td th:text="${parcela.parcelas}"></td>
+                        <td th:text="${parcela.valor}"></td>
+                        <td th:text="${parcela.valorPago}"></td>
+                        <td th:text="${parcela.bancoEntrada}"></td>
+                        <td th:text="${#dates.format(parcela.dataPagamento, 'dd/MM/yyyy')}"></td>
+                        <td>
+                            <span th:if="${parcela.status.name() == 'ATRASADA'}" style="color: red;">ATRASADA</span>
+                            <span th:if="${parcela.status.name() == 'PAGO'}" style="color: green;">PAGO</span>
+                            <span th:if="${parcela.status.name() == 'PENDENTE'}" style="color: orange;">PENDENTE</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+
+        <!-- Botão de fechar modal -->
+        <button class="close-button" onclick="window.location.href='/Table'">X</button>
+
+    </div>
+</div>
+
+</body>
+</html>

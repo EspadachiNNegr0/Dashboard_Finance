@@ -18,16 +18,10 @@ public class Historico {
     private int codigo;
 
     @Column(nullable = false)
-    private double price; // Valor do empréstimo atual
+    private Double price; // Valor do empréstimo atual
 
     @Column(nullable = false)
-    private double valorTotal; // Valor total do empréstimo antes de qualquer pagamento
-
-    @Column(nullable = false)
-    private double valorMensal; // Valor da parcela mensal
-
-    @Column(nullable = false)
-    private int percentage;
+    private Integer percentage;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
@@ -58,20 +52,16 @@ public class Historico {
     @JoinColumn(name = "banco_saida", nullable = false) // 🔹 Banco de onde o dinheiro sai
     private Banco bancoSaida;
 
-    @ManyToOne
-    @JoinColumn(name = "banco_entrada", nullable = false) // 🔹 Banco para onde o dinheiro vai
-    private Banco bancoEntrada;
-
 
     @Column(nullable = false)
-    private int parcelamento;
+    private Integer parcelamento;
 
     @OneToMany(mappedBy = "historico", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Parcelas> parcelas;
 
-    public Historico() {}
+    public Historico() {
+    }
 
-    // Getters e Setters
     public Long getId() {
         return id;
     }
@@ -80,36 +70,27 @@ public class Historico {
         this.id = id;
     }
 
-    public double getPrice() {
+    public int getCodigo() {
+        return codigo;
+    }
+
+    public void setCodigo(int codigo) {
+        this.codigo = codigo;
+    }
+
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(Double price) {
         this.price = price;
-        calcularValorMensal(); // Atualiza automaticamente o valor da parcela
     }
 
-    public double getValorTotal() {
-        return valorTotal;
-    }
-
-    public void setValorTotal(double valorTotal) {
-        this.valorTotal = valorTotal;
-    }
-
-    public double getValorMensal() {
-        return valorMensal;
-    }
-
-    public void setValorMensal(double valorMensal) {
-        this.valorMensal = valorMensal;
-    }
-
-    public int getPercentage() {
+    public Integer getPercentage() {
         return percentage;
     }
 
-    public void setPercentage(int percentage) {
+    public void setPercentage(Integer percentage) {
         this.percentage = percentage;
     }
 
@@ -127,6 +108,14 @@ public class Historico {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Socios getSocios() {
+        return socios;
+    }
+
+    public void setSocios(Socios socios) {
+        this.socios = socios;
     }
 
     public Clientes getCliente() {
@@ -153,31 +142,6 @@ public class Historico {
         this.creationF = creationF;
     }
 
-    public Socios getSocios() {
-        return socios;
-    }
-
-    public void setSocios(Socios socios) {
-        this.socios = socios;
-    }
-
-    public int getParcelamento() {
-        return parcelamento;
-    }
-
-    public void setParcelamento(int parcelamento) {
-        this.parcelamento = parcelamento;
-        calcularValorMensal(); // Atualiza automaticamente o valor da parcela
-    }
-
-    public Banco getBancoEntrada() {
-        return bancoEntrada;
-    }
-
-    public void setBancoEntrada(Banco bancoEntrada) {
-        this.bancoEntrada = bancoEntrada;
-    }
-
     public Banco getBancoSaida() {
         return bancoSaida;
     }
@@ -186,28 +150,19 @@ public class Historico {
         this.bancoSaida = bancoSaida;
     }
 
+    public Integer getParcelamento() {
+        return parcelamento;
+    }
+
+    public void setParcelamento(Integer parcelamento) {
+        this.parcelamento = parcelamento;
+    }
+
     public List<Parcelas> getParcelas() {
         return parcelas;
     }
 
     public void setParcelas(List<Parcelas> parcelas) {
         this.parcelas = parcelas;
-    }
-
-    public int getCodigo() {
-        return codigo;
-    }
-
-    public void setCodigo(int codigo) {
-        this.codigo = codigo;
-    }
-
-    /**
-     * Método para calcular o valor da parcela mensal automaticamente
-     */
-    public void calcularValorMensal() {
-        if (parcelamento > 0) {
-            this.valorMensal = this.price / this.parcelamento;
-        }
     }
 }
