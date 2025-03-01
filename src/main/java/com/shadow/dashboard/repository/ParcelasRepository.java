@@ -2,6 +2,7 @@ package com.shadow.dashboard.repository;
 
 import com.shadow.dashboard.models.Historico;
 import com.shadow.dashboard.models.Parcelas;
+import com.shadow.dashboard.models.StatusParcela;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -33,12 +34,16 @@ public interface ParcelasRepository extends JpaRepository<Parcelas, Long> {
     @Query("SELECT p FROM Parcelas p WHERE YEAR(p.dataPagamento) = :ano")
     List<Parcelas> findParcelasByYear(@Param("ano") int ano);
 
-    // 🔹 Busca a próxima parcela PENDENTE (pagas = 0), ordenada pelo ID ASC
-    Optional<Parcelas> findFirstByHistoricoAndPagasOrderByDataPagamentoAsc(Historico historico, int pagas);
+    // Buscar parcelas com status "PENDENTE" e "pagas = 0", ordenadas pela data de pagamento asc.
+    Optional<Parcelas> findFirstByPagasAndParcelasGreaterThanOrderByParcelasAsc(int pagas, int parcelas);
 
     @Query("SELECT COALESCE(SUM(p.valorPago), 0) FROM Parcelas p WHERE p.historico.id = :historicoId")
-    double somarPagamentosPorHistorico(@Param("historicoId") Long historicoId);
+    double somarValoresPagosPorHistorico(@Param("historicoId") Long historicoId);
 
+    @Query("SELECT COUNT(p) > 0 FROM Parcelas p WHERE p.historico.id = :historicoId AND p.status = 'ABERTA'")
+    boolean existeParcelaAberta(@Param("historicoId") Long historicoId);
 
     List<Parcelas> findByHistoricoId(Long id);
+
+    List<Parcelas> findByHistoricoIdAndStatus(Long id, StatusParcela statusParcela);
 }

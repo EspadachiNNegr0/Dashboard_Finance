@@ -6,6 +6,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -238,14 +239,14 @@ public class HistoricoService {
         System.out.println("✅ Parcelas recalculadas com sucesso!");
     }
 
-    public boolean quitarEmprestimoSeNecessario(Historico historico, double valorPago, double valorRestante) {
-        if (valorPago == valorRestante) {
+    public boolean quitarEmprestimoSeNecessario(Historico historico, double totalAmortizado) {
+        if (totalAmortizado >= historico.getMontante()) { // Agora pega o montante diretamente do objeto histórico
             List<Parcelas> parcelasDoHistorico = parcelasRepository.findByHistoricoId(historico.getId());
 
             for (Parcelas p : parcelasDoHistorico) {
                 p.setPagas(1);
                 p.setStatus(StatusParcela.PAGO);
-                p.setValorPago(Optional.ofNullable(p.getValorPago()).orElse(0.0));
+                p.setValorPago(Optional.ofNullable(p.getValorAmortizado()).orElse(0.0));
             }
 
             parcelasRepository.saveAll(parcelasDoHistorico);
@@ -253,9 +254,90 @@ public class HistoricoService {
             // ✅ Atualiza o status do histórico como "QUITADO"
             historico.setStatus(Status.PAGO);
             atualizarStatusHistorico(historico);
-            return true; // Retorna true se o empréstimo foi quitado
+            return true;
         }
-        return false; // Retorna false se ainda restam pagamentos
+        return false;
+    }
+
+    // 🔹 Função para calcular os juros
+    public double calcularJuros(Historico historico) {
+        return (historico.getPercentage() / 100.0) * historico.getMontante();
+    }
+
+    // 🔹 Função para validar o pagamento
+    public boolean validarPagamento(double valorPago, double juros, double valorRestante, RedirectAttributes redirectAttributes, Historico historico) {
+        if (valorPago < juros) {
+            redirectAttributes.addFlashAttribute("error", "❌ O valor pago não pode ser menor que os juros da parcela! Juros mínimo: "
+                    + String.format("%.2f", juros));
+            return false;
+        }
+        if (valorPago > valorRestante) {
+            redirectAttributes.addFlashAttribute("error", "❌ O valor pago não pode ser maior que o valor restante do empréstimo! Restante: "
+                    + String.format("%.2f", valorRestante));
+            return false;
+        }
+        return true;
+    }
+
+    // 🔹 Função para atualizar a parcela com o pagamento
+    public void atualizarParcela(Parcelas parcela, Banco bancoEntrada, double valorPago, double juros) {
+        parcela.setBancoEntrada(bancoEntrada.getNome());
+        parcela.setValorPago(parcela.getValorPago() + valorPago);
+        parcela.setPagas(1); // ✅ Marca a parcela como PAGA
+        parcela.setStatus(StatusParcela.PAGO);
+        parcela.setDataQPagamento(new Date());
+
+        double jurosVMensal = parcela.getValor() * (parcela.getHistorico().getPercentage() / 100.0);
+        parcela.setValorJuros(jurosVMensal);
+        parcela.setValorAmortizado(parcela.getValorPago() - jurosVMensal);
+        parcela.setValorSobra(parcela.getValor() - parcela.getValorPago());
+        parcelasRepository.save(parcela); // Salvar a parcela atualizada
+    }
+
+    // 🔹 Função para repassar sobra para a próxima parcela
+    public void repassarSobra(Parcelas parcela, Historico historico) {
+        double valorSobra = parcela.getValorSobra();
+        adicionarValorSobraNaProximaParcela(parcela, valorSobra);
+        atualizarStatusHistorico(historico);
+    }
+
+    // 🔹 Função para calcular o total pago até agora
+    public double calcularTotalPago(Historico historico) {
+        List<Parcelas> parcelasPagas = parcelasRepository.findByHistoricoIdAndStatus(historico.getId(), StatusParcela.PAGO);
+        double valorAmortizadoTotal = 0;
+        double valorJurosTotal = 0;
+        for (Parcelas parcelaPaga : parcelasPagas) {
+            valorAmortizadoTotal += parcelaPaga.getValorAmortizado();
+            valorJurosTotal += parcelaPaga.getValorJuros();
+        }
+        return valorAmortizadoTotal + valorJurosTotal;
+    }
+
+    // 🔹 Função para criar uma nova parcela, se necessário
+    public void criarNovaParcelaSeNecessario(Historico historico, double valorRestanteEmprestimo, double valorTotal, Parcelas parcela) {
+        boolean existeParcelaPendente = parcelasRepository.existeParcelaAberta(historico.getId());
+        if (!existeParcelaPendente && valorRestanteEmprestimo > 0) {
+            Date dataPagamentoAtual = parcela.getDataPagamento();
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(dataPagamentoAtual);
+            calendar.add(Calendar.MONTH, 1); // Adiciona 1 mês à data
+
+            Date proximaDataPagamento = calendar.getTime();
+
+            // Criação da nova parcela
+            Parcelas novaParcela = new Parcelas();
+            novaParcela.setDataPagamento(proximaDataPagamento);
+            novaParcela.setHistorico(historico);
+            novaParcela.setParcelas(parcela.getParcelas() + 1);
+            novaParcela.setValor(valorTotal);
+            novaParcela.setStatus(StatusParcela.PENDENTE);
+            novaParcela.setValorPago(0);
+
+            parcelasRepository.save(novaParcela);
+            System.out.println("📌 Nova parcela criada com valor: " + novaParcela.getValor());
+        } else {
+            System.out.println("📌 Nenhuma nova parcela foi criada. Verifique se já existe uma parcela pendente ou se o saldo restante é zero.");
+        }
     }
 
 
@@ -301,10 +383,11 @@ public class HistoricoService {
     }
 
     public void criarParcela(Historico historicoSalvo) {
-        int totalParcelas = historicoSalvo.getParcelamento(); // Número de parcelas
-        double valorParcela = historicoSalvo.getPrice() / totalParcelas; // Valor de cada parcela
+        int totalParcelas = historicoSalvo.getParcelamento(); // Número total de parcelas
+        double montanteTotal = historicoSalvo.getMontante(); // Montante corrigido pelos juros compostos
+        double valorParcela = montanteTotal / totalParcelas; // Valor correto de cada parcela
 
-        Calendar calendario = Calendar.getInstance(); // Obtem a data atual
+        Calendar calendario = Calendar.getInstance(); // Obtém a data atual
         calendario.setTime(historicoSalvo.getCreated()); // Usa a data do empréstimo como referência
 
         for (int i = 1; i <= totalParcelas; i++) {
@@ -313,11 +396,11 @@ public class HistoricoService {
             Parcelas parcela = new Parcelas();
             parcela.setHistorico(historicoSalvo);
             parcela.setParcelas(i); // Número da parcela (1, 2, 3...)
-            parcela.setValor(valorParcela);
+            parcela.setValor(valorParcela); // Valor atualizado conforme os juros
             parcela.setDataPagamento(calendario.getTime()); // Define a data futura
             parcela.setStatus(StatusParcela.PENDENTE); // Inicialmente, a parcela está pendente
             parcela.setPagas(0); // Nenhuma parcela foi paga ainda
-            parcela.setBancoEntrada(null); // Banco de Entrada será definido apenas no pagamento
+            parcela.setBancoEntrada(null); // Banco de entrada será definido apenas no pagamento
 
             parcelasRepository.save(parcela); // Salva a parcela no banco
         }
@@ -326,28 +409,38 @@ public class HistoricoService {
     public void adicionarValorSobraNaProximaParcela(Parcelas parcela, double valorSobra) {
         if (valorSobra <= 0) return; // Se não houver sobra, não faz nada
 
-        // 🔹 Buscar a próxima parcela pendente dentro do mesmo histórico
+        // 🔹 Agora, buscar a próxima parcela com status "PENDENTE" (pagas = 0) e parcelas > do número atual
         Optional<Parcelas> proximaParcelaOptional = parcelasRepository
-                .findFirstByHistoricoAndPagasOrderByDataPagamentoAsc(parcela.getHistorico(), 0);
+                .findFirstByPagasAndParcelasGreaterThanOrderByParcelasAsc(0, parcela.getParcelas()); // Busca a próxima parcela PENDENTE (pagas = 0)
 
         if (proximaParcelaOptional.isPresent()) {
             Parcelas proximaParcela = proximaParcelaOptional.get();
 
-            // 🔹 Somar `valorSobra` ao valor já presente na próxima parcela
-            double novoValor = proximaParcela.getValor() + valorSobra;
-            proximaParcela.setValor(novoValor);
+            // 🔹 Verifique o valor atual da próxima parcela
+            double valorAtualProximaParcela = proximaParcela.getValor();
 
-            // 🔹 Atualizar a sobra para continuar acumulando corretamente
-            double novaSobra = proximaParcela.getValorSobra() + valorSobra;
+            // 🔹 Somar o valor de sobra à próxima parcela com base no valor atual
+            double novoValor = valorAtualProximaParcela + valorSobra;
+            proximaParcela.setValor(novoValor); // Atualiza o valor da próxima parcela
+
+            // 🔹 Agora, calcular a nova sobra corretamente
+            double valorPagoProximaParcela = proximaParcela.getValorPago(); // Valor pago até agora
+            double novaSobra = novoValor - valorPagoProximaParcela; // Sobra é o valor atualizado menos o que já foi pago
+
+            // 🔹 Atualizando a sobra acumulada
             proximaParcela.setValorSobra(novaSobra);
 
+            // 🔹 Salvar a próxima parcela com o valor atualizado
             parcelasRepository.save(proximaParcela); // ✅ Salvar no banco
 
-            System.out.println("✅ Valor sobrando de " + valorSobra + " foi adicionado à próxima parcela ID: " + proximaParcela.getId());
+            // 🔹 Debug para verificar os valores
+            System.out.println("✅ Próxima parcela ID: " + proximaParcela.getId() + " - Novo valor: " + novoValor + " - Nova sobra: " + novaSobra);
         } else {
             System.out.println("⚠️ Não há mais parcelas pendentes para adicionar o valor sobrando.");
         }
     }
+
+
 }
 
 

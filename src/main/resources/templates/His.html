@@ -18,6 +18,8 @@
                 <span class="span-modal"><strong>Codigo do Emprestimo:</strong> <span th:text="${historico.codigo}"></span></span>
                 <span class="span-modal"><strong>Nome do Cliente:</strong> <td><a th:href="@{/cliente/{id}(id=${historico.cliente.id})}" th:text="${historico.cliente.nome}"></a></td></span>
                 <span class="span-modal"><strong>Valor:</strong> <span th:text="${historico.price}"></span></span>
+                <span class="span-modal"><strong>Porcentagem:</strong> <span th:text="${historico.percentage}"></span></span>
+                <span class="span-modal"><strong>Montante: </strong><span th:text="${#numbers.formatDecimal(historico.montante, 1, 2)}"></span></span>
                 <span class="span-modal"><strong>Data Inicial:</strong> <span th:text="${#dates.format(historico.created, 'dd/MM/yyyy')}"></span></span>
                 <span class="span-modal"><strong>Status:</strong> <span th:if="${historico.status.name() == 'ATRASADO'}" style="color: red;">ATRASADO</span>
                                                                     <span th:if="${historico.status.name() == 'PAGO'}" style="color: green;">PAGO</span>
@@ -35,17 +37,23 @@
                         <th>Número da Parcela</th>
                         <th>ValorMensal</th>
                         <th>ValorPago</th>
+                        <th>ValorAmortizado</th>
+                        <th>ValorJuros</th>
                         <th>BancoEntrada</th>
                         <th>DataPagamento</th>
+                        <th>DataVencimento</th>
                         <th>Status</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="parcela : ${parcelas}">
                         <td th:text="${parcela.parcelas}"></td>
-                        <td th:text="${parcela.valor}"></td>
+                        <td th:text="${#numbers.formatDecimal(parcela.valor, 1, 2)}"></td>
                         <td th:text="${parcela.valorPago}"></td>
+                        <td th:text="${#numbers.formatDecimal(parcela.valorAmortizado, 1, 2)}"></td>
+                        <td th:text="${#numbers.formatDecimal(parcela.valorJuros, 1, 2)}"></td>
                         <td th:text="${parcela.bancoEntrada}"></td>
+                        <td th:text="${#dates.format(parcela.dataQPagamento, 'dd/MM/yyyy')}"></td>
                         <td th:text="${#dates.format(parcela.dataPagamento, 'dd/MM/yyyy')}"></td>
                         <td>
                             <span th:if="${parcela.status.name() == 'ATRASADA'}" style="color: red;">ATRASADA</span>

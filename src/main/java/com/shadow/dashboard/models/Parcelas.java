@@ -21,6 +21,11 @@ public class Parcelas {
     @Column(nullable = false)
     private int pagas; // 🔹 0 = A PAGAR, -1 = ATRASADO, 1 = PAGO
 
+    //data de quando foi pago
+    @Temporal(TemporalType.DATE)
+    @Column(nullable = true)
+    private Date dataQPagamento;
+
     @Temporal(TemporalType.DATE)
     @Column(nullable = false)
     private Date dataPagamento;
@@ -30,7 +35,11 @@ public class Parcelas {
 
     private double valorPago;
 
+    private double valorJuros;
+
     private double valorSobra;
+
+    private double valorAmortizado;
 
     private String BancoEntrada;
 
@@ -75,6 +84,14 @@ public class Parcelas {
         atualizarStatus(); // 🔹 Atualiza o status automaticamente
     }
 
+    public Date getDataQPagamento() {
+        return dataQPagamento;
+    }
+
+    public void setDataQPagamento(Date dataQPagamento) {
+        this.dataQPagamento = dataQPagamento;
+    }
+
     public Date getDataPagamento() { return dataPagamento; }
 
     public void setDataPagamento(Date dataPagamento) { this.dataPagamento = dataPagamento; }
@@ -111,4 +128,19 @@ public class Parcelas {
         this.valorSobra = valorSobra;
     }
 
+    public double getValorJuros() {
+        return valorJuros;
+    }
+
+    public void setValorJuros(double valorJuros) {
+        this.valorJuros = valorJuros;
+    }
+
+    public double getValorAmortizado() {
+        return valorAmortizado;
+    }
+
+    public void setValorAmortizado(double valorAmortizado) {
+        this.valorAmortizado = valorAmortizado;
+    }
 }

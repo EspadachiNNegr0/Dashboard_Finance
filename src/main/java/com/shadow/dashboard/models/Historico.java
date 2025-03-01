@@ -56,6 +56,8 @@ public class Historico {
     @Column(nullable = false)
     private Integer parcelamento;
 
+    private double montante;
+
     @OneToMany(mappedBy = "historico", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Parcelas> parcelas;
 
@@ -164,5 +166,13 @@ public class Historico {
 
     public void setParcelas(List<Parcelas> parcelas) {
         this.parcelas = parcelas;
+    }
+
+    public double getMontante() {
+        return montante;
+    }
+
+    public void setMontante(double montante) {
+        this.montante = montante;
     }
 }

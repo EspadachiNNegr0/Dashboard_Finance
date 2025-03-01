@@ -21,7 +21,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("/")
 public class IndexController {
 
     @Autowired
@@ -111,7 +110,7 @@ public class IndexController {
         return mv;
     }
 
-    @PostMapping("/")
+    @PostMapping("/saveEm")
     public String saveEmprestimo(@ModelAttribute Historico historia,
                                  @RequestParam("bancoSaida") Long bancoSaidaId,
                                  RedirectAttributes redirectAttributes) {
@@ -141,6 +140,15 @@ public class IndexController {
                     .orElseThrow(() -> new RuntimeException("Banco de Saída não encontrado"));
 
             historia.setBancoSaida(bancoSaida);
+
+            double taxaJuros = historia.getPercentage() / 100.0; // Converte para decimal
+            int parcelas = historia.getParcelamento();
+            double valorPrincipal = historia.getPrice();
+
+            double montanteTotal = valorPrincipal * Math.pow(1 + taxaJuros, parcelas); // 📌 Aplica a fórmula
+
+            // 🔹 Atualiza o valor total no histórico
+            historia.setMontante(montanteTotal);
 
             // 🔹 Salvar o histórico no banco
             Historico historicoSalvo = historicoService.saveHistoryAndCreateNotification(historia);
@@ -192,70 +200,53 @@ public class IndexController {
                                @RequestParam Long bancoEntradaId,
                                RedirectAttributes redirectAttributes) {
         try {
-            // 🔹 Buscar a parcela pelo ID
+            // 🔹 Buscar a parcela e histórico
             Parcelas parcela = parcelasRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Parcela não encontrada"));
-
             Historico historico = parcela.getHistorico();
-            double valorRestante = historico.getPrice() - valorPago;
-            double valorMensal = historico.getPrice() / historico.getParcelamento();
-            double juros = (historico.getPercentage() / 100.0) * historico.getPrice(); // Calcula os juros
+            double valorRestante = parcela.getValor() - parcela.getValorPago();
 
-            // 🔹 Se o pagamento for menor que os juros, impede o pagamento
-            if (valorPago < juros) {
-                redirectAttributes.addFlashAttribute("error",
-                        "❌ O valor pago não pode ser menor que os juros da parcela! Juros mínimo: "
-                                + String.format("%.2f", juros));
-                return "redirect:/histori/" + historico.getId();
-            }
-            // 🔹 Verifica se o valor pago ultrapassa o total do empréstimo
-            if (valorPago > valorRestante) {
-                redirectAttributes.addFlashAttribute("error",
-                        "❌ O valor pago não pode ser maior que o valor restante do empréstimo! Restante: "
-                                + String.format("%.2f", valorRestante));
+            double juros = historicoService.calcularJuros(historico); // Calcula os juros do histórico
+
+            // 🔹 Valida pagamento
+            if (!historicoService.validarPagamento(valorPago, juros, valorRestante, redirectAttributes, historico)) {
                 return "redirect:/histori/" + historico.getId();
             }
 
-            // 🔹 Buscar o banco de entrada selecionado
+            // 🔹 Atualiza a parcela com o pagamento
             Banco bancoEntrada = bancoRepository.findById(bancoEntradaId)
                     .orElseThrow(() -> new RuntimeException("Banco de Entrada não encontrado"));
+            historicoService.atualizarParcela(parcela, bancoEntrada, valorPago, juros);
 
-            // 🔹 Salvar o banco de entrada e valor pago na parcela
-            parcela.setBancoEntrada(bancoEntrada.getNome());
-            parcela.setValorPago(valorPago);
-            parcela.setPagas(1); // ✅ Marca a parcela como PAGA
-            parcela.setStatus(StatusParcela.PAGO);
-
-            // 🔹 Calcular o valor restante (sobra)
-            double valorSobra = valorMensal - valorPago;
-
-            // ✅ Atualiza `valorSobra` da parcela paga
-            parcela.setValorSobra(valorSobra);
-            parcelasRepository.save(parcela); // Salvar a parcela atualizada
-
-            // ✅ Verifica se o empréstimo pode ser quitado
-            if (historicoService.quitarEmprestimoSeNecessario(historico, valorPago, valorRestante)) {
+            // 🔹 Verifica se o empréstimo foi quitado
+            double amortizado = parcela.getValorAmortizado();
+            if (amortizado >= historico.getMontante()) {
+                historicoService.quitarEmprestimoSeNecessario(historico, amortizado);
                 redirectAttributes.addFlashAttribute("success", "✅ Empréstimo quitado com sucesso!");
             } else {
-                // ✅ Se não foi quitado, continua o fluxo normal e repassa a sobra
-                historicoService.adicionarValorSobraNaProximaParcela(parcela, valorSobra);
-                historicoService.atualizarStatusHistorico(historico);
+                historicoService.repassarSobra(parcela, historico);
             }
 
-            // 🔹 Atualiza o status do histórico após pagamento
-            historicoService.atualizarStatusHistorico(historico);
+            // 🔹 Calcula o total pago até agora
+            double valorTotalPago = historicoService.calcularTotalPago(historico);
+            double valorRestanteEmprestimo = historico.getMontante() - valorTotalPago;
+            double valorRestanteJuros = valorRestanteEmprestimo * (historico.getPercentage() / 100.0);
+            double valorTotal = valorRestanteEmprestimo + valorRestanteJuros;
 
-            // 🔹 Criar notificação sobre o pagamento
+            // 🔹 Verifica e cria a próxima parcela, se necessário
+            historicoService.criarNovaParcelaSeNecessario(historico, valorRestanteEmprestimo, valorTotal, parcela);
+
+            // 🔹 Atualiza o status do histórico e cria a notificação
+            historicoService.atualizarStatusHistorico(historico);
             historicoService.criarNotificacao(historico, valorPago, "Pagamento da Parcela");
 
             redirectAttributes.addFlashAttribute("success", "✅ Pagamento registrado com sucesso!");
-            return "redirect:/histori/" + historico.getId(); // ✅ Redireciona para a página de detalhes
+            return "redirect:/histori/" + historico.getId();
 
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "❌ Erro: " + e.getMessage());
             return "redirect:/histori/" + id;
         }
     }
-
 
 }
