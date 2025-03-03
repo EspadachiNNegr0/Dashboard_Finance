@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 @Entity
 @Table(name = "Tb_History")
@@ -49,9 +48,8 @@ public class Historico {
 
     // 🔹 Adicionando Banco de Entrada e Banco de Saída
     @ManyToOne
-    @JoinColumn(name = "banco_saida", nullable = false) // 🔹 Banco de onde o dinheiro sai
+    @JoinColumn(name = "banco_saida", nullable = false)
     private Banco bancoSaida;
-
 
     @Column(nullable = false)
     private Integer parcelamento;
@@ -61,118 +59,53 @@ public class Historico {
     @OneToMany(mappedBy = "historico", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Parcelas> parcelas;
 
-    public Historico() {
-    }
+    // 🔹 Agora, corretamente ligado ao RelatorioSaida
+    @OneToOne(mappedBy = "historico", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private RelatorioSaida relatorioSaida;
 
-    public Long getId() {
-        return id;
-    }
+    // ✅ Getters e Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public int getCodigo() { return codigo; }
+    public void setCodigo(int codigo) { this.codigo = codigo; }
 
-    public int getCodigo() {
-        return codigo;
-    }
+    public Double getPrice() { return price; }
+    public void setPrice(Double price) { this.price = price; }
 
-    public void setCodigo(int codigo) {
-        this.codigo = codigo;
-    }
+    public Integer getPercentage() { return percentage; }
+    public void setPercentage(Integer percentage) { this.percentage = percentage; }
 
-    public Double getPrice() {
-        return price;
-    }
+    public Status getStatus() { return status; }
+    public void setStatus(Status status) { this.status = status; }
 
-    public void setPrice(Double price) {
-        this.price = price;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public Integer getPercentage() {
-        return percentage;
-    }
+    public Socios getSocios() { return socios; }
+    public void setSocios(Socios socios) { this.socios = socios; }
 
-    public void setPercentage(Integer percentage) {
-        this.percentage = percentage;
-    }
+    public Clientes getCliente() { return cliente; }
+    public void setCliente(Clientes cliente) { this.cliente = cliente; }
 
-    public Status getStatus() {
-        return status;
-    }
+    public Date getCreated() { return created; }
+    public void setCreated(Date created) { this.created = created; }
 
-    public void setStatus(Status status) {
-        this.status = status;
-    }
+    public Date getCreationF() { return creationF; }
+    public void setCreationF(Date creationF) { this.creationF = creationF; }
 
-    public String getDescription() {
-        return description;
-    }
+    public Banco getBancoSaida() { return bancoSaida; }
+    public void setBancoSaida(Banco bancoSaida) { this.bancoSaida = bancoSaida; }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    public Integer getParcelamento() { return parcelamento; }
+    public void setParcelamento(Integer parcelamento) { this.parcelamento = parcelamento; }
 
-    public Socios getSocios() {
-        return socios;
-    }
+    public List<Parcelas> getParcelas() { return parcelas; }
+    public void setParcelas(List<Parcelas> parcelas) { this.parcelas = parcelas; }
 
-    public void setSocios(Socios socios) {
-        this.socios = socios;
-    }
+    public double getMontante() { return montante; }
+    public void setMontante(double montante) { this.montante = montante; }
 
-    public Clientes getCliente() {
-        return cliente;
-    }
-
-    public void setCliente(Clientes cliente) {
-        this.cliente = cliente;
-    }
-
-    public Date getCreated() {
-        return created;
-    }
-
-    public void setCreated(Date created) {
-        this.created = created;
-    }
-
-    public Date getCreationF() {
-        return creationF;
-    }
-
-    public void setCreationF(Date creationF) {
-        this.creationF = creationF;
-    }
-
-    public Banco getBancoSaida() {
-        return bancoSaida;
-    }
-
-    public void setBancoSaida(Banco bancoSaida) {
-        this.bancoSaida = bancoSaida;
-    }
-
-    public Integer getParcelamento() {
-        return parcelamento;
-    }
-
-    public void setParcelamento(Integer parcelamento) {
-        this.parcelamento = parcelamento;
-    }
-
-    public List<Parcelas> getParcelas() {
-        return parcelas;
-    }
-
-    public void setParcelas(List<Parcelas> parcelas) {
-        this.parcelas = parcelas;
-    }
-
-    public double getMontante() {
-        return montante;
-    }
-
-    public void setMontante(double montante) {
-        this.montante = montante;
-    }
+    public RelatorioSaida getRelatorioSaida() { return relatorioSaida; }
+    public void setRelatorioSaida(RelatorioSaida relatorioSaida) { this.relatorioSaida = relatorioSaida; }
 }

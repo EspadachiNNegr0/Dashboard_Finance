@@ -26,10 +26,12 @@ public class HistoricoService {
     @Autowired
     private ParcelasRepository parcelasRepository;
 
-    /**
-     * Salva o histórico e cria suas parcelas e notificações
-     */
-    public Historico saveHistoryAndCreateNotification(Historico historico) {
+    @Autowired
+    private RelatorioSaidaRepository relatorioSaidaRepository;
+    @Autowired
+    private RelatorioService relatorioService;
+
+    public void saveHistoryAndCreateNotification(Historico historico) {
         // Validações
         if (historico.getCreated() == null || historico.getParcelamento() <= 0) {
             throw new IllegalArgumentException("Os campos 'created' e 'parcelamento' são obrigatórios.");
@@ -43,14 +45,18 @@ public class HistoricoService {
         // 🔹 Calcular a data final do empréstimo
         historico.setCreationF(calculaDataFinal(historico));
 
-        // 🔹 Salvar o histórico antes de criar as parcelas
+        // 🔹 Salvar o histórico no banco
         historico = historicoRepository.save(historico);
+
+        criarParcela(historico);
+
+        relatorioService.criarRelatorioSaida(historico);
+
 
         // 🔹 Criar notificação
         createNotification(historico);
-
-        return historico;
     }
+
 
     private int gerarCodigoUnico() {
         Random random = new Random();
@@ -387,9 +393,17 @@ public class HistoricoService {
         double montanteTotal = historicoSalvo.getMontante(); // Montante corrigido pelos juros compostos
         double valorParcela = montanteTotal / totalParcelas; // Valor correto de cada parcela
 
+        // Verifica se já existem parcelas associadas ao histórico
+        List<Parcelas> parcelasExistentes = parcelasRepository.findByHistorico(historicoSalvo);
+        if (!parcelasExistentes.isEmpty()) {
+            System.out.println("Parcelas já criadas para o histórico #" + historicoSalvo.getId());
+            return;  // Se as parcelas já existirem, não cria novas
+        }
+
         Calendar calendario = Calendar.getInstance(); // Obtém a data atual
         calendario.setTime(historicoSalvo.getCreated()); // Usa a data do empréstimo como referência
 
+        // Loop para criar as parcelas
         for (int i = 1; i <= totalParcelas; i++) {
             calendario.add(Calendar.MONTH, 1); // Adiciona um mês para cada parcela
 
@@ -402,8 +416,13 @@ public class HistoricoService {
             parcela.setPagas(0); // Nenhuma parcela foi paga ainda
             parcela.setBancoEntrada(null); // Banco de entrada será definido apenas no pagamento
 
-            parcelasRepository.save(parcela); // Salva a parcela no banco
+            // Salva a parcela no banco
+            parcelasRepository.save(parcela);
+
+            relatorioService.criarRelatorioEntrada(parcela, historicoSalvo);
         }
+
+        System.out.println("📌 Parcelas criadas com sucesso para o histórico #" + historicoSalvo.getId());
     }
 
     public void adicionarValorSobraNaProximaParcela(Parcelas parcela, double valorSobra) {
@@ -442,5 +461,3 @@ public class HistoricoService {
 
 
 }
-
-

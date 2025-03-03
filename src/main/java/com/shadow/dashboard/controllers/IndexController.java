@@ -47,9 +47,6 @@ public class IndexController {
     @Autowired
     private ParcelasRepository parcelasRepository;
 
-    @Autowired
-    private PagamentoLogRepository pagamentoLogRepository;
-
     // 🔹 Método para converter LocalDateTime para Date (para compatibilidade com Thymeleaf)
     private Date convertToDate(LocalDateTime dateTime) {
         return Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
@@ -151,10 +148,10 @@ public class IndexController {
             historia.setMontante(montanteTotal);
 
             // 🔹 Salvar o histórico no banco
-            Historico historicoSalvo = historicoService.saveHistoryAndCreateNotification(historia);
+            historicoService.saveHistoryAndCreateNotification(historia); // Não precisa atribuir o retorno
 
             // ✅ Criar Parcelas automaticamente
-            historicoService.criarParcela(historicoSalvo);
+            historicoService.criarParcela(historia); // Aqui você já usa o objeto `historia`
 
             redirectAttributes.addFlashAttribute("success", "Empréstimo registrado com sucesso!");
             return "redirect:/Table";

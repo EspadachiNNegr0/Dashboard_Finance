@@ -29,7 +29,7 @@
                 <span class="text">Dashboard</span>
             </a>
         </li>
-        <li class="active">
+        <li>
             <a href="/Table">
                 <i class='bx bxs-shopping-bag-alt' ></i>
                 <span class="text">Tabela</span>
@@ -41,7 +41,7 @@
                 <span class="text">Analytics</span>
             </a>
         </li>
-        <li>
+        <li class="active">
             <a href="/Relatorio">
                 <i class='bx bxs-doughnut-chart' ></i>
                 <span class="text">Relatorios</span>
@@ -106,13 +106,9 @@
 
             <!-- Botão para limpar notificações -->
             <div class="modal-footer">
-                <form action="/notifications/clear" method="post" target="hidden-frame">
-                    <button type="submit">Limpar Notificações</button>
-                </form>
+                <button id="clear-notifications">Limpar Notificações</button>
             </div>
         </div>
-
-
 
         <div class="profile" onclick="toggleSubMenu()">
             <div class="profile-photo">
@@ -146,7 +142,7 @@
                     </li>
                     <li><i class='bx bx-chevron-right' ></i></li>
                     <li>
-                        <a class="active" href="#">Search</a>
+                        <a class="active" href="#">Relatorio</a>
                     </li>
                 </ul>
             </div>
@@ -155,7 +151,7 @@
         <div class="table-data">
             <div class="order">
                 <div class="head">
-                    <h3>Pesquisado:</h3>
+                    <h3>Relatorio</h3>
 
                     <i class='bx bx-filter' id="openModalFiltro"></i>
 
@@ -216,34 +212,30 @@
                     </div>
 
                 </div>
-                <table id="example" class="table table-striped" style="width:100%">
+
+                <!-- TABELA -->
+                <table id="example" class="table table-striped">
                     <thead>
                     <tr>
-                        <th>Nome</th>
                         <th>Cod</th>
-                        <th>Price</th>
+                        <th>Valor</th>
+                        <th>Porcentagem</th>
                         <th>Parcelamento</th>
-                        <th>Start date</th>
-                        <th>End date</th>
+                        <th>Banco Saida</th>
+                        <th>Funcionario</th>
+                        <th>Data do Emp.</th>
+                        <th>Data final</th>
                         <th>Status</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="historico : ${listHistorico}">
-                        <td>
-                            <a th:if="${historico.cliente != null}"
-                               th:href="@{/cliente/{id}(id=${historico.cliente.id})}"
-                               th:text="${historico.cliente.nome}">
-                            </a>
-                            <span th:unless="${historico.cliente != null}">Cliente não disponível</span>
-                        </td>
-                        <td th:text="${historico.codigo}"></td>
-                        <td>
-                            <span th:text="${historico.price} + ' '"></span>
-                        </td>
-                        <td>
-                            <span th:text="${historico.parcelamento} + ' '"></span>
-                        </td>
+                    <tr th:each="historico: ${historias}">
+                        <td><a th:href="@{/emprestimo/{codigo}(codigo=${historico.codigo})}" th:text="${historico.codigo}"></a></td>
+                        <td th:text="${historico.price}"></td>
+                        <td th:text="${historico.percentage} + '%'"></td>
+                        <td th:text="${historico.parcelamento}"></td>
+                        <td th:text="${historico.bancoSaida.nome}"></td>
+                        <td th:text="${historico.socios.name}"></td>
                         <td th:text="${#dates.format(historico.created, 'dd/MM/yyyy')}"></td>
                         <td th:text="${#dates.format(historico.creationF, 'dd/MM/yyyy')}"></td>
                         <td>
@@ -257,7 +249,6 @@
                             </a>
                         </td>
                     </tr>
-
                     </tbody>
                 </table>
             </div>
