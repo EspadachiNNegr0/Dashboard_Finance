@@ -4,6 +4,8 @@ import com.shadow.dashboard.models.*;
 import com.shadow.dashboard.repository.*;
 import com.shadow.dashboard.service.ClientService;
 import com.shadow.dashboard.service.HistoricoService;
+import com.shadow.dashboard.service.RelatorioService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,10 +35,7 @@ public class IndexController {
     private HistoricoService historicoService;
 
     @Autowired
-    private ClientService clientService;
-
-    @Autowired
-    private SociosRepository sociosRepository;
+    private RelatorioEntradaRepository relatorioEntradaRepository;
 
     @Autowired
     private BancoRepository bancoRepository;
@@ -46,6 +45,12 @@ public class IndexController {
 
     @Autowired
     private ParcelasRepository parcelasRepository;
+
+    @Autowired
+    private RelatorioService relatorioService;
+
+    @Autowired
+    private RelatorioFinanceiroRepository relatorioFinanceiroRepository;
 
     // 🔹 Método para converter LocalDateTime para Date (para compatibilidade com Thymeleaf)
     private Date convertToDate(LocalDateTime dateTime) {
@@ -151,7 +156,7 @@ public class IndexController {
             historicoService.saveHistoryAndCreateNotification(historia); // Não precisa atribuir o retorno
 
             // ✅ Criar Parcelas automaticamente
-            historicoService.criarParcela(historia); // Aqui você já usa o objeto `historia`
+            historicoService.criarParcelas(historia); // Aqui você já usa o objeto `historia`
 
             redirectAttributes.addFlashAttribute("success", "Empréstimo registrado com sucesso!");
             return "redirect:/Table";
@@ -197,53 +202,90 @@ public class IndexController {
                                @RequestParam Long bancoEntradaId,
                                RedirectAttributes redirectAttributes) {
         try {
-            // 🔹 Buscar a parcela e histórico
+            // 🔹 Buscar a parcela
             Parcelas parcela = parcelasRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Parcela não encontrada"));
+                    .orElseThrow(() -> new RuntimeException("❌ Parcela não encontrada"));
+
+            // 🔹 Buscar histórico associado
             Historico historico = parcela.getHistorico();
+            if (historico == null) {
+                throw new RuntimeException("❌ Erro: A parcela ID " + parcela.getId() + " não possui um histórico associado.");
+            }
+
+            // 🔹 Buscar banco de entrada
+            Banco bancoEntrada = bancoRepository.findById(bancoEntradaId)
+                    .orElseThrow(() -> new RuntimeException("❌ Banco de Entrada não encontrado"));
+
+            // 🔹 Validar o pagamento
             double valorRestante = parcela.getValor() - parcela.getValorPago();
+            double juros = historicoService.calcularJuros(historico);
 
-            double juros = historicoService.calcularJuros(historico); // Calcula os juros do histórico
-
-            // 🔹 Valida pagamento
-            if (!historicoService.validarPagamento(valorPago, juros, valorRestante, redirectAttributes, historico)) {
+            if (valorPago < juros) {
+                redirectAttributes.addFlashAttribute("error", "❌ O valor pago não pode ser menor que os juros!");
                 return "redirect:/histori/" + historico.getId();
             }
 
-            // 🔹 Atualiza a parcela com o pagamento
-            Banco bancoEntrada = bancoRepository.findById(bancoEntradaId)
-                    .orElseThrow(() -> new RuntimeException("Banco de Entrada não encontrado"));
-            historicoService.atualizarParcela(parcela, bancoEntrada, valorPago, juros);
+            // 🔹 Atualizar a parcela com o pagamento
+            historicoService.atualizarParcela(parcela, bancoEntrada, valorPago);
+            parcelasRepository.save(parcela); // ✅ Salvar a atualização no banco
 
-            // 🔹 Verifica se o empréstimo foi quitado
-            double amortizado = parcela.getValorAmortizado();
-            if (amortizado >= historico.getMontante()) {
-                historicoService.quitarEmprestimoSeNecessario(historico, amortizado);
-                redirectAttributes.addFlashAttribute("success", "✅ Empréstimo quitado com sucesso!");
-            } else {
+            // 🔹 Atualizar o RelatórioEntrada (pega apenas o primeiro registro da lista)
+
+            // 🔹 Atualizar o RelatórioEntrada (pega apenas o primeiro registro da lista)
+            List<RelatorioEntrada> relatorios = relatorioEntradaRepository.findByHistorico(historico);
+            if (!relatorios.isEmpty()) {
+                RelatorioEntrada relatorioEntrada = relatorios.get(0);
+                relatorioEntrada.setBanco(bancoEntrada.getNome());
+                relatorioEntradaRepository.save(relatorioEntrada);
+
+                // 🔹 Atualizar ou criar Relatório Financeiro
+                RelatorioFinanceiro relatorioFinanceiro = relatorioFinanceiroRepository.findByCodigo(relatorioEntrada.getCodigo());
+                if (relatorioFinanceiro == null) {
+                    relatorioService.criarRelatorioFinanceiroEntrada(relatorioEntrada);
+                } else {
+                    relatorioFinanceiro.setValor(relatorioEntrada.getValor());
+                    relatorioFinanceiro.setBanco(relatorioEntrada.getBanco());
+                    relatorioFinanceiro.setData(relatorioEntrada.getData());
+                    relatorioFinanceiroRepository.save(relatorioFinanceiro);
+                }
+            }
+
+            // 🔹 Verificar sobra e repassá-la
+            double valorSobra = parcela.getValorSobra();
+            if (valorSobra > 0) {
                 historicoService.repassarSobra(parcela, historico);
             }
 
-            // 🔹 Calcula o total pago até agora
-            double valorTotalPago = historicoService.calcularTotalPago(historico);
-            double valorRestanteEmprestimo = historico.getMontante() - valorTotalPago;
-            double valorRestanteJuros = valorRestanteEmprestimo * (historico.getPercentage() / 100.0);
-            double valorTotal = valorRestanteEmprestimo + valorRestanteJuros;
+            // 🔹 Verificar se todas as parcelas foram pagas e quitar o empréstimo
+            double amortizado = historicoService.calcularTotalPago(historico);
+            if (amortizado >= historico.getMontante()) {
+                historicoService.quitarEmprestimoSeNecessario(historico, amortizado);
+                redirectAttributes.addFlashAttribute("success", "✅ Empréstimo quitado com sucesso!");
+            }
 
-            // 🔹 Verifica e cria a próxima parcela, se necessário
-            historicoService.criarNovaParcelaSeNecessario(historico, valorRestanteEmprestimo, valorTotal, parcela);
+            // 🔹 Criar nova parcela se houver sobra e nenhuma pendente
+            if (valorSobra > 0 && !parcelasRepository.existeParcelaAberta(historico.getId())) {
+                historicoService.criarNovaParcelaSeNecessario(historico, valorSobra, parcela);
+            }
 
-            // 🔹 Atualiza o status do histórico e cria a notificação
+            // 🔹 Atualizar status do histórico
             historicoService.atualizarStatusHistorico(historico);
-            historicoService.criarNotificacao(historico, valorPago, "Pagamento da Parcela");
+
+            // 🔹 Criar notificação do pagamento
+            historicoService.criarNotificacao(historico, "💰 Pagamento de R$ " + valorPago + " realizado.");
 
             redirectAttributes.addFlashAttribute("success", "✅ Pagamento registrado com sucesso!");
             return "redirect:/histori/" + historico.getId();
 
         } catch (RuntimeException e) {
+            e.printStackTrace();
             redirectAttributes.addFlashAttribute("error", "❌ Erro: " + e.getMessage());
-            return "redirect:/histori/" + id;
+            return "redirect:/Table";
         }
     }
+
+
+
+
 
 }

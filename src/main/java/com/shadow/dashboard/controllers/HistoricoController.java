@@ -6,9 +6,8 @@ import com.shadow.dashboard.service.ClientService;
 import com.shadow.dashboard.service.HistoricoService;
 import com.shadow.dashboard.service.SocioService;
 import jakarta.servlet.http.HttpServletRequest;
-import org.hibernate.mapping.Table;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -46,6 +45,13 @@ public class HistoricoController {
 
     @Autowired
     private ParcelasRepository parcelasRepository; // Adicionado para evitar erro
+
+    @Autowired
+    private RelatorioEntradaRepository relatorioEntradaRepository;
+
+    @Autowired
+    private RelatorioSaidaRepository relatorioSaidaRepository;
+
     @Autowired
     private SocioService socioService;
 
@@ -208,13 +214,38 @@ public class HistoricoController {
     }
 
 
-
     @DeleteMapping("/historico/delete/{id}")
+    @Transactional
     public ResponseEntity<String> excluirHistorico(@PathVariable Long id) {
         try {
-            historicoRepository.deleteById(id);
-            return ResponseEntity.ok("✅ Histórico excluído com sucesso!");
+            System.out.println("🔍 Buscando histórico ID: " + id);
+
+            Optional<Historico> historicoOptional = historicoRepository.findById(id);
+            if (historicoOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("❌ Histórico não encontrado.");
+            }
+
+            Historico historico = historicoOptional.get();
+            System.out.println("📌 Histórico encontrado: " + historico.getId());
+
+            // 🔹 Exclui parcelas associadas
+            int parcelasExcluidas = parcelasRepository.deleteByHistorico(historico);
+            System.out.println("📌 Parcelas excluídas: " + parcelasExcluidas);
+
+            // 🔹 Exclui relatórios associados
+            int relatoriosEntradaExcluidos = relatorioEntradaRepository.deleteByHistorico(historico);
+            int relatoriosSaidaExcluidos = relatorioSaidaRepository.deleteByHistorico(historico);
+            System.out.println("📌 Relatórios excluídos: Entrada=" + relatoriosEntradaExcluidos + ", Saída=" + relatoriosSaidaExcluidos);
+
+            // 🔹 Agora pode excluir o histórico
+            historicoRepository.delete(historico);
+            System.out.println("✅ Histórico excluído com sucesso!");
+
+            return ResponseEntity.ok("✅ Histórico e relatórios excluídos com sucesso!");
+
         } catch (Exception e) {
+            e.printStackTrace(); // 🔹 Exibe erro no console para depuração
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("❌ Erro ao excluir histórico: " + e.getMessage());
         }

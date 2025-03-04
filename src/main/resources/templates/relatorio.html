@@ -153,7 +153,18 @@
                 <div class="head">
                     <h3>Relatorio</h3>
 
+                    <div class="total-relatorio">
+                        <h3>📊 Totais do Relatório:</h3>
+                        <p>💰 Total de Entradas: <span id="total-entradas">R$ 0,00</span></p>
+                        <p>📉 Total de Saídas: <span id="total-saidas">R$ 0,00</span></p>
+                        <h3>📊 Saldo Final:
+                            <span id="saldo-final">R$ 0,00</span>
+                        </h3>
+                    </div>
+
+
                     <i class='bx bx-filter' id="openModalFiltro"></i>
+
 
                     <!-- MODAL DE FILTRO -->
                     <div class="modal-filtro" id="modalFiltro">
@@ -165,48 +176,22 @@
 
                             <h2>Selecione os filtros desejados</h2>
 
-                            <form id="form-filtro">
-                                <!-- Filtro: Data de Início do Empréstimo -->
-                                <div class="input-group">
-                                    <label for="data-inicio">Data de Início do Empréstimo:</label>
-                                    <input type="date" id="data-inicio" name="dataInicio">
-                                </div>
+                            <form id="form-filtro" >
+                                <label for="filtro-tipo">Tipo:</label>
+                                <select id="filtro-tipo" name="tipo">
+                                    <option value="">Todos</option>
+                                    <option value="entrada">Entrada</option>
+                                    <option value="saida">saida</option>
+                                </select>
 
-                                <!-- Filtro: Data de Pagamento do Empréstimo -->
-                                <div class="input-group">
-                                    <label for="data-pagamento">Data de Pagamento do Empréstimo:</label>
-                                    <input type="date" id="data-pagamento" name="dataPagamento">
-                                </div>
+                                <label>Valor:</label>
+                                <input type="number" id="filtro-valor-min" name="valorMin" placeholder="De" step="0.01">
+                                <input type="number" id="filtro-valor-max" name="valorMax" placeholder="Até" step="0.01">
 
-                                <!-- Filtro: Valor do Empréstimo -->
-                                <div class="input-group">
-                                    <label>Valor do Empréstimo:</label>
-                                    <div class="valor-range">
-                                        <input type="number" id="valor-min" name="valorMin" placeholder="De" step="0.01">
-                                        <span>até</span>
-                                        <input type="number" id="valor-max" name="valorMax" placeholder="Até" step="0.01">
-                                    </div>
-                                </div>
+                                <label for="filtro-mes">Mês:</label>
+                                <input type="month" id="filtro-mes" name="mes">
 
-                                <!-- Filtro: Funcionário -->
-                                <div class="input-group">
-                                    <label for="funcionario">Funcionário:</label>
-                                    <select id="funcionario">
-                                        <option value="" selected>Todos</option>
-                                        <option th:each="socio : ${socios}" th:value="${socio.name}" th:text="${socio.name}"></option>
-                                    </select>
-                                </div>
-
-                                <!-- Filtro: Banco de Saída -->
-                                <div class="input-group">
-                                    <label for="bancoSaida">Banco de Saída:</label>
-                                    <select id="bancoSaida">
-                                        <option value="" selected>Todos</option>
-                                        <option th:each="banco : ${bancos}" th:value="${banco.nome}" th:text="${banco.nome}"></option>
-                                    </select>
-                                </div>
-                                <!-- Botão de envio -->
-                                <button id="btn-modal-filtro" type="submit">Filtrar</button>
+                                <button type="submit">Filtrar</button>
                             </form>
                         </div>
                     </div>
@@ -218,38 +203,27 @@
                     <thead>
                     <tr>
                         <th>Cod</th>
-                        <th>Valor</th>
-                        <th>Porcentagem</th>
-                        <th>Parcelamento</th>
-                        <th>Banco Saida</th>
+                        <th>Banco</th>
                         <th>Funcionario</th>
-                        <th>Data do Emp.</th>
-                        <th>Data final</th>
+                        <th>Cliente</th>
+                        <th>Data</th>
+                        <th>Valor</th>
                         <th>Status</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="historico: ${historias}">
-                        <td><a th:href="@{/emprestimo/{codigo}(codigo=${historico.codigo})}" th:text="${historico.codigo}"></a></td>
-                        <td th:text="${historico.price}"></td>
-                        <td th:text="${historico.percentage} + '%'"></td>
-                        <td th:text="${historico.parcelamento}"></td>
-                        <td th:text="${historico.bancoSaida.nome}"></td>
-                        <td th:text="${historico.socios.name}"></td>
-                        <td th:text="${#dates.format(historico.created, 'dd/MM/yyyy')}"></td>
-                        <td th:text="${#dates.format(historico.creationF, 'dd/MM/yyyy')}"></td>
-                        <td>
-                            <span th:if="${historico.status.name() == 'ATRASADO'}" style="color: red;">ATRASADO</span>
-                            <span th:if="${historico.status.name() == 'PAGO'}" style="color: green;">PAGO</span>
-                            <span th:if="${historico.status.name() == 'PENDENTE'}" style="color: orange;">PENDENTE</span>
-                        </td>
-                        <td>
-                            <a th:href="@{/histori/{id}(id=${historico.id})}" class="btn btn-info">
-                                <span class="material-symbols-sharp">file_open</span>
-                            </a>
-                        </td>
+                    <tr th:each="relatorio : ${relatoriosFinanceiros}">
+                        <td th:text="${relatorio.codigo}"></td>
+                        <td th:text="${relatorio.banco}"></td>
+                        <td th:text="${relatorio.historico.socios.name}"></td>
+                        <td th:text="${relatorio.historico.cliente.nome}"></td>
+                        <td th:text="${#dates.format(relatorio.data, 'dd/MM/yyyy')}"></td>
+                        <td th:text="${relatorio.valor}"></td>
+                        <td th:text="${relatorio.status}"></td>
                     </tr>
                     </tbody>
+
+
                 </table>
             </div>
         </div>
@@ -258,7 +232,6 @@
 </section>
 <!-- CONTENT -->
 
-
-<script src="/js/script.js"></script>
+<script src="/js/scriptR.js"></script>
 </body>
 </html>

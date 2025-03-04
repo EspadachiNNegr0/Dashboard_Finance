@@ -68,20 +68,19 @@
 </div>
 <script>
     function deletarHistorico(id) {
-        if (confirm("Tem certeza que deseja excluir este histórico?")) {
+        if (confirm("Tem certeza que deseja excluir este histórico e os relatórios associados?")) {
             fetch(`/historico/delete/${id}`, {
                 method: "DELETE"
-            }).then(response => {
-                if (response.ok) {
-                    alert("Histórico excluído com sucesso!");
-                    window.location.href = "/Table"; // ✅ Redireciona para a página /Table
-                } else {
+            })
+                .then(response => response.text())
+                .then(message => {
+                    alert(message); // Exibe a mensagem do backend
+                    window.location.href = "/Table"; // 🔄 Redireciona para a página /Table
+                })
+                .catch(error => {
+                    console.error("Erro:", error);
                     alert("Erro ao excluir histórico.");
-                }
-            }).catch(error => {
-                console.error("Erro:", error);
-                alert("Erro ao excluir histórico.");
-            });
+                });
         }
     }
 </script>

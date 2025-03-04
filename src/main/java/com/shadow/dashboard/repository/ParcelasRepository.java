@@ -4,6 +4,7 @@ import com.shadow.dashboard.models.Historico;
 import com.shadow.dashboard.models.Parcelas;
 import com.shadow.dashboard.models.StatusParcela;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -34,8 +35,8 @@ public interface ParcelasRepository extends JpaRepository<Parcelas, Long> {
     @Query("SELECT p FROM Parcelas p WHERE YEAR(p.dataPagamento) = :ano")
     List<Parcelas> findParcelasByYear(@Param("ano") int ano);
 
-    // Buscar parcelas com status "PENDENTE" e "pagas = 0", ordenadas pela data de pagamento asc.
-    Optional<Parcelas> findFirstByPagasAndParcelasGreaterThanOrderByParcelasAsc(int pagas, int parcelas);
+    // ✅ Garante que apenas uma parcela seja retornada, ordenando pela data de pagamento mais próxima
+    Optional<Parcelas> findTopByPagasAndParcelasGreaterThanOrderByDataPagamentoAsc(int pagas, int parcelas);
 
     @Query("SELECT COALESCE(SUM(p.valorPago), 0) FROM Parcelas p WHERE p.historico.id = :historicoId")
     double somarValoresPagosPorHistorico(@Param("historicoId") Long historicoId);
@@ -46,4 +47,13 @@ public interface ParcelasRepository extends JpaRepository<Parcelas, Long> {
     List<Parcelas> findByHistoricoId(Long id);
 
     List<Parcelas> findByHistoricoIdAndStatus(Long id, StatusParcela statusParcela);
+
+    // ✅ Melhorado para retornar apenas uma parcela corretamente, evitando erro de múltiplos resultados
+    Optional<Parcelas> findTopByHistoricoAndPagasAndParcelasGreaterThanOrderByDataPagamentoAsc(
+            Historico historico, int pagas, int parcelas
+    );
+
+    @Modifying
+    @Query("DELETE FROM Parcelas p WHERE p.historico = :historico")
+    int deleteByHistorico(@Param("historico") Historico historico);
 }

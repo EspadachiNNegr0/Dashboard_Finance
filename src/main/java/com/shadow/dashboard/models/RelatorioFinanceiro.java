@@ -1,12 +1,11 @@
 package com.shadow.dashboard.models;
 
 import jakarta.persistence.*;
-
 import java.util.Date;
 
 @Entity
-@Table(name = "tb_RelatorioSaida")
-public class RelatorioSaida {
+@Table(name = "tb_RelatorioFinanceiro")
+public class RelatorioFinanceiro {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,17 +17,25 @@ public class RelatorioSaida {
     private double valor;
     private String banco;
 
-    @Temporal(TemporalType.TIMESTAMP) // 🔹 Corrige o armazenamento da data
+    @Temporal(TemporalType.TIMESTAMP)
     private Date data;
 
-    @Enumerated(EnumType.STRING) // 🔹 Corrige a persistência do enum
+    @Enumerated(EnumType.STRING)
     private StatusR status;
 
-    @ManyToOne // 🔹 Corrigido para refletir a relação correta
-    @JoinColumn(name = "historico_id", nullable = false, unique = true)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "historico_id", nullable = false)
     private Historico historico;
 
-    // ✅ Getters e Setters
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "relatorio_entrada_id")
+    private RelatorioEntrada relatorioEntrada;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "relatorio_saida_id")
+    private RelatorioSaida relatorioSaida;
+
+    // Getters e Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -49,4 +56,10 @@ public class RelatorioSaida {
 
     public Historico getHistorico() { return historico; }
     public void setHistorico(Historico historico) { this.historico = historico; }
+
+    public RelatorioEntrada getRelatorioEntrada() { return relatorioEntrada; }
+    public void setRelatorioEntrada(RelatorioEntrada relatorioEntrada) { this.relatorioEntrada = relatorioEntrada; }
+
+    public RelatorioSaida getRelatorioSaida() { return relatorioSaida; }
+    public void setRelatorioSaida(RelatorioSaida relatorioSaida) { this.relatorioSaida = relatorioSaida; }
 }

@@ -125,7 +125,7 @@ public class Parcelas {
     }
 
     public void setValorSobra(double valorSobra) {
-        this.valorSobra = valorSobra;
+        this.valorSobra += valorSobra; // Acumula a sobra corretamente
     }
 
     public double getValorJuros() {

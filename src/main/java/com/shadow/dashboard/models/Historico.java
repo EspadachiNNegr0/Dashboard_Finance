@@ -56,12 +56,15 @@ public class Historico {
 
     private double montante;
 
-    @OneToMany(mappedBy = "historico", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "historico", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Parcelas> parcelas;
 
-    // 🔹 Agora, corretamente ligado ao RelatorioSaida
-    @OneToOne(mappedBy = "historico", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private RelatorioSaida relatorioSaida;
+    @OneToMany(mappedBy = "historico", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RelatorioEntrada> relatorioEntradas;
+
+    @OneToMany(mappedBy = "historico", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RelatorioSaida> relatorioSaidas;
+
 
     // ✅ Getters e Setters
     public Long getId() { return id; }
@@ -106,6 +109,19 @@ public class Historico {
     public double getMontante() { return montante; }
     public void setMontante(double montante) { this.montante = montante; }
 
-    public RelatorioSaida getRelatorioSaida() { return relatorioSaida; }
-    public void setRelatorioSaida(RelatorioSaida relatorioSaida) { this.relatorioSaida = relatorioSaida; }
+    public List<RelatorioEntrada> getRelatorioEntradas() {
+        return relatorioEntradas;
+    }
+
+    public void setRelatorioEntradas(List<RelatorioEntrada> relatorioEntradas) {
+        this.relatorioEntradas = relatorioEntradas;
+    }
+
+    public List<RelatorioSaida> getRelatorioSaidas() {
+        return relatorioSaidas;
+    }
+
+    public void setRelatorioSaidas(List<RelatorioSaida> relatorioSaidas) {
+        this.relatorioSaidas = relatorioSaidas;
+    }
 }
