@@ -148,19 +148,34 @@
             </div>
         </div>
 
+        <ul class="box-info">
+            <li>
+                <i class='bx bxs-calendar-check'></i>
+                <span class="text">
+                    <h3><span id="total-entradas">R$ 0,00</span></p></h3>
+                    <p>💰 Total de Entradas:</p>
+                </span>
+            </li>
+            <li>
+                <i class='bx bxs-group' ></i>
+                <span class="text">
+						<h3><span id="total-saidas">R$ 0,00</span></p></h3>
+						<p>📉 Total de Saídas: </p>
+					</span>
+            </li>
+            <li>
+                <i class='bx bxs-dollar-circle' ></i>
+                <span class="text">
+						<h3><span id="saldo-final">R$ 0,00</span></h3>
+						<p>📊 Saldo Final:</p>
+					</span>
+            </li>
+        </ul>
+
         <div class="table-data">
             <div class="order">
                 <div class="head">
                     <h3>Relatorio</h3>
-
-                    <div class="total-relatorio">
-                        <h3>📊 Totais do Relatório:</h3>
-                        <p>💰 Total de Entradas: <span id="total-entradas">R$ 0,00</span></p>
-                        <p>📉 Total de Saídas: <span id="total-saidas">R$ 0,00</span></p>
-                        <h3>📊 Saldo Final:
-                            <span id="saldo-final">R$ 0,00</span>
-                        </h3>
-                    </div>
 
 
                     <i class='bx bx-filter' id="openModalFiltro"></i>
@@ -191,7 +206,18 @@
                                 <label for="filtro-mes">Mês:</label>
                                 <input type="month" id="filtro-mes" name="mes">
 
-                                <button type="submit">Filtrar</button>
+                                <label for="filtro-banco">Banco:</label>
+                                <input type="text" id="filtro-banco" name="banco" placeholder="Digite o banco">
+
+                                <label for="filtro-funcionario">Funcionário:</label>
+                                <input type="text" id="filtro-funcionario" name="funcionario" placeholder="Digite o funcionário">
+
+                                <label for="filtro-cliente">Cliente:</label>
+                                <input type="text" id="filtro-cliente" name="cliente" placeholder="Digite o cliente">
+
+
+                                <button type="submit" style="background-color: #2a7bbd; padding: 10px; border-radius: 10px; color: white">Filtrar</button>
+
                             </form>
                         </div>
                     </div>

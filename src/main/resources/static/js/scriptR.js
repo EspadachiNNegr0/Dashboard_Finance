@@ -26,7 +26,51 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     configurarModal(document.getElementById("openModalFiltro"), document.getElementById("modalFiltro"), document.getElementById("btnFecharModal"));
+    configurarModal(document.getElementById("open-modal"), document.getElementById("modal"), document.getElementById("close-modal"));
+    configurarModal(document.querySelector(".add"), document.getElementById("modal-add-emprestimo"), document.querySelector("#modal-add-emprestimo .close-button"));
+    configurarModal(document.querySelector(".addC"), document.getElementById("modal-add-cliente"), document.querySelector("#modal-add-cliente .close"));
+    configurarModal(document.querySelector(".addB"), document.getElementById("modal-add-banco"), document.getElementById("close-modal-add-banco"));
+    configurarModal(document.getElementById("openAddFuncionario"), document.getElementById("modal-add-funcionario"), document.getElementById("closeAddFuncionario"));
 
+
+    const profile = document.querySelector(".profile");
+    const subMenu = document.getElementById("subMenu");
+
+    if (profile && subMenu) {
+        profile.addEventListener("click", function (event) {
+            event.stopPropagation();
+            subMenu.classList.toggle("show");
+        });
+
+        document.addEventListener("click", function (event) {
+            if (!profile.contains(event.target) && !subMenu.contains(event.target)) {
+                subMenu.classList.remove("show");
+            }
+        });
+
+        console.log("🔹 Submenu configurado com sucesso!");
+    } else {
+        console.error("❌ Elemento 'profile' ou 'subMenu' não encontrado!");
+    }
+
+    // =================== LIMPAR NOTIFICAÇÕES ===================
+    const clearNotificationsButton = document.getElementById("clear-notifications");
+
+    if (clearNotificationsButton) {
+        clearNotificationsButton.addEventListener("click", function () {
+            if (confirm("Tem certeza que deseja apagar todas as notificações?")) {
+                fetch("/notifications/clear", { method: "DELETE", headers: { 'Content-Type': 'application/json' } })
+                    .then(() => {
+                        alert("Notificações apagadas com sucesso!");
+                        location.reload();
+                    })
+                    .catch(error => {
+                        console.error("Erro ao apagar notificações:", error);
+                        alert("Erro ao apagar notificações.");
+                    });
+            }
+        });
+    }
     // =================== FILTRAR A TABELA ===================
     const formFiltro = document.getElementById("form-filtro");
     const tabela = document.querySelector("#example tbody");
@@ -73,7 +117,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const tipo = document.getElementById("filtro-tipo").value.toLowerCase();
         const valorMin = parseFloat(document.getElementById("filtro-valor-min").value) || Number.MIN_VALUE;
         const valorMax = parseFloat(document.getElementById("filtro-valor-max").value) || Number.MAX_VALUE;
-        const mesSelecionado = document.getElementById("filtro-mes").value;
+        const mesSelecionado = document.getElementById("filtro-mes").value.toLowerCase();
+
+        // Novos filtros
+        const clienteFiltro = document.getElementById("filtro-cliente").value.trim().toLowerCase();
+        const funcionarioFiltro = document.getElementById("filtro-funcionario").value.trim().toLowerCase();
+        const bancoFiltro = document.getElementById("filtro-banco").value.trim().toLowerCase();
 
         let linhasVisiveis = 0;
 
@@ -82,6 +131,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const valor = parseFloat(valorTexto) || 0;
             const status = linha.cells[6]?.innerText.trim().toLowerCase();
             const dataTexto = linha.cells[4]?.innerText.trim();
+            const banco = linha.cells[1]?.innerText.trim().toLowerCase();
+            const funcionario = linha.cells[2]?.innerText.trim().toLowerCase();
+            const cliente = linha.cells[3]?.innerText.trim().toLowerCase();
 
             let mesAnoLinha = "";
             if (dataTexto) {
@@ -92,8 +144,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const correspondeTipo = tipo === "" || status === tipo;
             const correspondeValor = valor >= valorMin && valor <= valorMax;
             const correspondeMes = mesSelecionado === "" || mesSelecionado === mesAnoLinha;
+            const correspondeBanco = bancoFiltro === "" || banco.includes(bancoFiltro);
+            const correspondeFuncionario = funcionarioFiltro === "" || funcionario.includes(funcionarioFiltro);
+            const correspondeCliente = clienteFiltro === "" || cliente.includes(clienteFiltro);
 
-            const mostrar = correspondeTipo && correspondeValor && correspondeMes;
+            const mostrar = correspondeTipo && correspondeValor && correspondeMes && correspondeBanco && correspondeFuncionario && correspondeCliente;
 
             if (mostrar) {
                 linha.style.display = "";
@@ -110,13 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
         calcularTotaisTabela(); // Recalcular totais apenas com as linhas visíveis
         atualizarCoresStatus(); // Aplicar cores aos status filtrados
 
-        // **Corrigido: O modal agora pode ser aberto novamente**
-        fecharModal(modalFiltro);
-
-        // **Garante que o botão de abrir modal continua funcionando após o filtro**
-        setTimeout(() => {
-            openModalFiltro.addEventListener("click", () => abrirModal(modalFiltro));
-        }, 100);
+        fecharModal(modalFiltro); // Fechar modal após filtro
     });
 
     atualizarCoresStatus();
