@@ -2,6 +2,7 @@ package com.shadow.dashboard.repository;
 
 import com.shadow.dashboard.models.Historico;
 import com.shadow.dashboard.models.RelatorioSaida;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -12,8 +13,10 @@ import org.springframework.stereotype.Repository;
 public interface RelatorioSaidaRepository extends JpaRepository<RelatorioSaida, Long> {
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM RelatorioSaida r WHERE r.historico = :historico")
     int deleteByHistorico(@Param("historico") Historico historico);
+
 
     boolean existsByHistorico(Historico historico);
 }

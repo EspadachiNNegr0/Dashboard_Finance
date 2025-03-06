@@ -1,7 +1,9 @@
 package com.shadow.dashboard.controllers;
 
 import com.shadow.dashboard.models.Notification;
+import com.shadow.dashboard.models.Parcelas;
 import com.shadow.dashboard.models.RelatorioFinanceiro;
+import com.shadow.dashboard.repository.ParcelasRepository;
 import com.shadow.dashboard.repository.RelatorioFinanceiroRepository;
 import com.shadow.dashboard.service.RelatorioService;
 import com.shadow.dashboard.repository.NotificationRepository;
@@ -22,6 +24,8 @@ public class RelatorioController {
 
     @Autowired
     private RelatorioFinanceiroRepository relatorioFinanceiroRepository;
+    @Autowired
+    private ParcelasRepository parcelasRepository;
 
     @GetMapping
     public String relatorio(Model model) {
@@ -31,7 +35,7 @@ public class RelatorioController {
                 .stream()
                 .sorted(Comparator.comparing(Notification::getCreatedAt).reversed())
                 .toList();
-        int totalNotify = notificationRepository.findAll().size();
+        int totalNotify = notifications.size();
 
         model.addAttribute("totalNotify", totalNotify);
         model.addAttribute("notifications", notifications);
@@ -39,4 +43,5 @@ public class RelatorioController {
 
         return "relatorio";
     }
+
 }

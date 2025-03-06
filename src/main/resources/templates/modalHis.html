@@ -39,7 +39,7 @@
                     </thead>
                     <tbody>
                     <tr th:each="historico : ${historicos}">
-                        <td th:text="${historico.codigo}"></td>
+                        <td><a th:href="@{/emprestimo/{codigo}(codigo=${historico.codigo})}" th:text="${historico.codigo}"></a></td>
                         <td th:text="${historico.price}"></td>
                         <td th:text="${historico.parcelamento} + 'x'"></td>
                         <td th:text="${#dates.format(historico.created, 'dd/MM/yyyy')}"></td>
@@ -72,17 +72,23 @@
             fetch(`/historico/delete/${id}`, {
                 method: "DELETE"
             })
-                .then(response => response.text())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Erro HTTP! Status: ${response.status}`);
+                    }
+                    return response.text();
+                })
                 .then(message => {
                     alert(message); // Exibe a mensagem do backend
-                    window.location.href = "/Table"; // 🔄 Redireciona para a página /Table
+                    window.location.href = "/Table"; // 🔄 Redireciona para a página
                 })
                 .catch(error => {
-                    console.error("Erro:", error);
+                    console.error("Erro ao excluir histórico:", error);
                     alert("Erro ao excluir histórico.");
                 });
         }
     }
+
 </script>
 
 </body>

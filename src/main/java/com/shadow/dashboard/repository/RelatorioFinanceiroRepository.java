@@ -1,18 +1,29 @@
 package com.shadow.dashboard.repository;
 
-import com.shadow.dashboard.models.RelatorioEntrada;
+import com.shadow.dashboard.models.Historico;
+import com.shadow.dashboard.models.Parcelas;
 import com.shadow.dashboard.models.RelatorioFinanceiro;
-import com.shadow.dashboard.models.RelatorioSaida;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface RelatorioFinanceiroRepository extends JpaRepository<RelatorioFinanceiro, Long> {
-    Optional<RelatorioFinanceiro> findByRelatorioEntrada(RelatorioEntrada entrada);
 
-    Optional<RelatorioFinanceiro> findByRelatorioSaida(RelatorioSaida saida);
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM RelatorioFinanceiro rf WHERE rf.historico = :historico")
+    int deleteByHistorico(@Param("historico") Historico historico);
 
-    RelatorioFinanceiro findByCodigo(int codigo);
+    Optional<RelatorioFinanceiro> findByCodigoAndParcela(int codigo, Parcelas parcela);
+
+    List<RelatorioFinanceiro> findByHistorico(Historico historico);
+
+    Optional<RelatorioFinanceiro> findByParcela(Parcelas parcela);
 }

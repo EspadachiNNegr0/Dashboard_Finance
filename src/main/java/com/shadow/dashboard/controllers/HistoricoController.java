@@ -5,6 +5,8 @@ import com.shadow.dashboard.repository.*;
 import com.shadow.dashboard.service.ClientService;
 import com.shadow.dashboard.service.HistoricoService;
 import com.shadow.dashboard.service.SocioService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 
 @Controller
 public class HistoricoController {
+
 
     @Autowired
     private ClientRepository clientRepository;
@@ -54,6 +57,12 @@ public class HistoricoController {
 
     @Autowired
     private SocioService socioService;
+
+    @Autowired
+    private RelatorioFinanceiroRepository relatorioFinanceiroRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @GetMapping("/Table")
     public ModelAndView table() {
@@ -166,10 +175,12 @@ public class HistoricoController {
 
         // Buscar as parcelas associadas a esse histórico
         List<Parcelas> parcelas = historico.getParcelas();
+        double totalJuros = historicoService.calcularTotalJuros(parcelas);
 
         // Adicionar os dados ao modelo para a view
         model.addAttribute("historico", historico);
         model.addAttribute("parcelas", parcelas); // Enviar as parcelas para a página
+        model.addAttribute("totalJuros", totalJuros);
 
         return "His"; // Nome do arquivo modalHis.html dentro de templates/detalhe/
     }
@@ -229,16 +240,20 @@ public class HistoricoController {
             Historico historico = historicoOptional.get();
             System.out.println("📌 Histórico encontrado: " + historico.getId());
 
-            // 🔹 Exclui parcelas associadas
-            int parcelasExcluidas = parcelasRepository.deleteByHistorico(historico);
-            System.out.println("📌 Parcelas excluídas: " + parcelasExcluidas);
+            // 🔹 1. EXCLUIR RELATÓRIOS FINANCEIROS
+            int relatoriosFinanceirosExcluidos = relatorioFinanceiroRepository.deleteByHistorico(historico);
+            System.out.println("📌 Relatórios Financeiros excluídos: " + relatoriosFinanceirosExcluidos);
 
-            // 🔹 Exclui relatórios associados
+            // 🔹 2. EXCLUIR RELATÓRIOS DE ENTRADA E SAÍDA (antes das parcelas!)
             int relatoriosEntradaExcluidos = relatorioEntradaRepository.deleteByHistorico(historico);
             int relatoriosSaidaExcluidos = relatorioSaidaRepository.deleteByHistorico(historico);
             System.out.println("📌 Relatórios excluídos: Entrada=" + relatoriosEntradaExcluidos + ", Saída=" + relatoriosSaidaExcluidos);
 
-            // 🔹 Agora pode excluir o histórico
+            // 🔹 3. EXCLUIR PARCELAS (agora que os relatórios já foram removidos)
+            int parcelasExcluidas = parcelasRepository.deleteByHistorico(historico);
+            System.out.println("📌 Parcelas excluídas: " + parcelasExcluidas);
+
+            // 🔹 4. EXCLUIR O HISTÓRICO
             historicoRepository.delete(historico);
             System.out.println("✅ Histórico excluído com sucesso!");
 
@@ -250,6 +265,8 @@ public class HistoricoController {
                     .body("❌ Erro ao excluir histórico: " + e.getMessage());
         }
     }
+
+
 
     @PostMapping("/Table")
     public String SaveFuncionario(HttpServletRequest request, RedirectAttributes redirectAttributes) {

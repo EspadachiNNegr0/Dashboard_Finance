@@ -3,6 +3,7 @@ package com.shadow.dashboard.repository;
 import com.shadow.dashboard.models.Historico;
 import com.shadow.dashboard.models.Parcelas;
 import com.shadow.dashboard.models.StatusParcela;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -35,25 +36,27 @@ public interface ParcelasRepository extends JpaRepository<Parcelas, Long> {
     @Query("SELECT p FROM Parcelas p WHERE YEAR(p.dataPagamento) = :ano")
     List<Parcelas> findParcelasByYear(@Param("ano") int ano);
 
-    // ✅ Garante que apenas uma parcela seja retornada, ordenando pela data de pagamento mais próxima
-    Optional<Parcelas> findTopByPagasAndParcelasGreaterThanOrderByDataPagamentoAsc(int pagas, int parcelas);
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Parcelas p WHERE p.historico = :historico")
+    int deleteByHistorico(@Param("historico") Historico historico);
 
-    @Query("SELECT COALESCE(SUM(p.valorPago), 0) FROM Parcelas p WHERE p.historico.id = :historicoId")
-    double somarValoresPagosPorHistorico(@Param("historicoId") Long historicoId);
-
-    @Query("SELECT COUNT(p) > 0 FROM Parcelas p WHERE p.historico.id = :historicoId AND p.status = 'ABERTA'")
+    @Query("SELECT COUNT(p) > 0 FROM Parcelas p WHERE p.historico.id = :historicoId AND p.pagas = 0")
     boolean existeParcelaAberta(@Param("historicoId") Long historicoId);
-
-    List<Parcelas> findByHistoricoId(Long id);
 
     List<Parcelas> findByHistoricoIdAndStatus(Long id, StatusParcela statusParcela);
 
-    // ✅ Melhorado para retornar apenas uma parcela corretamente, evitando erro de múltiplos resultados
-    Optional<Parcelas> findTopByHistoricoAndPagasAndParcelasGreaterThanOrderByDataPagamentoAsc(
-            Historico historico, int pagas, int parcelas
-    );
+    // ✅ Busca a próxima parcela pendente de um histórico específico, ordenando pela numeração da parcela
+    @Query("SELECT p FROM Parcelas p WHERE p.historico = :historico AND p.parcelas > :atual ORDER BY p.parcelas ASC")
+    List<Parcelas> findProximaParcela(@Param("historico") Historico historico, @Param("atual") int atual);
 
-    @Modifying
-    @Query("DELETE FROM Parcelas p WHERE p.historico = :historico")
-    int deleteByHistorico(@Param("historico") Historico historico);
+    @Query("SELECT p FROM Parcelas p WHERE p.historico = :historico ORDER BY p.parcelas ASC LIMIT 1")
+    Parcelas findFirstByHistoricoOrderByParcelasAsc(@Param("historico") Historico historico);
+
+
+    @Query("SELECT p FROM Parcelas p WHERE p.historico = :historico AND p.parcelas = :codigo")
+    Parcelas findByHistoricoAndCodigo(@Param("historico") Historico historico, @Param("codigo") int codigo);
+
+    long countByHistoricoAndStatus(Historico historico, StatusParcela status);
+
 }

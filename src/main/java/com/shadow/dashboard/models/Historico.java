@@ -65,49 +65,121 @@ public class Historico {
     @OneToMany(mappedBy = "historico", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RelatorioSaida> relatorioSaidas;
 
+    @OneToMany(mappedBy = "historico", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<RelatorioFinanceiro> relatoriosFinanceiros;
 
-    // ✅ Getters e Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
 
-    public int getCodigo() { return codigo; }
-    public void setCodigo(int codigo) { this.codigo = codigo; }
+    public Long getId() {
+        return id;
+    }
 
-    public Double getPrice() { return price; }
-    public void setPrice(Double price) { this.price = price; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Integer getPercentage() { return percentage; }
-    public void setPercentage(Integer percentage) { this.percentage = percentage; }
+    public int getCodigo() {
+        return codigo;
+    }
 
-    public Status getStatus() { return status; }
-    public void setStatus(Status status) { this.status = status; }
+    public void setCodigo(int codigo) {
+        this.codigo = codigo;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public Double getPrice() {
+        return price;
+    }
 
-    public Socios getSocios() { return socios; }
-    public void setSocios(Socios socios) { this.socios = socios; }
+    public void setPrice(Double price) {
+        this.price = price;
+    }
 
-    public Clientes getCliente() { return cliente; }
-    public void setCliente(Clientes cliente) { this.cliente = cliente; }
+    public Integer getPercentage() {
+        return percentage;
+    }
 
-    public Date getCreated() { return created; }
-    public void setCreated(Date created) { this.created = created; }
+    public void setPercentage(Integer percentage) {
+        this.percentage = percentage;
+    }
 
-    public Date getCreationF() { return creationF; }
-    public void setCreationF(Date creationF) { this.creationF = creationF; }
+    public Status getStatus() {
+        return status;
+    }
 
-    public Banco getBancoSaida() { return bancoSaida; }
-    public void setBancoSaida(Banco bancoSaida) { this.bancoSaida = bancoSaida; }
+    public void setStatus(Status status) {
+        this.status = status;
+    }
 
-    public Integer getParcelamento() { return parcelamento; }
-    public void setParcelamento(Integer parcelamento) { this.parcelamento = parcelamento; }
+    public String getDescription() {
+        return description;
+    }
 
-    public List<Parcelas> getParcelas() { return parcelas; }
-    public void setParcelas(List<Parcelas> parcelas) { this.parcelas = parcelas; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-    public double getMontante() { return montante; }
-    public void setMontante(double montante) { this.montante = montante; }
+    public Socios getSocios() {
+        return socios;
+    }
+
+    public void setSocios(Socios socios) {
+        this.socios = socios;
+    }
+
+    public Clientes getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(Clientes cliente) {
+        this.cliente = cliente;
+    }
+
+    public Date getCreated() {
+        return created;
+    }
+
+    public void setCreated(Date created) {
+        this.created = created;
+    }
+
+    public Date getCreationF() {
+        return creationF;
+    }
+
+    public void setCreationF(Date creationF) {
+        this.creationF = creationF;
+    }
+
+    public Banco getBancoSaida() {
+        return bancoSaida;
+    }
+
+    public void setBancoSaida(Banco bancoSaida) {
+        this.bancoSaida = bancoSaida;
+    }
+
+    public Integer getParcelamento() {
+        return parcelamento;
+    }
+
+    public void setParcelamento(Integer parcelamento) {
+        this.parcelamento = parcelamento;
+    }
+
+    public double getMontante() {
+        return montante;
+    }
+
+    public void setMontante(double montante) {
+        this.montante = montante;
+    }
+
+    public List<Parcelas> getParcelas() {
+        return parcelas;
+    }
+
+    public void setParcelas(List<Parcelas> parcelas) {
+        this.parcelas = parcelas;
+    }
 
     public List<RelatorioEntrada> getRelatorioEntradas() {
         return relatorioEntradas;
@@ -123,5 +195,13 @@ public class Historico {
 
     public void setRelatorioSaidas(List<RelatorioSaida> relatorioSaidas) {
         this.relatorioSaidas = relatorioSaidas;
+    }
+
+    public List<RelatorioFinanceiro> getRelatoriosFinanceiros() {
+        return relatoriosFinanceiros;
+    }
+
+    public void setRelatoriosFinanceiros(List<RelatorioFinanceiro> relatoriosFinanceiros) {
+        this.relatoriosFinanceiros = relatoriosFinanceiros;
     }
 }

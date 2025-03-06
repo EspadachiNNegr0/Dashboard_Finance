@@ -23,17 +23,26 @@ public class RelatorioFinanceiro {
     @Enumerated(EnumType.STRING)
     private StatusR status;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "historico_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "historico_id", nullable = true) // 🔹 Permite ser NULL antes da exclusão
     private Historico historico;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "relatorio_entrada_id")
+    @JoinColumn(name = "relatorio_entrada_id", nullable = true) // 🔹 Agora pode ser NULL antes da exclusão
     private RelatorioEntrada relatorioEntrada;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "relatorio_saida_id")
+    @JoinColumn(name = "relatorio_saida_id", nullable = true) // 🔹 Agora pode ser NULL antes da exclusão
     private RelatorioSaida relatorioSaida;
+
+    private double juros;
+
+    private double amortizacao;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parcela_id", nullable = true)
+    private Parcelas parcela;
+
 
     // Getters e Setters
     public Long getId() { return id; }
@@ -62,4 +71,28 @@ public class RelatorioFinanceiro {
 
     public RelatorioSaida getRelatorioSaida() { return relatorioSaida; }
     public void setRelatorioSaida(RelatorioSaida relatorioSaida) { this.relatorioSaida = relatorioSaida; }
+
+    public double getJuros() {
+        return juros;
+    }
+
+    public void setJuros(double juros) {
+        this.juros = juros;
+    }
+
+    public double getAmortizacao() {
+        return amortizacao;
+    }
+
+    public void setAmortizacao(double amortizacao) {
+        this.amortizacao = amortizacao;
+    }
+
+    public Parcelas getParcela() {
+        return parcela;
+    }
+
+    public void setParcela(Parcelas parcela) {
+        this.parcela = parcela;
+    }
 }

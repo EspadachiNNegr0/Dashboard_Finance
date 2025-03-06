@@ -16,17 +16,21 @@
             </div>
             <div class="data-clients">
                 <span class="span-modal"><strong>Codigo do Emprestimo:</strong> <span th:text="${historico.codigo}"></span></span>
-                <span class="span-modal"><strong>Nome do Cliente:</strong> <td><a th:href="@{/cliente/{id}(id=${historico.cliente.id})}" th:text="${historico.cliente.nome}"></a></td></span>
+                <span class="span-modal"><strong>Nome do Cliente:</strong>
+                    <a th:href="@{/cliente/{id}(id=${historico.cliente.id})}" th:text="${historico.cliente.nome}"></a>
+                </span>
                 <span class="span-modal"><strong>Valor:</strong> <span th:text="${historico.price}"></span></span>
                 <span class="span-modal"><strong>Porcentagem:</strong> <span th:text="${historico.percentage}"></span></span>
                 <span class="span-modal"><strong>Montante: </strong><span th:text="${#numbers.formatDecimal(historico.montante, 1, 2)}"></span></span>
                 <span class="span-modal"><strong>Data Inicial:</strong> <span th:text="${#dates.format(historico.created, 'dd/MM/yyyy')}"></span></span>
-                <span class="span-modal"><strong>Status:</strong> <span th:if="${historico.status.name() == 'ATRASADO'}" style="color: red;">ATRASADO</span>
-                                                                    <span th:if="${historico.status.name() == 'PAGO'}" style="color: green;">PAGO</span>
-                                                                    <span th:if="${historico.status.name() == 'PENDENTE'}" style="color: orange;">PENDENTE</span>
+                <span class="span-modal"><strong>Status:</strong>
+                    <span th:if="${historico.status.name() == 'ATRASADO'}" style="color: red;">ATRASADO</span>
+                    <span th:if="${historico.status.name() == 'PAGO'}" style="color: green;">PAGO</span>
+                    <span th:if="${historico.status.name() == 'PENDENTE'}" style="color: orange;">PENDENTE</span>
                 </span>
             </div>
         </div>
+
         <!-- Lado direito com histórico -->
         <div class="modal-right-side">
             <h2 id="title-modal-historico">Detalhes das Parcelas</h2>
@@ -64,12 +68,17 @@
                     </tbody>
                 </table>
 
+                <!-- 🔹 Bloco para exibir o total de juros -->
+                <div class="total-juros-container">
+                    <strong>Total de Juros: </strong>
+                    <span th:text="${#numbers.formatDecimal(totalJuros, 1, 2)}"></span>
+                </div>
+
             </div>
         </div>
 
         <!-- Botão de fechar modal -->
         <button class="close-button" onclick="window.location.href='/Table'">X</button>
-
     </div>
 </div>
 

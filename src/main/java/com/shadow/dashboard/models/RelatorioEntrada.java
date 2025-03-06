@@ -28,6 +28,14 @@ public class RelatorioEntrada {
     @JoinColumn(name = "historico_id", nullable = false)
     private Historico historico;
 
+    private double juros;
+
+    private double amortizacao;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parcela_id", nullable = true)
+    private Parcelas parcela;
+
     // ✅ Getters e Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -49,4 +57,28 @@ public class RelatorioEntrada {
 
     public Historico getHistorico() { return historico; }
     public void setHistorico(Historico historico) { this.historico = historico; }
+
+    public double getJuros() {
+        return juros;
+    }
+
+    public void setJuros(double juros) {
+        this.juros = juros;
+    }
+
+    public double getAmortizacao() {
+        return amortizacao;
+    }
+
+    public void setAmortizacao(double amortizacao) {
+        this.amortizacao = amortizacao;
+    }
+
+    public Parcelas getParcela() {
+        return parcela;
+    }
+
+    public void setParcela(Parcelas parcela) {
+        this.parcela = parcela;
+    }
 }

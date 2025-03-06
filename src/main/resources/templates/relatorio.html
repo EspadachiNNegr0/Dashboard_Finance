@@ -170,6 +170,7 @@
 						<p>📊 Saldo Final:</p>
 					</span>
             </li>
+
         </ul>
 
         <div class="table-data">
@@ -203,6 +204,13 @@
                                 <input type="number" id="filtro-valor-min" name="valorMin" placeholder="De" step="0.01">
                                 <input type="number" id="filtro-valor-max" name="valorMax" placeholder="Até" step="0.01">
 
+                                <!-- Botões para mostrar/ocultar colunas -->
+                                <div class="filtros-adicionais">
+                                    <button id="toggle-juros" class="toggle-coluna">🔄 Alternar Juros</button>
+                                    <button id="toggle-amortizacao" class="toggle-coluna">🔄 Alternar Amortização</button>
+                                </div>
+
+
                                 <label for="filtro-mes">Mês:</label>
                                 <input type="month" id="filtro-mes" name="mes">
 
@@ -234,6 +242,8 @@
                         <th>Cliente</th>
                         <th>Data</th>
                         <th>Valor</th>
+                        <th>Juros</th> <!-- ✅ Correção -->
+                        <th>Amortização</th>
                         <th>Status</th>
                     </tr>
                     </thead>
@@ -241,16 +251,25 @@
                     <tr th:each="relatorio : ${relatoriosFinanceiros}">
                         <td th:text="${relatorio.codigo}"></td>
                         <td th:text="${relatorio.banco}"></td>
-                        <td th:text="${relatorio.historico.socios.name}"></td>
-                        <td th:text="${relatorio.historico.cliente.nome}"></td>
+                        <td th:if="${relatorio.historico != null and relatorio.historico.socios != null}"
+                            th:text="${relatorio.historico.socios.name}">
+                        </td>
+                        <td th:if="${relatorio.historico != null and relatorio.historico.cliente != null}">
+                            <a th:href="@{/cliente/{id}(id=${relatorio.historico.cliente.id})}"
+                               th:text="${relatorio.historico.cliente.nome}">
+                            </a>
+                        </td>
+                        <td th:if="${relatorio.historico == null or relatorio.historico.cliente == null}">-</td>
+                        <td th:if="${relatorio.historico == null or relatorio.historico.cliente == null}">-</td>
                         <td th:text="${#dates.format(relatorio.data, 'dd/MM/yyyy')}"></td>
-                        <td th:text="${relatorio.valor}"></td>
+                        <td th:text="${#numbers.formatDecimal(relatorio.valor, 1, 2)}"></td>
+                        <td th:text="${#numbers.formatDecimal(relatorio.juros, 1, 2)}"></td>
+                        <td th:text="${#numbers.formatDecimal(relatorio.amortizacao, 1, 2)}"></td>
                         <td th:text="${relatorio.status}"></td>
                     </tr>
                     </tbody>
-
-
                 </table>
+
             </div>
         </div>
     </main>

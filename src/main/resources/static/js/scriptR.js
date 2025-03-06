@@ -26,77 +26,38 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     configurarModal(document.getElementById("openModalFiltro"), document.getElementById("modalFiltro"), document.getElementById("btnFecharModal"));
-    configurarModal(document.getElementById("open-modal"), document.getElementById("modal"), document.getElementById("close-modal"));
-    configurarModal(document.querySelector(".add"), document.getElementById("modal-add-emprestimo"), document.querySelector("#modal-add-emprestimo .close-button"));
-    configurarModal(document.querySelector(".addC"), document.getElementById("modal-add-cliente"), document.querySelector("#modal-add-cliente .close"));
-    configurarModal(document.querySelector(".addB"), document.getElementById("modal-add-banco"), document.getElementById("close-modal-add-banco"));
-    configurarModal(document.getElementById("openAddFuncionario"), document.getElementById("modal-add-funcionario"), document.getElementById("closeAddFuncionario"));
 
+    // =================== TOGGLE DE COLUNAS (Juros e Amortização) ===================
+    function alternarColuna(classeColuna, botao, textoAtivar, textoDesativar) {
+        botao.addEventListener("click", () => {
+            const colunas = document.querySelectorAll(`.${classeColuna}`);
+            let visivel = colunas[0].style.display !== "none";
 
-    const profile = document.querySelector(".profile");
-    const subMenu = document.getElementById("subMenu");
+            colunas.forEach(coluna => {
+                coluna.style.display = visivel ? "none" : "";
+            });
 
-    if (profile && subMenu) {
-        profile.addEventListener("click", function (event) {
-            event.stopPropagation();
-            subMenu.classList.toggle("show");
-        });
-
-        document.addEventListener("click", function (event) {
-            if (!profile.contains(event.target) && !subMenu.contains(event.target)) {
-                subMenu.classList.remove("show");
-            }
-        });
-
-        console.log("🔹 Submenu configurado com sucesso!");
-    } else {
-        console.error("❌ Elemento 'profile' ou 'subMenu' não encontrado!");
-    }
-
-    // =================== LIMPAR NOTIFICAÇÕES ===================
-    const clearNotificationsButton = document.getElementById("clear-notifications");
-
-    if (clearNotificationsButton) {
-        clearNotificationsButton.addEventListener("click", function () {
-            if (confirm("Tem certeza que deseja apagar todas as notificações?")) {
-                fetch("/notifications/clear", { method: "DELETE", headers: { 'Content-Type': 'application/json' } })
-                    .then(() => {
-                        alert("Notificações apagadas com sucesso!");
-                        location.reload();
-                    })
-                    .catch(error => {
-                        console.error("Erro ao apagar notificações:", error);
-                        alert("Erro ao apagar notificações.");
-                    });
-            }
+            botao.textContent = visivel ? textoAtivar : textoDesativar;
         });
     }
-    // =================== FILTRAR A TABELA ===================
-    const formFiltro = document.getElementById("form-filtro");
-    const tabela = document.querySelector("#example tbody");
-    const totalEntradas = document.getElementById("total-entradas");
-    const totalSaidas = document.getElementById("total-saidas");
-    const saldoFinal = document.getElementById("saldo-final");
 
-    function atualizarCoresStatus() {
-        tabela.querySelectorAll("tr").forEach((linha) => {
-            const statusCell = linha.cells[6]; // Coluna do status
-            if (statusCell) {
-                const statusTexto = statusCell.textContent.trim().toLowerCase();
-                statusCell.style.color = statusTexto === "saida" ? "red" : "green";
-            }
-        });
-    }
+    alternarColuna("col-juros", document.getElementById("toggle-juros"), "👁 Mostrar Juros", "🙈 Ocultar Juros");
+    alternarColuna("col-amortizacao", document.getElementById("toggle-amortizacao"), "👁 Mostrar Amortização", "🙈 Ocultar Amortização");
+
+    // =================== ATUALIZAÇÃO DOS VALORES ===================
+    const totalEntradasElement = document.getElementById("total-entradas");
+    const totalSaidasElement = document.getElementById("total-saidas");
+    const saldoFinalElement = document.getElementById("saldo-final");
 
     function calcularTotaisTabela() {
         let totalEntradasValor = 0;
         let totalSaidasValor = 0;
 
-        tabela.querySelectorAll("tr").forEach((linha) => {
-            if (linha.style.display !== "none") { // Somar apenas linhas visíveis
+        document.querySelectorAll("#example tbody tr").forEach((linha) => {
+            if (linha.style.display !== "none") { // Só calcula os valores visíveis
                 const valorTexto = linha.cells[5]?.innerText.replace("R$", "").trim().replace(",", ".");
                 const valor = parseFloat(valorTexto) || 0;
-                const status = linha.cells[6]?.innerText.trim().toLowerCase();
+                const status = linha.cells[8]?.innerText.trim().toLowerCase();
 
                 if (status === "entrada") {
                     totalEntradasValor += valor;
@@ -106,10 +67,14 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        totalEntradas.textContent = `R$ ${totalEntradasValor.toFixed(2).replace(".", ",")}`;
-        totalSaidas.textContent = `R$ ${totalSaidasValor.toFixed(2).replace(".", ",")}`;
-        saldoFinal.textContent = `R$ ${(totalEntradasValor - totalSaidasValor).toFixed(2).replace(".", ",")}`;
+        totalEntradasElement.textContent = `R$ ${totalEntradasValor.toFixed(2).replace(".", ",")}`;
+        totalSaidasElement.textContent = `R$ ${totalSaidasValor.toFixed(2).replace(".", ",")}`;
+        saldoFinalElement.textContent = `R$ ${(totalEntradasValor - totalSaidasValor).toFixed(2).replace(".", ",")}`;
     }
+
+    // =================== FILTRO ===================
+    const formFiltro = document.getElementById("form-filtro");
+    const tabela = document.querySelector("#example tbody");
 
     formFiltro.addEventListener("submit", function (event) {
         event.preventDefault();
@@ -118,8 +83,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const valorMin = parseFloat(document.getElementById("filtro-valor-min").value) || Number.MIN_VALUE;
         const valorMax = parseFloat(document.getElementById("filtro-valor-max").value) || Number.MAX_VALUE;
         const mesSelecionado = document.getElementById("filtro-mes").value.toLowerCase();
-
-        // Novos filtros
         const clienteFiltro = document.getElementById("filtro-cliente").value.trim().toLowerCase();
         const funcionarioFiltro = document.getElementById("filtro-funcionario").value.trim().toLowerCase();
         const bancoFiltro = document.getElementById("filtro-banco").value.trim().toLowerCase();
@@ -127,9 +90,8 @@ document.addEventListener("DOMContentLoaded", () => {
         let linhasVisiveis = 0;
 
         tabela.querySelectorAll("tr").forEach((linha) => {
-            const valorTexto = linha.cells[5]?.innerText.replace("R$", "").trim().replace(",", ".");
-            const valor = parseFloat(valorTexto) || 0;
-            const status = linha.cells[6]?.innerText.trim().toLowerCase();
+            const valor = parseFloat(linha.cells[5]?.innerText.replace("R$", "").trim().replace(",", ".")) || 0;
+            const status = linha.cells[8]?.innerText.trim().toLowerCase();
             const dataTexto = linha.cells[4]?.innerText.trim();
             const banco = linha.cells[1]?.innerText.trim().toLowerCase();
             const funcionario = linha.cells[2]?.innerText.trim().toLowerCase();
@@ -158,16 +120,33 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
+        console.log(`📌 ${linhasVisiveis} linhas visíveis após filtragem.`);
+
         if (linhasVisiveis === 0) {
-            console.log("⚠ Nenhum resultado encontrado com os filtros aplicados!");
+            console.warn("⚠ Nenhum resultado encontrado com os filtros aplicados!");
         }
 
-        calcularTotaisTabela(); // Recalcular totais apenas com as linhas visíveis
-        atualizarCoresStatus(); // Aplicar cores aos status filtrados
-
-        fecharModal(modalFiltro); // Fechar modal após filtro
+        calcularTotaisTabela();
+        atualizarCoresStatus();
     });
 
+    // =================== COLORIR STATUS (Entrada = Verde, Saída = Vermelho) ===================
+    function atualizarCoresStatus() {
+        tabela.querySelectorAll("tr").forEach((linha) => {
+            const statusCell = linha.cells[8]; // Coluna do status
+            if (statusCell) {
+                const statusTexto = statusCell.textContent.trim().toLowerCase();
+                if (statusTexto === "entrada") {
+                    statusCell.style.color = "green";
+                } else if (statusTexto === "saida") {
+                    statusCell.style.color = "red";
+                } else {
+                    statusCell.style.color = "black";
+                }
+            }
+        });
+    }
+
+    calcularTotaisTabela();
     atualizarCoresStatus();
-    calcularTotaisTabela(); // Calcular totais ao carregar a página
 });
