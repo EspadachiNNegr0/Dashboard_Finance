@@ -154,7 +154,9 @@ public class HistoricoService {
             juros = historico.getPrice() * (historico.getPercentage() / 100.0);
         } else {
             // 🔹 A partir da segunda parcela, calcular juros com base no valor da parcela
-            juros = parcela.getValor() * (historico.getPercentage() / 100.0);
+            double valorOriginal = parcela.getValor() / (1 + (historico.getPercentage() / 100.0));
+            juros = parcela.getValor() - valorOriginal;
+
         }
 
         parcela.setValorJuros(juros);

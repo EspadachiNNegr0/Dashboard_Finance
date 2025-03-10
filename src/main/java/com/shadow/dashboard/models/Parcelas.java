@@ -143,4 +143,5 @@ public class Parcelas {
     public void setValorAmortizado(double valorAmortizado) {
         this.valorAmortizado = valorAmortizado;
     }
+
 }
