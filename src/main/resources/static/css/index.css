@@ -1794,7 +1794,7 @@ h3 {
 
 /* ===================== MODAL DE FUNCIONÁRIO ===================== */
 #modal-add-funcionario {
-    position: fixed;
+    display: flex;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -1812,8 +1812,8 @@ h3 {
 }
 
 #modal-add-funcionario .modal-content {
-    margin-top: 200px;
-    margin-left: 700px;
+    margin-top: 150px;
+    margin-left: 400px;
     width: 600px;
 }
 
@@ -2237,6 +2237,10 @@ h3 {
 #btn-modal-filtro:hover {
     background: #0056b3;
 }
+.filtros-adicionais {
+    display: none;
+}
+
 
 /* Responsividade */
 @media (max-width: 768px) {
@@ -2263,7 +2267,6 @@ h3 {
         position: absolute;
         left: 0;
     }
-
 
 
     @media screen and (max-width: 768px) {
@@ -2328,5 +2331,33 @@ h3 {
             min-width: 420px;
         }
 
+    }
+    /* Responsivo para 1366x768 */
+    @media screen and (max-width: 1366px) {
+        #sidebar {
+            width: 250px;
+        }
+
+        #content {
+            width: calc(100% - 250px);
+            left: 250px;
+        }
+
+        #content main {
+            padding: 24px;
+        }
+
+        #content main .box-info {
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+
+        #content main .table-data .order table {
+            min-width: 800px;
+        }
+
+        #modal-add-funcionario .modal-content {
+            width: 50%;
+            max-width: 500px;
+        }
     }
 }

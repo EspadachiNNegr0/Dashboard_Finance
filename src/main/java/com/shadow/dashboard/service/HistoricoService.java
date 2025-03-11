@@ -114,26 +114,6 @@ public class HistoricoService {
         relatorioService.criarRelatorioEntrada(historico);
     }
 
-
-    /**
-     * 🔹 Atualiza o status do histórico conforme as parcelas.
-     */
-    public void atualizarStatusHistorico(Historico historico) {
-        List<Parcelas> parcelas = parcelasRepository.findByHistorico(historico);
-        boolean temAtrasadas = parcelas.stream().anyMatch(p -> p.getPagas() == -1);
-        boolean temPendentes = parcelas.stream().anyMatch(p -> p.getPagas() == 0);
-
-        if (temAtrasadas) {
-            historico.setStatus(Status.ATRASADO);
-        } else if (!temPendentes) {
-            historico.setStatus(Status.PAGO);
-        } else {
-            historico.setStatus(Status.PENDENTE);
-        }
-
-        historicoRepository.save(historico);
-    }
-
     /**
      * 🔹 Atualiza a parcela com um pagamento.
      */
@@ -154,9 +134,7 @@ public class HistoricoService {
             juros = historico.getPrice() * (historico.getPercentage() / 100.0);
         } else {
             // 🔹 A partir da segunda parcela, calcular juros com base no valor da parcela
-            double valorOriginal = parcela.getValor() / (1 + (historico.getPercentage() / 100.0));
-            juros = parcela.getValor() - valorOriginal;
-
+            juros = parcela.getValor() * (historico.getPercentage() / 100.0);
         }
 
         parcela.setValorJuros(juros);
@@ -204,6 +182,9 @@ public class HistoricoService {
     /**
      * 🔹 Criar uma nova parcela se necessário (caso haja saldo residual).
      */
+    /**
+     * 🔹 Criar uma nova parcela se necessário (caso haja saldo residual).
+     */
     public void criarNovaParcelaSeNecessario(Historico historico, double saldoResidual, Parcelas parcela) {
         if (saldoResidual <= 0 || historico.getStatus() == Status.PAGO) {
             System.out.println("⚠️ Nenhuma nova parcela será criada, pois o empréstimo já foi quitado.");
@@ -226,7 +207,38 @@ public class HistoricoService {
 
         parcelasRepository.save(novaParcela);
         System.out.println("✅ Nova parcela criada com saldo residual: R$ " + saldoResidual);
+
+        // 🔹 Criar um novo Relatório de Entrada para a nova parcela
+        RelatorioEntrada relatorioEntrada = new RelatorioEntrada();
+        relatorioEntrada.setHistorico(historico);
+        relatorioEntrada.setCodigo(gerarCodigoUnico());
+        relatorioEntrada.setParcela(novaParcela); // ✅ Agora vinculado corretamente
+        relatorioEntrada.setValor(novaParcela.getValor());
+        relatorioEntrada.setJuros(juros);
+        relatorioEntrada.setAmortizacao(0.0); // Como é nova, ainda não tem amortização
+        relatorioEntrada.setBanco(parcela.getBancoEntrada());
+        relatorioEntrada.setData(new Date());
+        relatorioEntrada.setStatus(StatusR.Entrada);
+
+        relatorioEntradaRepository.save(relatorioEntrada);
+        System.out.println("📌 Novo Relatório de Entrada criado para a parcela ID: " + novaParcela.getId());
+
+        // 🔹 Criar um novo Relatório Financeiro baseado no Relatório de Entrada
+        RelatorioFinanceiro relatorioFinanceiro = new RelatorioFinanceiro();
+        relatorioFinanceiro.setHistorico(historico);
+        relatorioFinanceiro.setCodigo(gerarCodigoUnico());
+        relatorioFinanceiro.setParcela(novaParcela); // ✅ Agora vinculado corretamente
+        relatorioFinanceiro.setValor(relatorioEntrada.getValor());
+        relatorioFinanceiro.setJuros(relatorioEntrada.getJuros());
+        relatorioFinanceiro.setAmortizacao(relatorioEntrada.getAmortizacao());
+        relatorioFinanceiro.setBanco(relatorioEntrada.getBanco());
+        relatorioFinanceiro.setData(new Date());
+        relatorioFinanceiro.setStatus(StatusR.Entrada);
+
+        relatorioFinanceiroRepository.save(relatorioFinanceiro);
+        System.out.println("📌 Novo Relatório Financeiro criado para a parcela ID: " + novaParcela.getId());
     }
+
 
     /**
      * 🔹 Método para criar um Relatório de Entrada automaticamente ao gerar nova parcela
@@ -459,8 +471,81 @@ public class HistoricoService {
                 parcela.setPagas(-1);
                 parcela.setStatus(StatusParcela.ATRASADO);
                 parcelasRepository.save(parcela);
-                criarNotificacao(parcela.getHistorico(), "❌ Parcela vencida e agora está ATRASADA!");
+
+                Historico historico = parcela.getHistorico();
+                if (historico != null) {
+                    atualizarStatusHistorico(historico); // 🔹 Atualiza o status do histórico
+                    historicoRepository.save(historico);
+                    criarNotificacao(historico, "❌ Histórico #" + historico.getId() + " agora está em status ATRASADO!");
+                }
             }
         }
     }
+
+    @Scheduled(fixedRate = 30000)
+    public void verificarParcelasAtrasadasEAtualizarStatus() {
+        List<Parcelas> parcelasAtrasadas = parcelasRepository.findByStatusAtrasado();
+        Date hoje = new Date();
+
+        for (Parcelas parcela : parcelasAtrasadas) {
+            Historico historico = parcela.getHistorico();
+            if (historico == null) continue;
+
+            // ✅ Verifica se a data de pagamento ainda não venceu (ou seja, pode voltar a ser PENDENTE)
+            if (!parcela.getDataPagamento().before(hoje)) {
+                parcela.setPagas(0); // 🔹 Marca como "pendente" numericamente
+                parcela.setStatus(StatusParcela.PENDENTE); // 🔹 Altera o status para PENDENTE
+                parcelasRepository.save(parcela);
+
+                atualizarStatusHistorico(historico);
+
+                // ✅ Cria notificação de atualização para PENDENTE
+                criarNotificacao(historico,
+                        "⚠️ Sua parcela de R$ " + parcela.getValor() + " foi atualizada para PENDENTE, pois a data de pagamento ainda não venceu.");
+
+                System.out.println("✅ Parcela #" + parcela.getId() + " atualizada para PENDENTE.");
+            }
+
+            // 🔹 Verifica se a parcela atrasada já foi paga
+            if (parcela.getStatus() == StatusParcela.PAGO) {
+                boolean temOutrasAtrasadas = parcelasRepository.findByHistorico(historico)
+                        .stream().anyMatch(p -> p.getStatus() == StatusParcela.ATRASADO);
+
+                // ✅ Se não houver mais atrasadas, muda status do histórico para PENDENTE
+                if (!temOutrasAtrasadas && historico.getStatus() == Status.ATRASADO) {
+                    historico.setStatus(Status.PENDENTE);
+                    historicoRepository.save(historico);
+
+                    criarNotificacao(historico,
+                            "⚠️ Seu empréstimo #" + historico.getId() + " voltou para o status PENDENTE.");
+
+                    System.out.println("✅ Histórico #" + historico.getId() + " voltou para PENDENTE.");
+                }
+            }
+        }
+    }
+
+
+    public void atualizarStatusHistorico(Historico historico) {
+        if (historico == null) return;
+
+        List<Parcelas> parcelas = parcelasRepository.findByHistorico(historico);
+
+        if (parcelas.isEmpty()) return;
+
+        boolean temAtrasadas = parcelas.stream().anyMatch(parcela -> parcela.getPagas() == -1);
+        boolean temPendentes = parcelas.stream().anyMatch(parcela -> parcela.getPagas() == 0);
+        boolean todasPagas = parcelas.stream().allMatch(parcela -> parcela.getPagas() == 1);
+
+        if (temAtrasadas) {
+            historico.setStatus(Status.ATRASADO);
+        } else if (todasPagas) {
+            historico.setStatus(Status.PAGO);
+        } else {
+            historico.setStatus(Status.PENDENTE);
+        }
+
+        historicoRepository.save(historico);
+    }
+
 }

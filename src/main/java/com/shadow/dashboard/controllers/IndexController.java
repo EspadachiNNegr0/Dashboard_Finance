@@ -147,7 +147,7 @@ public class IndexController {
             int parcelas = historia.getParcelamento();
             double valorPrincipal = historia.getPrice();
 
-            double montanteTotal = valorPrincipal * Math.pow(1 + taxaJuros, parcelas); // 📌 Aplica a fórmula
+            double montanteTotal = valorPrincipal * ((taxaJuros * Math.pow(1 + taxaJuros, parcelas)) / (Math.pow(1 + taxaJuros, parcelas) - 1)) * parcelas;
 
             // 🔹 Atualiza o valor total no histórico
             historia.setMontante(montanteTotal);
@@ -179,7 +179,7 @@ public class IndexController {
 
         // 🔹 Buscar parcelas pendentes (para pagamento)
         Parcelas parcelaSelecionada = parcelas.stream()
-                .filter(p -> p.getPagas() == 0) // Seleciona a primeira pendente
+                .filter(p -> p.getPagas() == 0 || p.getPagas() == -1) // Permite PENDENTE e ATRASADA
                 .findFirst()
                 .orElse(null);
 
@@ -200,7 +200,7 @@ public class IndexController {
     public String pagarParcela(@PathVariable Long id,
                                @RequestParam double valorPago,
                                @RequestParam Long bancoEntradaId,
-                               RedirectAttributes redirectAttributes){
+                               RedirectAttributes redirectAttributes) {
         try {
             // 🔹 Buscar a parcela
             Parcelas parcela = parcelasRepository.findById(id)
@@ -221,11 +221,6 @@ public class IndexController {
 
             if (valorPago < juros) {
                 redirectAttributes.addFlashAttribute("error", "❌ O valor pago não pode ser menor que os juros!");
-                return "redirect:/histori/" + historico.getId();
-            }
-
-            if (valorPago > parcela.getValor()) {
-                redirectAttributes.addFlashAttribute("error", "❌ O valor pago não pode ser maior que o valor da parcela!");
                 return "redirect:/histori/" + historico.getId();
             }
 
@@ -272,5 +267,8 @@ public class IndexController {
             return "redirect:/Table";
         }
     }
+
+
+
 
 }

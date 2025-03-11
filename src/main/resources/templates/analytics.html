@@ -94,6 +94,89 @@
     table th {
         background-color: #e0e0e0;
     }
+    /* 🔹 Layout Responsivo para 1366x768 */
+    @media screen and (max-width: 1366px) {
+        /* Sidebar */
+        #sidebar {
+            width: 240px;
+        }
+
+        #content {
+            width: calc(100% - 240px);
+            left: 240px;
+        }
+
+        #content main {
+            padding: 20px;
+        }
+
+        /* 🔹 Ajuste dos gráficos para não ultrapassarem a tela */
+        .charts-analytcs {
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .chart-analytcs {
+            width: 90%;
+            max-width: 600px;
+            height: auto;
+        }
+
+        .chart-analytcs canvas {
+            width: 100% !important;
+            height: auto !important;
+        }
+
+        /* 🔹 Ajuste das tabelas para evitar scroll horizontal */
+        table {
+            width: 100%;
+            font-size: 14px;
+        }
+
+        table th, table td {
+            padding: 10px;
+        }
+
+        /* 🔹 Modais - Centralizados */
+        .window {
+            width: 70%;
+            max-width: 600px;
+        }
+
+        /* 🔹 Botões Responsivos */
+        .btn-modais {
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        /* 🔹 Modal de Adicionar Funcionário */
+        #modal-add-funcionario {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        #modal-add-funcionario .modal-content {
+            background: white;
+            width: 50%;
+            max-width: 500px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+    }
+
 </style>
 
 <body>

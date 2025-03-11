@@ -152,26 +152,42 @@
             <li>
                 <i class='bx bxs-calendar-check'></i>
                 <span class="text">
-                    <h3><span id="total-entradas">R$ 0,00</span></p></h3>
-                    <p>💰 Total de Entradas:</p>
-                </span>
+            <h3><span id="total-entradas">R$ 0,00</span></h3>
+            <p>💰 Total de Entradas:</p>
+        </span>
             </li>
             <li>
                 <i class='bx bxs-group' ></i>
                 <span class="text">
-						<h3><span id="total-saidas">R$ 0,00</span></p></h3>
-						<p>📉 Total de Saídas: </p>
-					</span>
+            <h3><span id="total-saidas">R$ 0,00</span></h3>
+            <p>📉 Total de Saídas:</p>
+        </span>
             </li>
             <li>
                 <i class='bx bxs-dollar-circle' ></i>
                 <span class="text">
-						<h3><span id="saldo-final">R$ 0,00</span></h3>
-						<p>📊 Saldo Final:</p>
-					</span>
+            <h3><span id="saldo-final">R$ 0,00</span></h3>
+            <p>📊 Saldo Final:</p>
+        </span>
             </li>
-
+            <!-- 🔹 Novo bloco para Total de Juros -->
+            <li>
+                <i class='bx bxs-coin-stack'></i>
+                <span class="text">
+            <h3><span id="total-juros">R$ 0,00</span></h3>
+            <p>💲 Total de Juros:</p>
+        </span>
+            </li>
+            <!-- 🔹 Novo bloco para Total de Amortização -->
+            <li>
+                <i class='bx bxs-bank'></i>
+                <span class="text">
+            <h3><span id="total-amortizacao">R$ 0,00</span></h3>
+            <p>📈 Total de Amortização:</p>
+        </span>
+            </li>
         </ul>
+
 
         <div class="table-data">
             <div class="order">
@@ -200,16 +216,11 @@
                                     <option value="saida">saida</option>
                                 </select>
 
-                                <label>Valor:</label>
-                                <input type="number" id="filtro-valor-min" name="valorMin" placeholder="De" step="0.01">
-                                <input type="number" id="filtro-valor-max" name="valorMax" placeholder="Até" step="0.01">
-
                                 <!-- Botões para mostrar/ocultar colunas -->
                                 <div class="filtros-adicionais">
                                     <button id="toggle-juros" class="toggle-coluna">🔄 Alternar Juros</button>
                                     <button id="toggle-amortizacao" class="toggle-coluna">🔄 Alternar Amortização</button>
                                 </div>
-
 
                                 <label for="filtro-mes">Mês:</label>
                                 <input type="month" id="filtro-mes" name="mes">

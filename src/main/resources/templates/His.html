@@ -60,9 +60,9 @@
                         <td th:text="${#dates.format(parcela.dataQPagamento, 'dd/MM/yyyy')}"></td>
                         <td th:text="${#dates.format(parcela.dataPagamento, 'dd/MM/yyyy')}"></td>
                         <td>
-                            <span th:if="${parcela.status.name() == 'ATRASADA'}" style="color: red;">ATRASADA</span>
-                            <span th:if="${parcela.status.name() == 'PAGO'}" style="color: green;">PAGO</span>
-                            <span th:if="${parcela.status.name() == 'PENDENTE'}" style="color: orange;">PENDENTE</span>
+                            <span th:if="${parcela.pagas == -1}" style="color: red;">ATRASADO</span>
+                            <span th:if="${parcela.pagas > 0}" style="color: green;">PAGO</span>
+                            <span th:if="${parcela.pagas == 0}" style="color: orange;">PENDENTE</span>
                         </td>
                     </tr>
                     </tbody>
