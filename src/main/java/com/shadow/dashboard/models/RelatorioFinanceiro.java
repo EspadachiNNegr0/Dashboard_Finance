@@ -11,7 +11,7 @@ public class RelatorioFinanceiro {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false, unique = true)
     private int codigo;
 
     private double valor;
@@ -28,21 +28,20 @@ public class RelatorioFinanceiro {
     private Historico historico;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "relatorio_entrada_id", nullable = true) // 🔹 Agora pode ser NULL antes da exclusão
+    @JoinColumn(name = "relatorio_entrada_id", nullable = true, unique = false) // 🔹 Removido unique = true
     private RelatorioEntrada relatorioEntrada;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "relatorio_saida_id", nullable = true) // 🔹 Agora pode ser NULL antes da exclusão
+    @JoinColumn(name = "relatorio_saida_id", nullable = true, unique = false) // 🔹 Removido unique = true
     private RelatorioSaida relatorioSaida;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "relatorio_projetada_id", nullable = true, unique = false) // 🔹 Removido unique = true
+    private RelatorioProjetada relatorioProjetada;
 
     private double juros;
 
     private double amortizacao;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parcela_id", nullable = true)
-    private Parcelas parcela;
-
 
     // Getters e Setters
     public Long getId() { return id; }
@@ -72,6 +71,14 @@ public class RelatorioFinanceiro {
     public RelatorioSaida getRelatorioSaida() { return relatorioSaida; }
     public void setRelatorioSaida(RelatorioSaida relatorioSaida) { this.relatorioSaida = relatorioSaida; }
 
+    public RelatorioProjetada getRelatorioProjetada() {
+        return relatorioProjetada;
+    }
+
+    public void setRelatorioProjetada(RelatorioProjetada relatorioProjetada) {
+        this.relatorioProjetada = relatorioProjetada;
+    }
+
     public double getJuros() {
         return juros;
     }
@@ -88,11 +95,4 @@ public class RelatorioFinanceiro {
         this.amortizacao = amortizacao;
     }
 
-    public Parcelas getParcela() {
-        return parcela;
-    }
-
-    public void setParcela(Parcelas parcela) {
-        this.parcela = parcela;
-    }
 }

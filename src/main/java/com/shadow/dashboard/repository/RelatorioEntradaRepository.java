@@ -22,8 +22,5 @@ public interface RelatorioEntradaRepository extends JpaRepository<RelatorioEntra
     int deleteByHistorico(@Param("historico") Historico historico);
 
 
-    Optional<RelatorioEntrada> findByParcela(Parcelas parcela);
-
-
-    boolean existsByHistoricoAndParcela(Historico historico, Parcelas parcela);
+    boolean existsByHistorico(Historico historico);
 }

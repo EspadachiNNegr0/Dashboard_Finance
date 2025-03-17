@@ -4,6 +4,7 @@ import com.shadow.dashboard.models.*;
 import com.shadow.dashboard.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -30,6 +31,8 @@ public class HistoricoService {
     private RelatorioService relatorioService;
     @Autowired
     private RelatorioFinanceiroRepository relatorioFinanceiroRepository;
+    @Autowired
+    private RelatorioProjetadaRepository relatorioProjetadaRepository;
 
     /**
      * 🔹 Salva um novo histórico e cria as parcelas associadas.
@@ -52,12 +55,8 @@ public class HistoricoService {
     }
 
     private int gerarCodigoUnico() {
-        Random random = new Random();
-        int codigo;
-        do {
-            codigo = random.nextInt(900000) + 100000;
-        } while (historicoRepository.existsByCodigo(codigo));
-        return codigo;
+        Integer maxCodigo = relatorioFinanceiroRepository.findMaxCodigo();
+        return (maxCodigo == null ? 100000 : maxCodigo + 1);
     }
 
     private Date calculaDataFinal(Historico historico) {
@@ -107,11 +106,13 @@ public class HistoricoService {
             parcelasCriadas.add(parcela);
         }
 
-        // 🔹 Salvar todas as parcelas de uma vez para evitar inconsistências
+        // 🔹 Salvar todas as parcelas primeiro
         parcelasRepository.saveAll(parcelasCriadas);
 
-        // 🔹 Criar relatórios após salvar parcelas
-        relatorioService.criarRelatorioEntrada(historico);
+        // 🔹 Agora criar relatórios para cada parcela
+        for (Parcelas parcela : parcelasCriadas) {
+            relatorioService.criarRelatorioProjetadaParaParcela(parcela);
+        }
     }
 
     /**
@@ -124,16 +125,18 @@ public class HistoricoService {
         // 🔹 Obtém o histórico associado à parcela
         Historico historico = parcela.getHistorico();
 
+        // 🔹 Verifica se o histórico já está setado antes de buscar novamente
+        if (historico == null) {
+            throw new IllegalStateException("❌ ERRO: O objeto 'historico' está NULL ao tentar salvar RelatorioEntrada.");
+        }
+
         // 🔹 Obtém a primeira parcela do histórico
         Parcelas primeiraParcela = parcelasRepository.findFirstByHistoricoOrderByParcelasAsc(historico);
 
         double juros;
-
         if (parcela.getId().equals(primeiraParcela.getId())) {
-            // 🔹 Se for a primeira parcela, usa os juros do Price do histórico
             juros = historico.getPrice() * (historico.getPercentage() / 100.0);
         } else {
-            // 🔹 A partir da segunda parcela, calcular juros com base no valor da parcela
             juros = parcela.getValor() * (historico.getPercentage() / 100.0);
         }
 
@@ -146,42 +149,48 @@ public class HistoricoService {
 
         parcelasRepository.save(parcela);
 
-        // 🔹 Buscar o Relatório de Entrada **correspondente à parcela** e atualizar apenas se existir
-        Optional<RelatorioEntrada> optionalRelatorioEntrada = relatorioEntradaRepository.findByParcela(parcela);
+        // 🔹 Criar um novo RelatorioEntrada
+        RelatorioEntrada relatorioEntrada = new RelatorioEntrada();
 
-        if (optionalRelatorioEntrada.isPresent()) {
-            RelatorioEntrada relatorioEntrada = optionalRelatorioEntrada.get();
-            relatorioEntrada.setBanco(parcela.getBancoEntrada());
-            relatorioEntrada.setValor(parcela.getValor());
-            relatorioEntrada.setJuros(parcela.getValorJuros());
-            relatorioEntrada.setAmortizacao(parcela.getValorAmortizado());
-
-            relatorioEntradaRepository.save(relatorioEntrada);
-            System.out.println("✅ Relatório de Entrada atualizado para a parcela ID: " + parcela.getId());
-
-            // 🔹 Atualizar o Relatório Financeiro com base no Relatório de Entrada
-            Optional<RelatorioFinanceiro> optionalRelatorioFinanceiro = relatorioFinanceiroRepository.findByParcela(parcela);
-
-            if (optionalRelatorioFinanceiro.isPresent()) {
-                RelatorioFinanceiro relatorioFinanceiro = optionalRelatorioFinanceiro.get();
-                relatorioFinanceiro.setBanco(relatorioEntrada.getBanco());
-                relatorioFinanceiro.setValor(relatorioEntrada.getValor());
-                relatorioFinanceiro.setJuros(relatorioEntrada.getJuros());
-                relatorioFinanceiro.setAmortizacao(relatorioEntrada.getAmortizacao());
-
-                relatorioFinanceiroRepository.save(relatorioFinanceiro);
-                System.out.println("✅ Relatório Financeiro atualizado para a parcela ID: " + parcela.getId());
-            } else {
-                System.out.println("⚠️ Nenhum relatório financeiro encontrado para a parcela ID: " + parcela.getId() + ". Nenhuma atualização realizada.");
-            }
-        } else {
-            System.out.println("⚠️ Nenhum relatório de entrada encontrado para a parcela ID: " + parcela.getId() + ". Nenhuma atualização realizada.");
+        // 🔹 Define histórico apenas se ainda não estiver setado
+        if (relatorioEntrada.getHistorico() == null) {
+            relatorioEntrada.setHistorico(historico);
         }
+
+        relatorioEntrada.setStatus(StatusR.Entrada);
+        relatorioEntrada.setCodigo(gerarCodigoUnico());
+        relatorioEntrada.setBanco(parcela.getBancoEntrada());
+        relatorioEntrada.setValor(parcela.getValorPago());
+        relatorioEntrada.setJuros(parcela.getValorJuros());
+        relatorioEntrada.setAmortizacao(parcela.getValorAmortizado());
+        relatorioEntrada.setData(parcela.getDataQPagamento());
+
+        // 🔹 Salvar o relatório apenas se o histórico estiver correto
+        if (relatorioEntrada.getHistorico() != null) {
+            relatorioEntradaRepository.save(relatorioEntrada);
+            System.out.println("✅ RelatorioEntrada criado para a parcela ID: " + parcela.getId());
+        } else {
+            System.err.println("❌ ERRO: Não foi possível salvar RelatorioEntrada porque o histórico é NULL.");
+        }
+
+        // 🔹 Criar sempre um novo Relatório Financeiro, mesmo se já existir outro para a mesma parcela
+        RelatorioFinanceiro relatorioFinanceiro = new RelatorioFinanceiro();
+        if (relatorioFinanceiro.getHistorico() == null) {
+            relatorioFinanceiro.setHistorico(historico);
+        }
+        relatorioFinanceiro.setCodigo(gerarCodigoUnico());
+        relatorioFinanceiro.setRelatorioEntrada(relatorioEntrada);
+        relatorioFinanceiro.setStatus(StatusR.Entrada);
+        relatorioFinanceiro.setBanco(relatorioEntrada.getBanco());
+        relatorioFinanceiro.setValor(relatorioEntrada.getValor());
+        relatorioFinanceiro.setJuros(relatorioEntrada.getJuros());
+        relatorioFinanceiro.setAmortizacao(relatorioEntrada.getAmortizacao());
+        relatorioFinanceiro.setData(relatorioEntrada.getData());
+
+        relatorioFinanceiroRepository.save(relatorioFinanceiro);
+        System.out.println("✅ Criado novo Relatório Financeiro para a parcela ID: " + parcela.getId());
     }
 
-    /**
-     * 🔹 Criar uma nova parcela se necessário (caso haja saldo residual).
-     */
     /**
      * 🔹 Criar uma nova parcela se necessário (caso haja saldo residual).
      */
@@ -208,65 +217,26 @@ public class HistoricoService {
         parcelasRepository.save(novaParcela);
         System.out.println("✅ Nova parcela criada com saldo residual: R$ " + saldoResidual);
 
-        // 🔹 Criar um novo Relatório de Entrada para a nova parcela
-        RelatorioEntrada relatorioEntrada = new RelatorioEntrada();
-        relatorioEntrada.setHistorico(historico);
-        relatorioEntrada.setCodigo(gerarCodigoUnico());
-        relatorioEntrada.setParcela(novaParcela); // ✅ Agora vinculado corretamente
-        relatorioEntrada.setValor(novaParcela.getValor());
-        relatorioEntrada.setJuros(juros);
-        relatorioEntrada.setAmortizacao(0.0); // Como é nova, ainda não tem amortização
-        relatorioEntrada.setBanco(parcela.getBancoEntrada());
-        relatorioEntrada.setData(new Date());
-        relatorioEntrada.setStatus(StatusR.Entrada);
-
-        relatorioEntradaRepository.save(relatorioEntrada);
-        System.out.println("📌 Novo Relatório de Entrada criado para a parcela ID: " + novaParcela.getId());
-
-        // 🔹 Criar um novo Relatório Financeiro baseado no Relatório de Entrada
-        RelatorioFinanceiro relatorioFinanceiro = new RelatorioFinanceiro();
-        relatorioFinanceiro.setHistorico(historico);
-        relatorioFinanceiro.setCodigo(gerarCodigoUnico());
-        relatorioFinanceiro.setParcela(novaParcela); // ✅ Agora vinculado corretamente
-        relatorioFinanceiro.setValor(relatorioEntrada.getValor());
-        relatorioFinanceiro.setJuros(relatorioEntrada.getJuros());
-        relatorioFinanceiro.setAmortizacao(relatorioEntrada.getAmortizacao());
-        relatorioFinanceiro.setBanco(relatorioEntrada.getBanco());
-        relatorioFinanceiro.setData(new Date());
-        relatorioFinanceiro.setStatus(StatusR.Entrada);
-
-        relatorioFinanceiroRepository.save(relatorioFinanceiro);
-        System.out.println("📌 Novo Relatório Financeiro criado para a parcela ID: " + novaParcela.getId());
+        // Criar Relatório Projetado APENAS para essa parcela
+        relatorioService.criarRelatorioProjetadaParaParcela(novaParcela);
     }
 
+    private Long gerarNovoId(JpaRepository<?, Long> repository) {
+        Long novoId;
+        do {
+            novoId = new Random().nextLong(1, Long.MAX_VALUE); // Gera um ID aleatório válido
+        } while (repository.existsById(novoId)); // Garante que o ID não existe no banco
 
-    /**
-     * 🔹 Método para criar um Relatório de Entrada automaticamente ao gerar nova parcela
-     */
-    private void criarRelatorioEntrada(Parcelas parcela, Historico historico) {
-        RelatorioEntrada relatorioEntrada = new RelatorioEntrada();
-        relatorioEntrada.setHistorico(historico);
-        relatorioEntrada.setCodigo(historico.getCodigo());
-        relatorioEntrada.setValor(parcela.getValor());
-        relatorioEntrada.setJuros(parcela.getValorJuros());
-        relatorioEntrada.setAmortizacao(parcela.getValorAmortizado());
-        relatorioEntrada.setBanco(parcela.getBancoEntrada());
-        relatorioEntrada.setData(new Date()); // Usa a data atual
-        relatorioEntrada.setStatus(StatusR.Entrada);
-
-        relatorioEntradaRepository.save(relatorioEntrada);
-        relatorioService.criarRelatorioFinanceiroEntrada(relatorioEntrada);
-
-        System.out.println("📌 Novo relatório de entrada criado para a parcela ID: " + parcela.getId());
+        return novoId;
     }
+
 
     public double calcularTotalJuros(List<Parcelas> parcelas) {
         return parcelas.stream()
                 .mapToDouble(Parcelas::getValorJuros) // Soma todos os valores de juros
                 .sum();
     }
-
-
+    
     /**
      * 🔹 Calcula o total pago de um histórico.
      */
@@ -392,35 +362,6 @@ public class HistoricoService {
             parcelasRepository.save(proximaParcela);
             System.out.println("✅ Sobra de R$" + valorSobra + " adicionada à próxima parcela ID: " + proximaParcela.getId());
 
-            // 🔹 Atualizar o Relatório de Entrada correspondente à próxima parcela
-            Optional<RelatorioEntrada> optionalRelatorioEntrada = relatorioEntradaRepository.findByParcela(proximaParcela);
-
-            if (optionalRelatorioEntrada.isPresent()) {
-                RelatorioEntrada relatorioEntrada = optionalRelatorioEntrada.get();
-                relatorioEntrada.setValor(proximaParcela.getValor());
-                relatorioEntrada.setJuros(proximaParcela.getValorJuros());
-                relatorioEntrada.setAmortizacao(proximaParcela.getValorAmortizado());
-
-                relatorioEntradaRepository.save(relatorioEntrada);
-                System.out.println("✅ Relatório de Entrada atualizado para a parcela ID: " + proximaParcela.getId());
-
-                // 🔹 Atualizar o Relatório Financeiro correspondente
-                Optional<RelatorioFinanceiro> optionalRelatorioFinanceiro = relatorioFinanceiroRepository.findByParcela(proximaParcela);
-
-                if (optionalRelatorioFinanceiro.isPresent()) {
-                    RelatorioFinanceiro relatorioFinanceiro = optionalRelatorioFinanceiro.get();
-                    relatorioFinanceiro.setValor(relatorioEntrada.getValor());
-                    relatorioFinanceiro.setJuros(relatorioEntrada.getJuros());
-                    relatorioFinanceiro.setAmortizacao(relatorioEntrada.getAmortizacao());
-
-                    relatorioFinanceiroRepository.save(relatorioFinanceiro);
-                    System.out.println("✅ Relatório Financeiro atualizado para a parcela ID: " + proximaParcela.getId());
-                } else {
-                    System.out.println("⚠️ Nenhum relatório financeiro encontrado para a parcela ID: " + proximaParcela.getId());
-                }
-            } else {
-                System.out.println("⚠️ Nenhum relatório de entrada encontrado para a parcela ID: " + proximaParcela.getId());
-            }
         } else {
             System.out.println("⚠️ Nenhuma próxima parcela encontrada. Nenhuma nova parcela será criada.");
         }

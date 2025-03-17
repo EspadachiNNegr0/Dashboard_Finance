@@ -1,6 +1,18 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("🚀 Script carregado!");
 
+    const inputMesAno = document.getElementById("filtro-mes");
+
+    // 🔹 Força o formato para apenas "YYYY-MM" ao mudar a data
+    inputMesAno.addEventListener("input", function () {
+        let dataSelecionada = new Date(this.value);
+        if (!isNaN(dataSelecionada)) {
+            let ano = dataSelecionada.getFullYear();
+            let mes = String(dataSelecionada.getMonth() + 1).padStart(2, "0");
+            this.value = `${ano}-${mes}`;
+        }
+    });
+
     /** =================== MODAIS =================== **/
     function configurarModal(openButton, modal, closeButton) {
         if (openButton && modal && closeButton) {
@@ -78,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
         event.preventDefault();
 
         const tipo = document.getElementById("filtro-tipo").value.toLowerCase();
-        const mesSelecionado = document.getElementById("filtro-mes").value;
+        const mesSelecionado = document.getElementById("filtro-mes").value; // Formato YYYY-MM
         const bancoFiltro = document.getElementById("filtro-banco").value.trim().toLowerCase();
         const funcionarioFiltro = document.getElementById("filtro-funcionario").value.trim().toLowerCase();
         const clienteFiltro = document.getElementById("filtro-cliente").value.trim().toLowerCase();
@@ -87,19 +99,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
         tabela.querySelectorAll("tr").forEach((linha) => {
             const status = linha.cells[8]?.innerText.trim().toLowerCase();
-            const dataTexto = linha.cells[4]?.innerText.trim();
+            const dataTexto = linha.cells[4]?.innerText.trim(); // Supondo que a data esteja na coluna 4
             const banco = linha.cells[1]?.innerText.trim().toLowerCase();
             const funcionario = linha.cells[2]?.innerText.trim().toLowerCase();
             const cliente = linha.cells[3]?.innerText.trim().toLowerCase();
 
             let mesAnoLinha = "";
             if (dataTexto) {
-                let [dia, mes, ano] = dataTexto.split("/");
-                mesAnoLinha = `${ano}-${mes.padStart(2, "0")}`;
+                const partesData = dataTexto.split("/");
+                if (partesData.length === 3) {
+                    const [dia, mes, ano] = partesData;
+                    mesAnoLinha = `${ano}-${mes.padStart(2, "0")}`; // Converte para formato YYYY-MM
+                }
             }
 
+            // 🔹 Verifica se o filtro "Tipo" corresponde ao status da linha
             const correspondeTipo = !tipo || status === tipo;
+
+            // 🔹 Verifica se a data da linha corresponde ao mês/ano selecionado
             const correspondeMes = !mesSelecionado || mesSelecionado === mesAnoLinha;
+
             const correspondeBanco = !bancoFiltro || banco.includes(bancoFiltro);
             const correspondeFuncionario = !funcionarioFiltro || funcionario.includes(funcionarioFiltro);
             const correspondeCliente = !clienteFiltro || cliente.includes(clienteFiltro);
@@ -122,7 +141,15 @@ document.addEventListener("DOMContentLoaded", () => {
         tabela.querySelectorAll("tr").forEach((linha) => {
             const statusCell = linha.cells[8];
             if (statusCell) {
-                statusCell.style.color = statusCell.textContent.trim().toLowerCase() === "entrada" ? "green" : "red";
+                const statusTexto = statusCell.textContent.trim().toLowerCase();
+
+                if (statusTexto === "entrada") {
+                    statusCell.style.color = "green";
+                } else if (statusTexto === "projetada") {
+                    statusCell.style.color = "orange"; // 🔹 Projetada em laranja
+                } else {
+                    statusCell.style.color = "red"; // 🔹 Outros status em vermelho
+                }
             }
         });
     }

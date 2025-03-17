@@ -1,24 +1,22 @@
 package com.shadow.dashboard.controllers;
 
 import com.shadow.dashboard.models.*;
-import com.shadow.dashboard.repository.ClientRepository;
-import com.shadow.dashboard.repository.HistoricoRepository;
-import com.shadow.dashboard.repository.NotificationRepository;
-import com.shadow.dashboard.repository.ParcelasRepository;
-import com.shadow.dashboard.repository.SociosRepository;
+import com.shadow.dashboard.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Controller
+@RequestMapping("/Analytics") // 🔥 Todas as rotas agora começam com "/Analytics"
 public class AnalyticsController {
 
     @Autowired
@@ -35,6 +33,9 @@ public class AnalyticsController {
 
     @Autowired
     private SociosRepository sociosRepository;
+
+    @Autowired
+    private BancoRepository bancoRepository;
 
     @GetMapping("/Analytics")
     public String showAnalytics(@RequestParam(value = "year", required = false) Integer selectedYear, Model model) {
@@ -54,6 +55,7 @@ public class AnalyticsController {
         List<Socios> socios = sociosRepository.findAll();
         List<Clientes> clientes = clientRepository.findAll();
         List<Historico> historicos = historicoRepository.findAll();
+        List<Banco> bancos = bancoRepository.findAll();
 
 
         // Gerando os meses e valores de vendas mensais
@@ -99,6 +101,7 @@ public class AnalyticsController {
         model.addAttribute("historicos", historicos);
         model.addAttribute("totalPriceDosHistoricos", totalPriceDosHistoricos);
         model.addAttribute("totalClientes", totalClientes);
+        model.addAttribute("bancos", bancos);
 
         return "analytics";
     }
@@ -110,5 +113,59 @@ public class AnalyticsController {
                 "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
         };
         return (month >= 1 && month <= 12) ? meses[month - 1] : "";
+    }
+
+    // ================== EDITAR CLIENTE (Aceita POST) ==================
+    @PostMapping("/clientes/editar")
+    public String editarCliente(@ModelAttribute Clientes cliente) {
+        if (cliente.getId() != null && clientRepository.existsById(cliente.getId())) {
+            clientRepository.save(cliente);
+        }
+        return "redirect:/Analytics/Analytics"; // 🔥 Redireciona para o dashboard após edição
+    }
+
+    // ================== EXCLUIR CLIENTE (Aceita POST) ==================
+    @PostMapping("/clientes/excluir")
+    public String excluirCliente(@RequestParam Long id) {
+        if (id != null && clientRepository.existsById(id)) {
+            clientRepository.deleteById(id);
+        }
+        return "redirect:/Analytics/Analytics"; // 🔥 Redireciona para o dashboard após exclusão
+    }
+
+    // ================== EDITAR FUNCIONÁRIO (Aceita POST) ==================
+    @PostMapping("/funcionarios/editar")
+    public String editarFuncionario(@ModelAttribute Socios funcionario) {
+        if (funcionario.getId() != null && sociosRepository.existsById(funcionario.getId())) {
+            sociosRepository.save(funcionario);
+        }
+        return "redirect:/Analytics/Analytics";  // 🔥 Redireciona para Analytics após edição
+    }
+
+    // ================== EXCLUIR FUNCIONÁRIO (Aceita POST) ==================
+    @PostMapping("/funcionarios/excluir")
+    public String excluirFuncionario(@RequestParam Long id) {
+        if (id != null && sociosRepository.existsById(id)) {
+            sociosRepository.deleteById(id);
+        }
+        return "redirect:/Analytics/Analytics";  // 🔥 Redireciona para Analytics após exclusão
+    }
+
+    // ================== EDITAR BANCO (Aceita POST) ==================
+    @PostMapping("/bancos/editar")
+    public String editarBanco(@ModelAttribute Banco banco) {
+        if (banco.getId() != null && bancoRepository.existsById(banco.getId())) {
+            bancoRepository.save(banco);
+        }
+        return "redirect:/Analytics/Analytics"; // 🔥 Redireciona para a lista de bancos após edição
+    }
+
+    // ================== EXCLUIR BANCO (Aceita POST) ==================
+    @PostMapping("/bancos/excluir")
+    public String excluirBanco(@RequestParam Long id) {
+        if (id != null && bancoRepository.existsById(id)) {
+            bancoRepository.deleteById(id);
+        }
+        return "redirect:/Analytics/Analytics"; // 🔥 Redireciona para a lista de bancos após exclusão
     }
 }

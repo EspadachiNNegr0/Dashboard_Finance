@@ -2241,6 +2241,22 @@ h3 {
     display: none;
 }
 
+/* Esconde o ícone do calendário padrão */
+.mes-ano::-webkit-inner-spin-button,
+.mes-ano::-webkit-calendar-picker-indicator {
+    display: none;
+    -webkit-appearance: none;
+}
+
+/* Define um estilo para parecer um seletor de mês */
+.mes-ano {
+    width: 140px;
+    font-size: 16px;
+    padding: 5px;
+    cursor: pointer;
+}
+
+
 
 /* Responsividade */
 @media (max-width: 768px) {

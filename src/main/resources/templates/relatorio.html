@@ -36,7 +36,7 @@
             </a>
         </li>
         <li>
-            <a href="/Analytics">
+            <a href="/Analytics/Analytics">
                 <i class='bx bxs-doughnut-chart' ></i>
                 <span class="text">Analytics</span>
             </a>
@@ -197,7 +197,6 @@
 
                     <i class='bx bx-filter' id="openModalFiltro"></i>
 
-
                     <!-- MODAL DE FILTRO -->
                     <div class="modal-filtro" id="modalFiltro">
                         <div class="modal-filtro-content">
@@ -208,12 +207,13 @@
 
                             <h2>Selecione os filtros desejados</h2>
 
-                            <form id="form-filtro" >
+                            <form id="form-filtro">
                                 <label for="filtro-tipo">Tipo:</label>
                                 <select id="filtro-tipo" name="tipo">
                                     <option value="">Todos</option>
                                     <option value="entrada">Entrada</option>
-                                    <option value="saida">saida</option>
+                                    <option value="saida">Saída</option>
+                                    <option value="projetada">Projetada</option> <!-- 🔹 Adicionada opção Projetada -->
                                 </select>
 
                                 <!-- Botões para mostrar/ocultar colunas -->
@@ -234,9 +234,9 @@
                                 <label for="filtro-cliente">Cliente:</label>
                                 <input type="text" id="filtro-cliente" name="cliente" placeholder="Digite o cliente">
 
-
-                                <button type="submit" style="background-color: #2a7bbd; padding: 10px; border-radius: 10px; color: white">Filtrar</button>
-
+                                <button type="submit" style="background-color: #2a7bbd; padding: 10px; border-radius: 10px; color: white">
+                                    Filtrar
+                                </button>
                             </form>
                         </div>
                     </div>

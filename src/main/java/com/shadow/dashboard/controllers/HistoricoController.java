@@ -61,6 +61,9 @@ public class HistoricoController {
     @Autowired
     private RelatorioFinanceiroRepository relatorioFinanceiroRepository;
 
+    @Autowired
+    private RelatorioProjetadaRepository relatorioProjetadaRepository;
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -249,11 +252,15 @@ public class HistoricoController {
             int relatoriosSaidaExcluidos = relatorioSaidaRepository.deleteByHistorico(historico);
             System.out.println("📌 Relatórios excluídos: Entrada=" + relatoriosEntradaExcluidos + ", Saída=" + relatoriosSaidaExcluidos);
 
-            // 🔹 3. EXCLUIR PARCELAS (agora que os relatórios já foram removidos)
+            // 🔹 3. EXCLUIR RELATÓRIOS PROJETADOS (antes das parcelas!)
+            int relatoriosProjetadosExcluidos = relatorioProjetadaRepository.deleteByHistorico(historico);
+            System.out.println("📌 Relatórios Projetados excluídos: " + relatoriosProjetadosExcluidos);
+
+            // 🔹 4. EXCLUIR PARCELAS (agora que os relatórios já foram removidos)
             int parcelasExcluidas = parcelasRepository.deleteByHistorico(historico);
             System.out.println("📌 Parcelas excluídas: " + parcelasExcluidas);
 
-            // 🔹 4. EXCLUIR O HISTÓRICO
+            // 🔹 5. EXCLUIR O HISTÓRICO
             historicoRepository.delete(historico);
             System.out.println("✅ Histórico excluído com sucesso!");
 
@@ -265,8 +272,6 @@ public class HistoricoController {
                     .body("❌ Erro ao excluir histórico: " + e.getMessage());
         }
     }
-
-
 
     @PostMapping("/Table")
     public String SaveFuncionario(HttpServletRequest request, RedirectAttributes redirectAttributes) {

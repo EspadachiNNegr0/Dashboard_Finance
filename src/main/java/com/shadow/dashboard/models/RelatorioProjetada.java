@@ -1,11 +1,12 @@
 package com.shadow.dashboard.models;
 
 import jakarta.persistence.*;
+
 import java.util.Date;
 
 @Entity
-@Table(name = "tb_RelatorioEntrada")
-public class RelatorioEntrada {
+@Table(name = "tb_relatorioProjetada")
+public class RelatorioProjetada {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,12 +26,16 @@ public class RelatorioEntrada {
     private StatusR status;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL) // 🔹 Corrige a relação com Historico
-    @JoinColumn(name = "historico_id", unique = false)
+    @JoinColumn(name = "historico_id", nullable = false)
     private Historico historico;
 
     private double juros;
 
     private double amortizacao;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parcela_id", nullable = true)
+    private Parcelas parcela;
 
     // ✅ Getters e Setters
     public Long getId() { return id; }
@@ -70,4 +75,11 @@ public class RelatorioEntrada {
         this.amortizacao = amortizacao;
     }
 
+    public Parcelas getParcela() {
+        return parcela;
+    }
+
+    public void setParcela(Parcelas parcela) {
+        this.parcela = parcela;
+    }
 }

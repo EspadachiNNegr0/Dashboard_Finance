@@ -2,8 +2,7 @@ package com.shadow.dashboard.repository;
 
 import com.shadow.dashboard.models.Historico;
 import com.shadow.dashboard.models.Parcelas;
-import com.shadow.dashboard.models.RelatorioFinanceiro;
-import jakarta.transaction.Transactional;
+import com.shadow.dashboard.models.RelatorioProjetada;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -14,15 +13,17 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface RelatorioFinanceiroRepository extends JpaRepository<RelatorioFinanceiro, Long> {
+public interface RelatorioProjetadaRepository extends JpaRepository<RelatorioProjetada, Long> {
+
+    boolean existsByHistoricoAndParcela(Historico historicoSalvo, Parcelas parcela);
+
+    Optional<RelatorioProjetada> findByParcela(Parcelas parcela);
 
     @Modifying
-    @Transactional
-    @Query("DELETE FROM RelatorioFinanceiro rf WHERE rf.historico = :historico")
+    @Query("DELETE FROM RelatorioProjetada rp WHERE rp.historico = :historico")
     int deleteByHistorico(@Param("historico") Historico historico);
 
-    @Query("SELECT MAX(r.codigo) FROM RelatorioFinanceiro r")
-    Integer findMaxCodigo();
+    Optional<RelatorioProjetada> findByHistorico(Historico historicoSalvo);
 
-    Optional<RelatorioFinanceiro> findByCodigo(int codigo);
+    List<RelatorioProjetada> findByHistoricoAndParcela(Historico historicoSalvo, Parcelas parcela);
 }

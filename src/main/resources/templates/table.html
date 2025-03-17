@@ -36,7 +36,7 @@
             </a>
         </li>
         <li>
-            <a href="/Analytics">
+            <a href="/Analytics/Analytics">
                 <i class='bx bxs-doughnut-chart' ></i>
                 <span class="text">Analytics</span>
             </a>
@@ -356,17 +356,10 @@
                             <h2>Selecione os filtros desejados</h2>
 
                             <form id="form-filtro">
-                                <!-- Filtro: Data de Início do Empréstimo -->
-                                <div class="input-group">
-                                    <label for="data-inicio">Data de Início do Empréstimo:</label>
-                                    <input type="date" id="data-inicio" name="dataInicio">
-                                </div>
 
-                                <!-- Filtro: Data de Pagamento do Empréstimo -->
-                                <div class="input-group">
-                                    <label for="data-pagamento">Data de Pagamento do Empréstimo:</label>
-                                    <input type="date" id="data-pagamento" name="dataPagamento">
-                                </div>
+                                <!-- Filtro: Mês -->
+                                <label for="filtro-mes">Mês:</label>
+                                <input type="month" id="filtro-mes" name="mes">
 
                                 <!-- Filtro: Funcionário -->
                                 <div class="input-group">
@@ -377,19 +370,21 @@
                                     </select>
                                 </div>
 
-                                <!-- Filtro: Banco de Saída -->
+                                <!-- Filtro: Cliente -->
                                 <div class="input-group">
-                                    <label for="bancoSaida">Banco de Saída:</label>
-                                    <select id="bancoSaida">
+                                    <label for="cliente">Cliente:</label>
+                                    <select id="cliente">
                                         <option value="" selected>Todos</option>
-                                        <option th:each="banco : ${bancos}" th:value="${banco.nome}" th:text="${banco.nome}"></option>
+                                        <option th:each="cliente : ${clientes}" th:value="${cliente.nome}" th:text="${cliente.nome}"></option>
                                     </select>
                                 </div>
+
                                 <!-- Botão de envio -->
                                 <button id="btn-modal-filtro" type="submit">Filtrar</button>
                             </form>
                         </div>
                     </div>
+
 
                 </div>
 
@@ -401,7 +396,7 @@
                         <th>Valor</th>
                         <th>Porcentagem</th>
                         <th>Parcelamento</th>
-                        <th>Banco Saida</th>
+                        <th>Cliente</th>
                         <th>Funcionario</th>
                         <th>Data do Emp.</th>
                         <th>Data final</th>
@@ -414,7 +409,7 @@
                         <td th:text="${historico.price}"></td>
                         <td th:text="${historico.percentage} + '%'"></td>
                         <td th:text="${historico.parcelamento}"></td>
-                        <td th:text="${historico.bancoSaida.nome}"></td>
+                        <td><a th:href="@{/cliente/{id}(id=${historico.cliente.id})}" th:text="${historico.cliente.nome}"></a></td>
                         <td th:text="${historico.socios.name}"></td>
                         <td th:text="${#dates.format(historico.created, 'dd/MM/yyyy')}"></td>
                         <td th:text="${#dates.format(historico.creationF, 'dd/MM/yyyy')}"></td>
