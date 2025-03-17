@@ -168,6 +168,26 @@ public class HistoricoController {
         return "modalHis"; // Nome do arquivo modalHis.html dentro da pasta templates/detalhe/
     }
 
+    @GetMapping("/cliente2/{id}")
+    public String exibirHistoricoCliente2(@PathVariable("id") Long id, Model model) {
+        Clientes cliente = clientRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado para o ID: " + id));
+
+        List<Historico> historicos = historicoRepository.findByCliente(cliente);
+
+        if (historicos.isEmpty()) {
+            throw new RuntimeException("Nenhum histórico encontrado para o cliente ID: " + id);
+        }
+
+        Historico historico = historicos.get(0); // Pegando o primeiro histórico apenas como exemplo
+
+        model.addAttribute("cliente", cliente);
+        model.addAttribute("historicos", historicos);
+        model.addAttribute("historico", historico); // ✅ Adicionando um histórico ao Model
+
+        return "modalHis2"; // Nome do arquivo modalHis.html dentro da pasta templates/detalhe/
+    }
+
     // Buscar histórico pelo código do empréstimo
     @GetMapping("/emprestimo/{codigo}")
     public String exibirHistorico(@PathVariable("codigo") int codigo, Model model) {

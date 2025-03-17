@@ -28,8 +28,8 @@
                     th:disabled="${parcelaSelecionada == null}">
                 <a>Receber</a>
             </button>
-            <button class="back">
-                <a href="/Table">Voltar</a>
+            <button class="back" onclick="voltarPaginaAnterior()">
+                <a>Voltar</a>
             </button>
         </div>
         <div class="modal-body">
@@ -171,6 +171,14 @@
 
     function closeReceberModal() {
         document.getElementById('modal-receber').classList.add('hide');
+    }
+
+    function voltarPaginaAnterior() {
+        if (document.referrer) {
+            window.history.back(); // Retorna para a página anterior
+        } else {
+            window.location.href = "/"; // Caso não haja página anterior, redireciona para a home
+        }
     }
 </script>
 

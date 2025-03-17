@@ -78,9 +78,18 @@
         </div>
 
         <!-- Botão de fechar modal -->
-        <button class="close-button" onclick="window.location.href='/Table'">X</button>
+        <button class="close-button" onclick="voltarPaginaAnterior()">X</button>
     </div>
 </div>
 
+<script>
+    function voltarPaginaAnterior() {
+        if (document.referrer) {
+            window.history.back(); // Retorna para a página anterior
+        } else {
+            window.location.href = "/"; // Caso não haja página anterior, redireciona para a home
+        }
+    }
+</script>
 </body>
 </html>
