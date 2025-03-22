@@ -177,6 +177,14 @@
         }
     }
 
+    .scrollable-table-container {
+        max-height: 400px; /* Você pode ajustar a altura como quiser */
+        overflow-y: auto;
+        margin-top: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+    }
+
 </style>
 
 <body>
@@ -370,6 +378,7 @@
                     <button id="closeClientsList" class="close-button">&times;</button>
                 </div>
                 <div class="window-body">
+                    <div class="scrollable-table-container">
                     <table>
                         <thead>
                         <tr>
@@ -403,6 +412,7 @@
                         </tr>
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
 
@@ -416,6 +426,7 @@
                     <button id="closeSociosList" class="close-button">&times;</button>
                 </div>
                 <div class="window-body">
+                    <div class="scrollable-table-container">
                     <table>
                         <thead>
                         <tr>
@@ -449,6 +460,7 @@
                         </tr>
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
 
@@ -462,6 +474,7 @@
                     <button id="closeBanksList" class="close-button">&times;</button>
                 </div>
                 <div class="window-body">
+                    <div class="scrollable-table-container">
                     <table>
                         <thead>
                         <tr>
@@ -489,6 +502,7 @@
                         </tr>
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
 
