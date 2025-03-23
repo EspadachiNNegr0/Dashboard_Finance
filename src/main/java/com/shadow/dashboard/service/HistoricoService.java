@@ -39,7 +39,7 @@ public class HistoricoService {
      */
     public void saveHistoryAndCreateNotification(Historico historico) {
         validarHistorico(historico);
-        historico.setCodigo(historico.getCodigo() == 0 ? gerarCodigoUnico() : historico.getCodigo());
+        historico.setCodigo(gerarCodigoUnicoH());
         historico.setCreationF(calculaDataFinal(historico));
         historico = historicoRepository.save(historico);
 
@@ -53,6 +53,18 @@ public class HistoricoService {
             throw new IllegalArgumentException("Os campos 'created' e 'parcelamento' são obrigatórios.");
         }
     }
+
+    private int gerarCodigoUnicoH() {
+        int codigo;
+        Random random = new Random();
+
+        do {
+            codigo = 100000 + random.nextInt(900000); // Gera um número entre 100000 e 999999
+        } while (historicoRepository.existsByCodigo(codigo));
+
+        return codigo;
+    }
+
 
     private int gerarCodigoUnico() {
         Integer maxCodigo = relatorioFinanceiroRepository.findMaxCodigo();
