@@ -7,6 +7,7 @@ import com.shadow.dashboard.service.HistoricoService;
 import com.shadow.dashboard.service.RelatorioService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -200,6 +201,7 @@ public class IndexController {
     public String pagarParcela(@PathVariable Long id,
                                @RequestParam double valorPago,
                                @RequestParam Long bancoEntradaId,
+                               @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date dataPagamento,
                                RedirectAttributes redirectAttributes) {
         try {
             // 🔹 Buscar a parcela
@@ -227,7 +229,7 @@ public class IndexController {
             double montante = historico.getMontante();
 
             // 🔹 Atualizar a parcela com o pagamento
-            historicoService.atualizarParcela(parcela, bancoEntrada, valorPago);
+            historicoService.atualizarParcela(parcela, bancoEntrada, valorPago, dataPagamento);
             parcelasRepository.save(parcela); // ✅ Salvar a atualização no banco
 
             // 🔹 Verificar sobra e repassá-la

@@ -157,20 +157,19 @@
         </span>
             </li>
             <li>
-                <i class='bx bxs-group' ></i>
+                <i class='bx bxs-group'></i>
                 <span class="text">
             <h3><span id="total-saidas">R$ 0,00</span></h3>
             <p>📉 Total de Saídas:</p>
         </span>
             </li>
             <li>
-                <i class='bx bxs-dollar-circle' ></i>
+                <i class='bx bxs-dollar-circle'></i>
                 <span class="text">
             <h3><span id="saldo-final">R$ 0,00</span></h3>
             <p>📊 Saldo Final:</p>
         </span>
             </li>
-            <!-- 🔹 Novo bloco para Total de Juros -->
             <li>
                 <i class='bx bxs-coin-stack'></i>
                 <span class="text">
@@ -178,7 +177,6 @@
             <p>💲 Total de Juros:</p>
         </span>
             </li>
-            <!-- 🔹 Novo bloco para Total de Amortização -->
             <li>
                 <i class='bx bxs-bank'></i>
                 <span class="text">
@@ -186,14 +184,25 @@
             <p>📈 Total de Amortização:</p>
         </span>
             </li>
+            <!-- 🔹 Novo bloco para Total Projetadas -->
+            <li>
+                <i class='bx bxs-bar-chart-alt-2'></i>
+                <span class="text">
+            <h3><span id="total-projetadas">R$ 0,00</span></h3>
+            <p>📅 Total Projetadas:</p>
+        </span>
+            </li>
         </ul>
-
 
         <div class="table-data">
             <div class="order">
                 <div class="head">
                     <h3>Relatorio</h3>
 
+                    <!-- Substitua seu botão atual por isso -->
+                    <a href="/Relatorio/gerar-pdf" target="_blank">
+                        <button class="addB" aria-label="Gerar PDF">Gerar PDF</button>
+                    </a>
 
                     <i class='bx bx-filter' id="openModalFiltro"></i>
 
@@ -226,13 +235,28 @@
                                 <input type="month" id="filtro-mes" name="mes">
 
                                 <label for="filtro-banco">Banco:</label>
-                                <input type="text" id="filtro-banco" name="banco" placeholder="Digite o banco">
+                                <select id="filtro-banco" name="banco">
+                                    <option value="">Todos</option>
+                                    <th:block th:each="banco : ${bancos}">
+                                        <option th:value="${banco.id}" th:text="${banco.nome}"></option>
+                                    </th:block>
+                                </select>
 
                                 <label for="filtro-funcionario">Funcionário:</label>
-                                <input type="text" id="filtro-funcionario" name="funcionario" placeholder="Digite o funcionário">
+                                <select id="filtro-funcionario" name="funcionario">
+                                    <option value="">Todos</option>
+                                    <th:block th:each="func : ${funcionarios}">
+                                        <option th:value="${func.id}" th:text="${func.name}"></option>
+                                    </th:block>
+                                </select>
 
                                 <label for="filtro-cliente">Cliente:</label>
-                                <input type="text" id="filtro-cliente" name="cliente" placeholder="Digite o cliente">
+                                <select id="filtro-cliente" name="cliente">
+                                    <option value="">Todos</option>
+                                    <th:block th:each="cli : ${clientes}">
+                                        <option th:value="${cli.id}" th:text="${cli.nome}"></option>
+                                    </th:block>
+                                </select>
 
                                 <button type="submit" style="background-color: #2a7bbd; padding: 10px; border-radius: 10px; color: white">
                                     Filtrar

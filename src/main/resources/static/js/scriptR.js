@@ -53,13 +53,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const saldoFinalElement = document.getElementById("saldo-final");
     const totalJurosElement = document.getElementById("total-juros");
     const totalAmortizacaoElement = document.getElementById("total-amortizacao");
+    const totalProjetadasElement = document.getElementById("total-projetadas"); // 🔹 Novo elemento
 
     function formatarMoeda(valor) {
         return `R$ ${valor.toFixed(2).replace(".", ",")}`;
     }
 
     function calcularTotaisTabela() {
-        let totalEntradas = 0, totalSaidas = 0, totalJuros = 0, totalAmortizacao = 0;
+        let totalEntradas = 0, totalSaidas = 0, totalJuros = 0, totalAmortizacao = 0, totalProjetadas = 0;
 
         document.querySelectorAll("#example tbody tr:not([style*='display: none'])").forEach((linha) => {
             const obterValor = (index) => parseFloat(linha.cells[index]?.innerText.replace("R$", "").trim().replace(",", ".")) || 0;
@@ -71,6 +72,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (status === "entrada") totalEntradas += valor;
             if (status === "saida") totalSaidas += valor;
+            if (status === "projetada") totalProjetadas += valor;
+
             totalJuros += juros;
             totalAmortizacao += amortizacao;
         });
@@ -80,6 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
         saldoFinalElement.textContent = formatarMoeda(totalEntradas - totalSaidas);
         totalJurosElement.textContent = formatarMoeda(totalJuros);
         totalAmortizacaoElement.textContent = formatarMoeda(totalAmortizacao);
+        totalProjetadasElement.textContent = formatarMoeda(totalProjetadas); // 🔹 Atualiza o box
     }
 
     /** =================== FILTRO =================== **/

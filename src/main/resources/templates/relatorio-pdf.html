@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório PDF</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #aaa;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #ddd;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        @media print {
+            button {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Relatório Financeiro</h1>
+
+<button onclick="window.print()">Imprimir PDF</button>
+
+<table>
+    <thead>
+    <tr>
+        <th>Cod</th>
+        <th>Banco</th>
+        <th>Funcionário</th>
+        <th>Cliente</th>
+        <th>Data</th>
+        <th>Valor</th>
+        <th>Juros</th>
+        <th>Amortização</th>
+        <th>Status</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="relatorio : ${relatoriosFinanceiros}">
+        <td th:text="${relatorio.codigo}"></td>
+        <td th:text="${relatorio.banco}"></td>
+        <td th:text="${relatorio.historico?.socios?.name}">-</td>
+        <td th:text="${relatorio.historico?.cliente?.nome}">-</td>
+        <td th:text="${#dates.format(relatorio.data, 'dd/MM/yyyy')}"></td>
+        <td th:text="${#numbers.formatDecimal(relatorio.valor, 1, 2)}"></td>
+        <td th:text="${#numbers.formatDecimal(relatorio.juros, 1, 2)}"></td>
+        <td th:text="${#numbers.formatDecimal(relatorio.amortizacao, 1, 2)}"></td>
+        <td th:text="${relatorio.status}"></td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

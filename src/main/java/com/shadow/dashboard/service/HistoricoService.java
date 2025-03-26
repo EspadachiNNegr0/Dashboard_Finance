@@ -130,7 +130,7 @@ public class HistoricoService {
     /**
      * 🔹 Atualiza a parcela com um pagamento.
      */
-    public void atualizarParcela(Parcelas parcela, Banco bancoEntrada, double valorPago) {
+    public void atualizarParcela(Parcelas parcela, Banco bancoEntrada, double valorPago, Date dataPagamento) {
         parcela.setBancoEntrada(bancoEntrada.getNome());
         parcela.setValorPago(parcela.getValorPago() + valorPago);
 
@@ -156,7 +156,7 @@ public class HistoricoService {
         parcela.setValorAmortizado(parcela.getValorPago() - juros);
         parcela.setValorSobra(parcela.getValor() - (parcela.getValorAmortizado() + parcela.getValorJuros()));
         parcela.setPagas(1);
-        parcela.setDataQPagamento(new Date());
+        parcela.setDataQPagamento(dataPagamento);
         parcela.setStatus(parcela.getPagas() == 1 ? StatusParcela.PAGO : StatusParcela.PENDENTE);
 
         parcelasRepository.save(parcela);
