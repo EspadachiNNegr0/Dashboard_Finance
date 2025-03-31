@@ -145,12 +145,7 @@ public class HistoricoService {
         // 🔹 Obtém a primeira parcela do histórico
         Parcelas primeiraParcela = parcelasRepository.findFirstByHistoricoOrderByParcelasAsc(historico);
 
-        double juros;
-        if (parcela.getId().equals(primeiraParcela.getId())) {
-            juros = historico.getPrice() * (historico.getPercentage() / 100.0);
-        } else {
-            juros = parcela.getValor() * (historico.getPercentage() / 100.0);
-        }
+        double juros = calcularJuros(historico, parcela);
 
         parcela.setValorJuros(juros);
         parcela.setValorAmortizado(parcela.getValorPago() - juros);
@@ -218,6 +213,7 @@ public class HistoricoService {
         novaParcela.setHistorico(historico);
         novaParcela.setParcelas(parcela.getParcelas() + 1);
         novaParcela.setValor(saldoResidual + juros);
+        novaParcela.setValorJuros(juros);
         novaParcela.setStatus(StatusParcela.PENDENTE);
         novaParcela.setPagas(0);
 
@@ -248,7 +244,7 @@ public class HistoricoService {
                 .mapToDouble(Parcelas::getValorJuros) // Soma todos os valores de juros
                 .sum();
     }
-    
+
     /**
      * 🔹 Calcula o total pago de um histórico.
      */
@@ -390,14 +386,29 @@ public class HistoricoService {
         double taxaJuros = historico.getPercentage() / 100.0;
         Parcelas primeiraParcela = parcelasRepository.findFirstByHistoricoOrderByParcelasAsc(historico);
 
-        // Se for a primeira parcela, usa o juros de Price do histórico
+        // 🔹 Se for a primeira parcela, juros com base no valor do empréstimo (price)
         if (parcela.getId().equals(primeiraParcela.getId())) {
-            return historico.getPrice() * taxaJuros;
+            double jurosPrimeira = historico.getPrice() * taxaJuros;
+            System.out.println("ℹ️ Juros da primeira parcela: R$" + jurosPrimeira);
+            return jurosPrimeira;
         }
 
-        // A partir da segunda parcela, calcula o juros baseado no valor da parcela
-        return parcela.getValor() * taxaJuros;
+        // 🔹 Se valorPago == valorJuros da parcela atual, manter mesmo valor de juros
+        if (Double.compare(parcela.getValorPago(), parcela.getValorJuros()) == 0) {
+            System.out.println("ℹ️ Juros mantidos porque valorPago == valorJuros: R$" + parcela.getValorJuros());
+            return parcela.getValorJuros();
+        }
+
+        // 🔹 Caso contrário, calcular o valor sem juros e depois descobrir o juros real
+        double valorTotal = parcela.getValor();
+        double valorBase = valorTotal / (1 + taxaJuros);
+        double jurosCalculado = valorTotal - valorBase;
+
+        System.out.println("ℹ️ Juros recalculados a partir do valor total com juros: R$" + jurosCalculado);
+        return jurosCalculado;
+
     }
+
     /**
      * 🔹 Exclui um histórico e todos os seus registros associados.
      */
