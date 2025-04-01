@@ -238,7 +238,7 @@
                                 <select id="filtro-banco" name="banco">
                                     <option value="">Todos</option>
                                     <th:block th:each="banco : ${bancos}">
-                                        <option th:value="${banco.id}" th:text="${banco.nome}"></option>
+                                        <option th:value="${banco.nome}" th:text="${banco.nome}"></option>
                                     </th:block>
                                 </select>
 
@@ -246,7 +246,7 @@
                                 <select id="filtro-funcionario" name="funcionario">
                                     <option value="">Todos</option>
                                     <th:block th:each="func : ${funcionarios}">
-                                        <option th:value="${func.id}" th:text="${func.name}"></option>
+                                        <option th:value="${func.name}" th:text="${func.name}"></option>
                                     </th:block>
                                 </select>
 
@@ -254,7 +254,7 @@
                                 <select id="filtro-cliente" name="cliente">
                                     <option value="">Todos</option>
                                     <th:block th:each="cli : ${clientes}">
-                                        <option th:value="${cli.id}" th:text="${cli.nome}"></option>
+                                        <option th:value="${cli.nome}" th:text="${cli.nome}"></option>
                                     </th:block>
                                 </select>
 

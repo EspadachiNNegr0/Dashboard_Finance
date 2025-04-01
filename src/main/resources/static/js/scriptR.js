@@ -3,15 +3,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const inputMesAno = document.getElementById("filtro-mes");
 
-    // 🔹 Força o formato para apenas "YYYY-MM" ao mudar a data
-    inputMesAno.addEventListener("input", function () {
-        let dataSelecionada = new Date(this.value);
-        if (!isNaN(dataSelecionada)) {
-            let ano = dataSelecionada.getFullYear();
-            let mes = String(dataSelecionada.getMonth() + 1).padStart(2, "0");
-            this.value = `${ano}-${mes}`;
+    inputMesAno.addEventListener("change", function () {
+        // Garante que o valor fique no formato "YYYY-MM"
+        if (this.value.length >= 7) {
+            this.value = this.value.substring(0, 7);
         }
     });
+
+
 
     /** =================== MODAIS =================== **/
     function configurarModal(openButton, modal, closeButton) {
