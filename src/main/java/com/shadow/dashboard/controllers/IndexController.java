@@ -221,7 +221,8 @@ public class IndexController {
             // 🔹 Validar o pagamento
             double juros = historicoService.calcularJuros(historico, parcela);
 
-            if (valorPago < juros) {
+            double epsilon = 0.01; // margem de 1 centavo
+            if (valorPago + epsilon < juros) {
                 redirectAttributes.addFlashAttribute("error", "❌ O valor pago não pode ser menor que os juros!");
                 return "redirect:/histori/" + historico.getId();
             }

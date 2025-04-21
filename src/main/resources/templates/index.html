@@ -228,8 +228,8 @@
                             <thead>
                             <tr>
                                 <th>Cliente</th>
+                                <th>Funcionario</th>
                                 <th>Valor Mensal</th>
-                                <th>Dia do Empréstimo</th>
                                 <th>Datas de Pagamento</th>
                                 <th>Status</th>
                                 <th></th>
@@ -239,8 +239,8 @@
                             <tr th:each="parcela : ${parcelas}"
                                 th:if="${#dates.format(parcela.dataPagamento, 'dd') == #numbers.formatInteger(dia, 2)}">
                                 <td><a th:href="@{/cliente2/{id}(id=${parcela.historico.cliente.id})}" th:text="${parcela.historico.cliente.nome}"></a></td>
+                                <td th:text="${parcela.historico.socios.name}"></td>
                                 <td th:text="${#numbers.formatDecimal(parcela.valor, 1, 2)}"></td>
-                                <td th:text="${#dates.format(parcela.historico.created, 'dd/MM/yyyy')}"></td>
                                 <td th:text="${#dates.format(parcela.dataPagamento, 'dd/MM/yyyy')}"></td>
                                 <td>
                                     <span th:if="${parcela.pagas == -1}" style="color: red;">ATRASADO</span>
@@ -257,8 +257,8 @@
                             <tfoot>
                             <tr>
                                 <th>Cliente</th>
+                                <th>Funcionario</th>
                                 <th>Valor Mensal</th>
-                                <th>Dia do Empréstimo</th>
                                 <th>Datas de Pagamento</th>
                                 <th>Status</th>
                                 <th></th>
