@@ -3,38 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <title>Relatório PDF</title>
+
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             padding: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th, td {
-            border: 1px solid #aaa;
-            padding: 8px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #ddd;
+            background-color: #f5f7fa;
+            color: #333;
         }
 
         h1 {
             text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            border-radius: 8px;
+            background-color: white;
+        }
+
+        thead {
+            background-color: #34495e;
+            color: #ecf0f1;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        th {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f2f6f9;
+        }
+
+        tbody tr:hover {
+            background-color: #e6f2ff;
+        }
+
+        td {
+            font-size: 13px;
+            color: #2c3e50;
         }
 
         @media print {
             button {
                 display: none;
             }
+
+            body {
+                background-color: white;
+            }
+
+            table {
+                box-shadow: none;
+                border-radius: 0;
+            }
+
+            th {
+                background-color: #ccc !important;
+                color: #000 !important;
+            }
         }
     </style>
+
+
 </head>
 <body>
 
