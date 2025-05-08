@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -48,6 +48,7 @@
                             <span th:if="${historico.status.name() == 'ATRASADO'}" style="color: red;">ATRASADO</span>
                             <span th:if="${historico.status.name() == 'PAGO'}" style="color: green;">PAGO</span>
                             <span th:if="${historico.status.name() == 'PENDENTE'}" style="color: orange;">PENDENTE</span>
+                            <span th:if="${historico.status.name() == 'RATRASADO'}" style="color: yellow;">RATRASADO</span>
                         </td>
                         <td>
                             <button class="delete-btn"

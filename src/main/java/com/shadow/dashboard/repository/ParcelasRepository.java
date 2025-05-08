@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,5 +59,17 @@ public interface ParcelasRepository extends JpaRepository<Parcelas, Long> {
     Parcelas findByHistoricoAndCodigo(@Param("historico") Historico historico, @Param("codigo") int codigo);
 
     long countByHistoricoAndStatus(Historico historico, StatusParcela status);
+
+    List<Parcelas> findByStatus(StatusParcela statusParcela);
+
+    // Método customizado para verificar se já existe uma parcela replicada no mês/ano
+    @Query("SELECT COUNT(p) > 0 FROM Parcelas p WHERE p.historico = :historico " +
+            "AND FUNCTION('MONTH', p.dataPagamento) = :mes " +
+            "AND FUNCTION('YEAR', p.dataPagamento) = :ano")
+    boolean existsByHistoricoAndMesAno(@Param("historico") Historico historico,
+                                       @Param("mes") int mes,
+                                       @Param("ano") int ano);
+
+    List<Parcelas> findByStatusIn(List<StatusParcela> statusList);
 
 }

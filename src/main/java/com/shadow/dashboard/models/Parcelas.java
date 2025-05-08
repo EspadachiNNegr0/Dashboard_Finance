@@ -19,7 +19,7 @@ public class Parcelas {
     private int parcelas;
 
     @Column(nullable = false)
-    private int pagas; // 🔹 0 = A PAGAR, -1 = ATRASADO, 1 = PAGO
+    public int pagas; // 🔹 0 = A PAGAR, -1 = ATRASADO, 1 = PAGO
 
     //data de quando foi pago
     @Temporal(TemporalType.DATE)
@@ -49,11 +49,12 @@ public class Parcelas {
 
     public Parcelas() {}
 
-    // 🔹 Método que atualiza o status automaticamente
     public void atualizarStatus() {
         Date hoje = new Date();
 
-        if (this.pagas > 0) {
+        if (this.pagas == -2) {
+            this.status = StatusParcela.RATRASADO;
+        } else if (this.pagas > 0) {
             this.status = StatusParcela.PAGO;
         } else if (this.dataPagamento == null) {
             this.status = StatusParcela.PENDENTE;

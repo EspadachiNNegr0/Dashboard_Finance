@@ -2256,6 +2256,10 @@ h3 {
     cursor: pointer;
 }
 
+.linha-atrasada {
+    background-color: #ffe5e5;
+}
+
 
 
 /* Responsividade */
