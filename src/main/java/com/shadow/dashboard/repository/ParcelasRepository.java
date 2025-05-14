@@ -62,14 +62,6 @@ public interface ParcelasRepository extends JpaRepository<Parcelas, Long> {
 
     List<Parcelas> findByStatus(StatusParcela statusParcela);
 
-    // Método customizado para verificar se já existe uma parcela replicada no mês/ano
-    @Query("SELECT COUNT(p) > 0 FROM Parcelas p WHERE p.historico = :historico " +
-            "AND FUNCTION('MONTH', p.dataPagamento) = :mes " +
-            "AND FUNCTION('YEAR', p.dataPagamento) = :ano")
-    boolean existsByHistoricoAndMesAno(@Param("historico") Historico historico,
-                                       @Param("mes") int mes,
-                                       @Param("ano") int ano);
-
     List<Parcelas> findByStatusIn(List<StatusParcela> statusList);
 
 }

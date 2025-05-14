@@ -64,6 +64,7 @@
                             <span th:if="${parcela.pagas > 0}" style="color: green;">PAGO</span>
                             <span th:if="${parcela.pagas == 0}" style="color: orange;">PENDENTE</span>
                             <span th:if="${parcela.pagas == -2}" style="color: yellow;">RATRASADO</span>
+                            <span th:if="${parcela.pagas == -3}" style="color: darkred;">ATRASADOR</span>
                         </td>
                     </tr>
                     </tbody>

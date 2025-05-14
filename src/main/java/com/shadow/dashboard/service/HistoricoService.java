@@ -441,6 +441,7 @@ public class HistoricoService {
                     historicoRepository.save(historico);
                     criarNotificacao(historico, "❌ Histórico #" + historico.getId() + " agora está em status ATRASADO!");
                 }
+//                replicarParcelasAtrasadasParaMesAtual();
             }
         }
     }
@@ -488,72 +489,70 @@ public class HistoricoService {
         }
     }
 
-    @Scheduled(fixedRate = 30000) // Executa a cada 10 segundos
-    public void replicarParcelasAtrasadasParaMesAtual() {
-        List<Parcelas> parcelasAtrasadasAndR = parcelasRepository.findByStatusIn(
-                Arrays.asList(StatusParcela.ATRASADO, StatusParcela.RATRASADO)
-        );
-        System.out.println("🔍 Parcelas atrasadas encontradas: " + parcelasAtrasadasAndR.size());
-        Date hoje = new Date();
-
-        for (Parcelas parcela : parcelasAtrasadasAndR) {
-            if (parcela.getPagas() == 0 || parcela.getPagas() == -1 || parcela.getPagas() == -2) {
-
-                // Obtém a data de pagamento da parcela
-                Date dataPagamento = parcela.getDataPagamento();
-                if (dataPagamento == null || dataPagamento.after(hoje)) {
-                    continue; // Se a data de pagamento for nula ou no futuro, pula
-                }
-
-                // Verifica a diferença de meses entre a data de pagamento e o mês atual
-                Calendar calendarPagamento = Calendar.getInstance();
-                calendarPagamento.setTime(dataPagamento);
-                int mesPagamento = calendarPagamento.get(Calendar.MONTH) + 1; // Mês (1-12)
-                int anoPagamento = calendarPagamento.get(Calendar.YEAR); // Ano
-
-                Calendar calendarHoje = Calendar.getInstance();
-                calendarHoje.setTime(hoje);
-                int mesHoje = calendarHoje.get(Calendar.MONTH) + 1; // Mês atual
-                int anoHoje = calendarHoje.get(Calendar.YEAR); // Ano atual
-
-                // Verifica se a diferença de meses é 1 (ou seja, mês passado)
-                if ((anoHoje == anoPagamento && mesHoje - mesPagamento == 1) ||
-                        (anoHoje - anoPagamento == 1 && mesPagamento == 12 && mesHoje == 1)) {
-
-                    // Atualiza o status da parcela para PAGO com valor 0
-                    parcela.pagas = 1;
-                    parcela.setStatus(StatusParcela.PAGO);
-                    parcela.setValorPago(0);
-                    parcelasRepository.save(parcela);
-
-                    System.out.println("✅ Parcela do histórico #" + parcela.getHistorico().getId() +
-                            " foi marcada como PAGO com valor 0, porque está atrasada há um mês.");
-
-                    // Cria a nova parcela para o próximo mês
-                    Calendar calendarProximoMes = Calendar.getInstance();
-                    calendarProximoMes.setTime(parcela.getDataPagamento()); // usa a data original da parcela
-                    calendarProximoMes.add(Calendar.MONTH, 1); // mesmo dia, mês seguinte
-                    Date dataProximoMes = calendarProximoMes.getTime();
-
-                    // Cria uma nova parcela replicada para o próximo mês
-                    Parcelas novaParcela = new Parcelas();
-                    novaParcela.setDataPagamento(dataProximoMes); // Define a data de pagamento para o próximo mês
-                    novaParcela.setPagas(-2); // Status ATRASADO
-                    novaParcela.setStatus(StatusParcela.RATRASADO);
-                    novaParcela.setValor(parcela.getValor());
-                    novaParcela.setParcelas(parcela.getParcelas()); // Mantém o número de parcelas
-                    novaParcela.setHistorico(parcela.getHistorico());
-
-                    parcelasRepository.save(novaParcela);
-
-                    criarNotificacao(parcela.getHistorico(), "🔁 Parcela em atraso do histórico #" +
-                            parcela.getHistorico().getId() + " foi replicada para o próximo mês.");
-                    System.out.println("✅ Nova parcela replicada para o próximo mês.");
-                }
-            }
-        }
-    }
-
+//    public void replicarParcelasAtrasadasParaMesAtual() {
+//        List<Parcelas> parcelasAtrasadasAndR = parcelasRepository.findByStatusIn(
+//                Arrays.asList(StatusParcela.ATRASADO, StatusParcela.RATRASADO)
+//        );
+//        System.out.println("🔍 Parcelas atrasadas encontradas: " + parcelasAtrasadasAndR.size());
+//        Date hoje = new Date();
+//
+//        for (Parcelas parcela : parcelasAtrasadasAndR) {
+//            if (parcela.getPagas() == 0 || parcela.getPagas() == -1 || parcela.getPagas() == -2) {
+//
+//                // Obtém a data de pagamento da parcela
+//                Date dataPagamento = parcela.getDataPagamento();
+//                if (dataPagamento == null || dataPagamento.after(hoje)) {
+//                    continue; // Se a data de pagamento for nula ou no futuro, pula
+//                }
+//
+//                // Verifica a diferença de meses entre a data de pagamento e o mês atual
+//                Calendar calendarPagamento = Calendar.getInstance();
+//                calendarPagamento.setTime(dataPagamento);
+//                int mesPagamento = calendarPagamento.get(Calendar.MONTH) + 1; // Mês (1-12)
+//                int anoPagamento = calendarPagamento.get(Calendar.YEAR); // Ano
+//
+//                Calendar calendarHoje = Calendar.getInstance();
+//                calendarHoje.setTime(hoje);
+//                int mesHoje = calendarHoje.get(Calendar.MONTH) + 1; // Mês atual
+//                int anoHoje = calendarHoje.get(Calendar.YEAR); // Ano atual
+//
+//                // Verifica se a diferença de meses é 1 (ou seja, mês passado)
+//                if ((anoHoje == anoPagamento && mesHoje - mesPagamento == 1) ||
+//                        (anoHoje - anoPagamento == 1 && mesPagamento == 12 && mesHoje == 1)) {
+//
+//                    // Atualiza o status da parcela para PAGO com valor 0
+//                    parcela.pagas = -3;
+//                    parcela.setStatus(StatusParcela.ATRASADOR);
+//                    parcela.setValorPago(0);
+//                    parcelasRepository.save(parcela);
+//
+//                    System.out.println("✅ Parcela do histórico #" + parcela.getHistorico().getId() +
+//                            " foi marcada como PAGO com valor 0, porque está atrasada há um mês.");
+//
+//                    // Cria a nova parcela para o próximo mês
+//                    Calendar calendarProximoMes = Calendar.getInstance();
+//                    calendarProximoMes.setTime(parcela.getDataPagamento()); // usa a data original da parcela
+//                    calendarProximoMes.add(Calendar.MONTH, 1); // mesmo dia, mês seguinte
+//                    Date dataProximoMes = calendarProximoMes.getTime();
+//
+//                    // Cria uma nova parcela replicada para o próximo mês
+//                    Parcelas novaParcela = new Parcelas();
+//                    novaParcela.setDataPagamento(dataProximoMes); // Define a data de pagamento para o próximo mês
+//                    novaParcela.setPagas(-2); // Status ATRASADO
+//                    novaParcela.setStatus(StatusParcela.RATRASADO);
+//                    novaParcela.setValor(parcela.getValor());
+//                    novaParcela.setParcelas(parcela.getParcelas()); // Mantém o número de parcelas
+//                    novaParcela.setHistorico(parcela.getHistorico());
+//
+//                    parcelasRepository.save(novaParcela);
+//
+//                    criarNotificacao(parcela.getHistorico(), "🔁 Parcela em atraso do histórico #" +
+//                            parcela.getHistorico().getId() + " foi replicada para o próximo mês.");
+//                    System.out.println("✅ Nova parcela replicada para o próximo mês.");
+//                }
+//            }
+//        }
+//    }
 
     public void atualizarStatusHistorico(Historico historico) {
         if (historico == null) return;

@@ -2,16 +2,15 @@ package com.shadow.dashboard.controllers;
 
 import com.shadow.dashboard.models.*;
 import com.shadow.dashboard.repository.*;
-import com.shadow.dashboard.service.RelatorioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/Relatorio")
@@ -29,7 +28,7 @@ public class RelatorioController {
     @Autowired
     private SociosRepository sociosRepository;
     @Autowired
-    private ClientesRepository clientesRepository;
+    private ClientRepository clientRepository;
 
     @GetMapping
     public String relatorio(Model model) {
@@ -40,9 +39,21 @@ public class RelatorioController {
                 .sorted(Comparator.comparing(Notification::getCreatedAt).reversed())
                 .toList();
         int totalNotify = notifications.size();
-        List<Banco> bancos = bancoRepository.findAll();
-        List<Socios> funcionarios = sociosRepository.findAll();
-        List<Clientes> clientes = clientesRepository.findAll();
+        List<Clientes> clientes = clientRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Clientes::getNome)) // 🔠 ordena alfabeticamente por nome
+                .collect(Collectors.toList());
+
+        List<Socios> funcionarios = sociosRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Socios::getName))
+                .collect(Collectors.toList());
+
+        List<Banco> bancos = bancoRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Banco::getNome))
+                .collect(Collectors.toList());
+
 
         model.addAttribute("totalNotify", totalNotify);
         model.addAttribute("notifications", notifications);

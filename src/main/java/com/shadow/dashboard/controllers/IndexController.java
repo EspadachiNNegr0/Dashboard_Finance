@@ -65,25 +65,37 @@ public class IndexController {
 
         // Define o ano e mês atuais se nenhum for selecionado
         int currentYear = LocalDate.now().getYear();
+        int currentMonth = LocalDate.now().getMonthValue();
         final int finalSelectedYear = (selectedYear == null) ? currentYear : selectedYear;
-        final int finalSelectedMonth = (selectedMonth == null || selectedMonth == 0) ? 1 : selectedMonth;
+        final int finalSelectedMonth = (selectedMonth == null || selectedMonth == 0) ? currentMonth : selectedMonth;
 
         List<Integer> anosDisponiveis = parcelasRepository.findDistinctYears();
         List<Parcelas> todasParcelas = parcelasRepository.findParcelasByYear(finalSelectedYear);
+
         List<Notification> notifications = notificationRepository.findAll()
                 .stream()
-                .sorted(Comparator.comparing(Notification::getCreatedAt).reversed()) // 🔥 Ordena pela data mais recente primeiro
+                .sorted(Comparator.comparing(Notification::getCreatedAt).reversed())
                 .collect(Collectors.toList());
 
-        // Filtra apenas as parcelas do mês selecionado
+        // Filtrar parcelas do mês atual ou com 1 mês de atraso (status -1)
         List<Parcelas> parcelasFiltradas = todasParcelas.stream()
                 .filter(p -> {
                     if (p.getDataPagamento() == null) return false;
-                    Calendar cal = Calendar.getInstance();
-                    cal.setTime(p.getDataPagamento());
-                    return cal.get(Calendar.MONTH) + 1 == finalSelectedMonth;
+
+                    LocalDate dataPagamento = Instant.ofEpochMilli(p.getDataPagamento().getTime())
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+
+                    boolean isDoMesSelecionado = dataPagamento.getMonthValue() == finalSelectedMonth
+                            && dataPagamento.getYear() == finalSelectedYear;
+
+                    boolean isAtrasadaUmMes = p.getPagas() == -1 &&
+                            dataPagamento.plusMonths(1).getMonthValue() == finalSelectedMonth &&
+                            dataPagamento.plusMonths(1).getYear() == finalSelectedYear;
+
+                    return isDoMesSelecionado || isAtrasadaUmMes;
                 })
-                .toList();
+                .collect(Collectors.toList());
 
         // Contagem de clientes com histórico ativo baseado no pagamento de parcelas
         long totalClientes = historicoRepository.countClientesComHistoricoAtivoPorPagamento(finalSelectedYear, finalSelectedMonth);
@@ -91,15 +103,13 @@ public class IndexController {
         // Logs para depuração
         System.out.println("📊 Total de Clientes Ativos (com pagamento no período): " + totalClientes);
 
-        // Informações auxiliares
-        int totalNotify = notificationRepository.findAll().size();
+        int totalNotify = notifications.size();
         double somaDeEmprestimo = parcelasFiltradas.stream().mapToDouble(Parcelas::getValor).sum();
         long emprestimosAtivos = parcelasFiltradas.stream()
                 .filter(parcela -> parcela.getHistorico() != null
                         && !"COMPLETE".equalsIgnoreCase(parcela.getHistorico().getStatus().toString()))
                 .count();
 
-        // Adiciona os atributos para a view
         mv.addObject("anosDisponiveis", anosDisponiveis);
         mv.addObject("selectedYear", finalSelectedYear);
         mv.addObject("selectedMonth", finalSelectedMonth);

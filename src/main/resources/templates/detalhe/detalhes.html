@@ -95,13 +95,12 @@
                         </div>
                         <div class="field">
                             <label>Parcelas Pagas:</label>
-                            <span th:if="${parcelas != null and not #lists.isEmpty(parcelas)}">
+                            <span th:if="${(parcelas != null and not #lists.isEmpty(parcelas))}">
                             <span th:text="${#aggregates.sum(parcelas.![pagas > 0 ? 1 : 0])}"></span> /
                             <span th:text="${#lists.size(parcelas)}"></span>
-                             </span>
+                        </span>
                             <span th:if="${parcelas == null or #lists.isEmpty(parcelas)}">Nenhuma parcela registrada</span>
                         </div>
-
                     </div>
                 </div>
             </form>

@@ -49,6 +49,7 @@
                             <span th:if="${historico.status.name() == 'PAGO'}" style="color: green;">PAGO</span>
                             <span th:if="${historico.status.name() == 'PENDENTE'}" style="color: orange;">PENDENTE</span>
                             <span th:if="${historico.status.name() == 'RATRASADO'}" style="color: yellow;">RATRASADO</span>
+                            <span th:if="${historico.status.name() == 'ATRASADOR'}" style="color: darkred;">ATRASADOR</span>
                         </td>
                         <td>
                             <button class="delete-btn"

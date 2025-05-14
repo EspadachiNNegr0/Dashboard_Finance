@@ -71,14 +71,27 @@ public class HistoricoController {
     public ModelAndView table() {
         ModelAndView mv = new ModelAndView("table");
 
-        List<Clientes> clientes = clientRepository.findAll();
+
         List<Historico> historias = historicoRepository.findAll();
         List<Notification> notifications = notificationRepository.findAll()
                 .stream()
                 .sorted(Comparator.comparing(Notification::getCreatedAt).reversed()) // 🔥 Ordena pela data mais recente primeiro
                 .collect(Collectors.toList());
-        List<Socios> socios = sociosRepository.findAll();
-        List<Banco> bancos = bancoRepository.findAll();
+        List<Clientes> clientes = clientRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Clientes::getNome)) // 🔠 ordena alfabeticamente por nome
+                .collect(Collectors.toList());
+
+        List<Socios> socios = sociosRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Socios::getName))
+                .collect(Collectors.toList());
+
+        List<Banco> bancos = bancoRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Banco::getNome))
+                .collect(Collectors.toList());
+
 
         // Total de notificações
         int totalNotify = notifications.size();

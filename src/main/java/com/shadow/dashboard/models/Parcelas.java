@@ -49,21 +49,21 @@ public class Parcelas {
 
     public Parcelas() {}
 
-    public void atualizarStatus() {
-        Date hoje = new Date();
-
-        if (this.pagas == -2) {
-            this.status = StatusParcela.RATRASADO;
-        } else if (this.pagas > 0) {
-            this.status = StatusParcela.PAGO;
-        } else if (this.dataPagamento == null) {
-            this.status = StatusParcela.PENDENTE;
-        } else if (this.dataPagamento.before(hoje)) {
-            this.status = StatusParcela.ATRASADO;
-        } else {
-            this.status = StatusParcela.PENDENTE;
-        }
-    }
+//    public void atualizarStatus() {
+//        Date hoje = new Date();
+//
+//        if (this.pagas == -2) {
+//            this.status = StatusParcela.RATRASADO;
+//        } else if (this.pagas > 0) {
+//            this.status = StatusParcela.PAGO;
+//        } else if (this.dataPagamento == null) {
+//            this.status = StatusParcela.PENDENTE;
+//        } else if (this.dataPagamento.before(hoje)) {
+//            this.status = StatusParcela.ATRASADO;
+//        } else {
+//            this.status = StatusParcela.PENDENTE;
+//        }
+//    }
 
     // Getters e Setters
     public Long getId() { return id; }
@@ -82,7 +82,7 @@ public class Parcelas {
 
     public void setPagas(int pagas) {
         this.pagas = pagas;
-        atualizarStatus(); // 🔹 Atualiza o status automaticamente
+//        atualizarStatus(); // 🔹 Atualiza o status automaticamente
     }
 
     public Date getDataQPagamento() {
