@@ -39,16 +39,19 @@ public class RelatorioService {
 
     public void criarRelatorioSaida(Historico historico) {
         if (!relatorioSaidaRepository.existsByHistorico(historico)) {
+            List<Parcelas> parcelas = parcelasRepository.findByHistorico(historico);
+
             RelatorioSaida relatorioSaida = new RelatorioSaida();
             relatorioSaida.setCodigo(gerarCodigoUnico());
             relatorioSaida.setValor(historico.getPrice());
-            relatorioSaida.setBanco(String.valueOf(historico.getBancoSaida().getNome()));
-            relatorioSaida.setData(new Date());
+            relatorioSaida.setBanco(historico.getBancoSaida().getNome());
+            relatorioSaida.setData(parcelas.getFirst().getDataPagamento());
             relatorioSaida.setStatus(StatusR.Saida);
             relatorioSaida.setHistorico(historico);
-            relatorioSaidaRepository.save(relatorioSaida);
 
+            relatorioSaidaRepository.save(relatorioSaida);
             criarRelatorioFinanceiroSaida(relatorioSaida);
+
             System.out.println("✅ [SUCESSO] Relatório de saída salvo com sucesso!");
         }
     }

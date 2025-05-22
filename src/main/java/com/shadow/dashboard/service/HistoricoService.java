@@ -41,9 +41,13 @@ public class HistoricoService {
         historico.setCodigo(gerarCodigoUnicoH());
         historico.setCreationF(calculaDataFinal(historico));
         historico = historicoRepository.save(historico);
-
         criarParcelas(historico);
+
+// Recarrega o histórico com as parcelas carregadas
+        historico = historicoRepository.findWithParcelas(historico).orElse(historico);
+
         relatorioService.criarRelatorioSaida(historico);
+
         criarNotificacao(historico, "📢 Novo empréstimo registrado.");
     }
 

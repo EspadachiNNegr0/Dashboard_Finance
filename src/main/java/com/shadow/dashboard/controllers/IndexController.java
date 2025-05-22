@@ -89,11 +89,11 @@ public class IndexController {
                     boolean isDoMesSelecionado = dataPagamento.getMonthValue() == finalSelectedMonth
                             && dataPagamento.getYear() == finalSelectedYear;
 
-                    boolean isAtrasadaUmMes = p.getPagas() == -1 &&
-                            dataPagamento.plusMonths(1).getMonthValue() == finalSelectedMonth &&
-                            dataPagamento.plusMonths(1).getYear() == finalSelectedYear;
+                    boolean isAtrasadaAindaNaoPaga = p.getPagas() == -1 &&
+                            (dataPagamento.getYear() < finalSelectedYear ||
+                                    (dataPagamento.getYear() == finalSelectedYear && dataPagamento.getMonthValue() < finalSelectedMonth));
 
-                    return isDoMesSelecionado || isAtrasadaUmMes;
+                    return isDoMesSelecionado || isAtrasadaAindaNaoPaga;
                 })
                 .collect(Collectors.toList());
 

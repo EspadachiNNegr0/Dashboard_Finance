@@ -54,4 +54,7 @@ public interface HistoricoRepository extends JpaRepository<Historico, Long> {
     @Query("SELECT COALESCE(SUM(h.price), 0) FROM Historico h")
     Double sumTotalPrice();
 
+    @Query("SELECT h FROM Historico h LEFT JOIN FETCH h.parcelas WHERE h = :historico")
+    Optional<Historico> findWithParcelas(@Param("historico") Historico historico);
+
 }
