@@ -45,7 +45,7 @@ public class RelatorioService {
             relatorioSaida.setCodigo(gerarCodigoUnico());
             relatorioSaida.setValor(historico.getPrice());
             relatorioSaida.setBanco(historico.getBancoSaida().getNome());
-            relatorioSaida.setData(parcelas.getFirst().getDataPagamento());
+            relatorioSaida.setData(historico.getCreated());
             relatorioSaida.setStatus(StatusR.Saida);
             relatorioSaida.setHistorico(historico);
 
