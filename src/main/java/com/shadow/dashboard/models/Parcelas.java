@@ -1,6 +1,8 @@
 package com.shadow.dashboard.models;
 
 import jakarta.persistence.*;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.util.Date;
 
 @Entity
@@ -21,14 +23,11 @@ public class Parcelas {
     @Column(nullable = false)
     public int pagas; // 🔹 0 = A PAGAR, -1 = ATRASADO, 1 = PAGO
 
-    //data de quando foi pago
-    @Temporal(TemporalType.DATE)
-    @Column(nullable = true)
-    private Date dataQPagamento;
-
-    @Temporal(TemporalType.DATE)
-    @Column(nullable = false)
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date dataPagamento;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date dataQPagamento;
 
     @Column(nullable = false)
     private double valor;

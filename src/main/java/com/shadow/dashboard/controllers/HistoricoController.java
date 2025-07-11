@@ -221,6 +221,42 @@ public class HistoricoController {
         return "His"; // Nome do arquivo modalHis.html dentro de templates/detalhe/
     }
 
+    @PostMapping("/parcela/atualizar")
+    public String atualizarParcela(@ModelAttribute Parcelas formParcela,
+                                   RedirectAttributes redirect) {
+        // Buscar a parcela original no banco
+        Parcelas parcelaOriginal = parcelasRepository.findById(formParcela.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Parcela não encontrada: " + formParcela.getId()));
+
+        // Atualiza os campos
+        parcelaOriginal.setValor(formParcela.getValor());
+        parcelaOriginal.setValorPago(formParcela.getValorPago());
+        parcelaOriginal.setValorAmortizado(formParcela.getValorAmortizado());
+        parcelaOriginal.setValorJuros(formParcela.getValorJuros());
+        parcelaOriginal.setBancoEntrada(formParcela.getBancoEntrada());
+        parcelaOriginal.setDataPagamento(formParcela.getDataPagamento());
+        parcelaOriginal.setDataQPagamento(formParcela.getDataQPagamento());
+
+        // Converte status de texto para número
+        String statusStr = String.valueOf(parcelaOriginal.getStatus()); // Supondo que você tem <select name="status">
+        int pagas;
+        switch (statusStr.toUpperCase()) {
+            case "PAGO": pagas = 1; break;
+            case "PENDENTE": pagas = 0; break;
+            case "ATRASADO": pagas = -1; break;
+            case "RATRASADO": pagas = -2; break;
+            case "ATRASADOR": pagas = -3; break;
+            default: pagas = 0;
+        }
+        parcelaOriginal.setPagas(pagas);
+
+        // Salvar no banco
+        parcelasRepository.save(parcelaOriginal);
+
+        redirect.addFlashAttribute("mensagemSucesso", "Parcela atualizada com sucesso!");
+        return "redirect:/emprestimo/" + parcelaOriginal.getHistorico().getCodigo();
+    }
+
     @GetMapping("/emprestimo/{codigo}/editar")
     public String editarHistorico(@PathVariable("codigo") int codigo, Model model) {
         // Buscar o histórico pelo código

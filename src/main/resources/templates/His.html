@@ -5,6 +5,101 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/modalHis.css">
     <title>Histórico do Empréstimo</title>
+    <style>
+        /* Estilização do modal de edição */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        .modal-content label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 8px 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .modal-content button[type="submit"] {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .modal-content button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #999;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .close-button:hover {
+            color: #000;
+        }
+    </style>
+
 </head>
 <body>
 <div class="container">
@@ -47,6 +142,7 @@
                         <th>DataPagamento</th>
                         <th>DataVencimento</th>
                         <th>Status</th>
+                        <th>Ações</th> <!-- Nova coluna -->
                     </tr>
                     </thead>
                     <tbody>
@@ -65,6 +161,22 @@
                             <span th:if="${parcela.pagas == 0}" style="color: orange;">PENDENTE</span>
                             <span th:if="${parcela.pagas == -2}" style="color: yellow;">RATRASADO</span>
                             <span th:if="${parcela.pagas == -3}" style="color: darkred;">ATRASADOR</span>
+                        </td>
+                        <td>
+                            <button
+                                    class="edit-button"
+                                    th:attr="data-id=${parcela.id},
+             data-valor=${parcela.valor},
+             data-valorpago=${parcela.valorPago},
+             data-valoramortizado=${parcela.valorAmortizado},
+             data-valorjuros=${parcela.valorJuros},
+             data-bancoentrada=${parcela.bancoEntrada},
+             data-datapgto=${#dates.format(parcela.dataPagamento, 'yyyy-MM-dd')},
+             data-datavenc=${#dates.format(parcela.dataQPagamento, 'yyyy-MM-dd')},
+             data-status=${parcela.pagas}"
+                            onclick="abrirModalEdicao(this)">
+                            Editar
+                            </button>
                         </td>
                     </tr>
                     </tbody>
@@ -92,6 +204,56 @@
             window.location.href = "/"; // Caso não haja página anterior, redireciona para a home
         }
     }
+        function abrirModalEdicao(botao) {
+        document.getElementById('edit-id').value = botao.dataset.id;
+        document.getElementById('edit-valor').value = botao.dataset.valor;
+        document.getElementById('edit-valorpago').value = botao.dataset.valorpago;
+        document.getElementById('edit-valoramortizado').value = botao.dataset.valoramortizado;
+        document.getElementById('edit-valorjuros').value = botao.dataset.valorjuros;
+        document.getElementById('edit-bancoentrada').value = botao.dataset.bancoentrada;
+        document.getElementById('edit-datapgto').value = botao.dataset.datapgto;
+        document.getElementById('edit-datavenc').value = botao.dataset.datavenc
+
+        document.getElementById('modal-edicao').style.display = 'flex';
+    }
+
+        function fecharModalEdicao() {
+        document.getElementById('modal-edicao').style.display = 'none';
+    }
+
 </script>
+<div id="modal-edicao" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close-button" onclick="fecharModalEdicao()">×</span>
+        <h3>Editar Parcela</h3>
+        <form id="form-edicao" method="post" th:action="@{/parcela/atualizar}">
+            <input type="hidden" name="id" id="edit-id">
+
+            <label>Valor Mensal:</label>
+            <input type="number" step="0.01" name="valor" id="edit-valor">
+
+            <label>Valor Pago:</label>
+            <input type="number" step="0.01" name="valorPago" id="edit-valorpago">
+
+            <label>Valor Amortizado:</label>
+            <input type="number" step="0.01" name="valorAmortizado" id="edit-valoramortizado">
+
+            <label>Valor Juros:</label>
+            <input type="number" step="0.01" name="valorJuros" id="edit-valorjuros">
+
+            <label>Banco Entrada:</label>
+            <input type="text" name="bancoEntrada" id="edit-bancoentrada">
+
+            <label>Data Pagamento:</label>
+            <input type="date" name="dataPagamento" id="edit-datapgto">
+
+            <label>Data Vencimento:</label>
+            <input type="date" name="dataQPagamento" id="edit-datavenc">
+
+            <button type="submit">Salvar Alterações</button>
+        </form>
+    </div>
+</div>
+
 </body>
 </html>
