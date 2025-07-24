@@ -275,7 +275,9 @@
                 </div>
             </div>
 
-            <!-- Botão para limpar notificações -->
+            <!-- Criação do iframe invisível -->
+            <iframe name="hidden-frame" style="display: none;"></iframe>
+
             <div class="modal-footer">
                 <form action="/notifications/clear" method="post" target="hidden-frame">
                     <button type="submit">Limpar Notificações</button>
@@ -291,14 +293,16 @@
         <div class="sub-menu-wrap" id="subMenu">
             <div class="sub-menu">
                 <div class="user-info">
-                    <img src="img/Admin.jpg" alt="Perfil">
-                    <h2>Shadow</h2>
+                    <img src="/img/admin.jpg" alt="Perfil">
+                    <h2>Anderson</h2>
                 </div>
                 <hr>
-                <a href="/logout">
-                    <span class="material-symbols-sharp">logout</span>
-                    Sair
-                </a>
+                <form action="/logout" method="post">
+                    <button type="submit">
+                        <span class="material-symbols-sharp">logout</span>
+                        Sair
+                    </button>
+                </form>
             </div>
         </div>
     </nav>

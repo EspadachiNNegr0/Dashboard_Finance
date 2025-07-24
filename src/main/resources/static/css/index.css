@@ -380,8 +380,8 @@ body {
 }
 
 .sub-menu-wrap.show {
-    visibility: visible !important;
-    opacity: 1 !important;
+    visibility: visible;
+    opacity: 1 ;
     transform: translateY(0);
 }
 

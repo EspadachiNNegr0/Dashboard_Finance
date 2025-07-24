@@ -123,7 +123,7 @@
             <div class="sub-menu">
                 <div class="user-info">
                     <img src="img/Admin.jpg" alt="Perfil">
-                    <h2>Shadow</h2>
+                    <h2>Anderson</h2>
                 </div>
                 <hr>
                 <a href="/logout">
@@ -159,6 +159,7 @@
 
                     <i class='bx bx-filter' id="openModalFiltro"></i>
 
+
                     <!-- MODAL DE FILTRO -->
                     <div class="modal-filtro" id="modalFiltro">
                         <div class="modal-filtro-content">
@@ -170,27 +171,10 @@
                             <h2>Selecione os filtros desejados</h2>
 
                             <form id="form-filtro">
-                                <!-- Filtro: Data de Início do Empréstimo -->
-                                <div class="input-group">
-                                    <label for="data-inicio">Data de Início do Empréstimo:</label>
-                                    <input type="date" id="data-inicio" name="dataInicio">
-                                </div>
 
-                                <!-- Filtro: Data de Pagamento do Empréstimo -->
-                                <div class="input-group">
-                                    <label for="data-pagamento">Data de Pagamento do Empréstimo:</label>
-                                    <input type="date" id="data-pagamento" name="dataPagamento">
-                                </div>
-
-                                <!-- Filtro: Valor do Empréstimo -->
-                                <div class="input-group">
-                                    <label>Valor do Empréstimo:</label>
-                                    <div class="valor-range">
-                                        <input type="number" id="valor-min" name="valorMin" placeholder="De" step="0.01">
-                                        <span>até</span>
-                                        <input type="number" id="valor-max" name="valorMax" placeholder="Até" step="0.01">
-                                    </div>
-                                </div>
+                                <!-- Filtro: Mês -->
+                                <label for="filtro-mes">Mês:</label>
+                                <input type="month" id="filtro-mes" name="mes">
 
                                 <!-- Filtro: Funcionário -->
                                 <div class="input-group">
@@ -201,14 +185,15 @@
                                     </select>
                                 </div>
 
-                                <!-- Filtro: Banco de Saída -->
+                                <!-- Filtro: Cliente -->
                                 <div class="input-group">
-                                    <label for="bancoSaida">Banco de Saída:</label>
-                                    <select id="bancoSaida">
+                                    <label for="cliente">Cliente:</label>
+                                    <select id="cliente">
                                         <option value="" selected>Todos</option>
-                                        <option th:each="banco : ${bancos}" th:value="${banco.nome}" th:text="${banco.nome}"></option>
+                                        <option th:each="cliente : ${clientes}" th:value="${cliente.nome}" th:text="${cliente.nome}"></option>
                                     </select>
                                 </div>
+
                                 <!-- Botão de envio -->
                                 <button id="btn-modal-filtro" type="submit">Filtrar</button>
                             </form>

@@ -160,3 +160,24 @@ document.addEventListener("DOMContentLoaded", () => {
     calcularTotaisTabela();
     atualizarCoresStatus();
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const profilePhoto = document.querySelector(".profile-photo");
+    const subMenu = document.getElementById("subMenu");
+
+    if (profilePhoto && subMenu) {
+        profilePhoto.addEventListener("click", (event) => {
+            event.stopPropagation(); // Evita conflito com clique fora
+            subMenu.classList.toggle("show");
+        });
+
+        // Fecha se clicar fora
+        window.addEventListener("click", (event) => {
+            if (!subMenu.contains(event.target) && !profilePhoto.contains(event.target)) {
+                subMenu.classList.remove("show");
+            }
+        });
+    } else {
+        console.warn("⚠️ Elementos do menu de perfil não encontrados.");
+    }
+});
