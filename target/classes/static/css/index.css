@@ -48,6 +48,7 @@ body {
     overflow-x: hidden;
     display: flex;
     padding-bottom: 342px;
+    overflow: hidden; /* trava o body de ter scroll geral */
 }
 
 
@@ -379,8 +380,8 @@ body {
 }
 
 .sub-menu-wrap.show {
-    visibility: visible !important;
-    opacity: 1 !important;
+    visibility: visible;
+    opacity: 1 ;
     transform: translateY(0);
 }
 
@@ -472,8 +473,9 @@ body {
     width: 100%;
     padding: 36px 24px;
     font-family: var(--poppins);
-    max-height: calc(100vh - 56px);
-    overflow-y: auto;
+    max-height: calc(100vh - 56px); /* altura da tela menos navbar */
+    overflow-y: auto; /* scroll só se realmente precisar */
+    padding-bottom: 20px; /* garante espaçamento sem gerar scroll extra */
 }
 #content main .head-title {
     display: flex;
@@ -1543,6 +1545,7 @@ h3 {
     opacity: 0;
     transition: visibility 0s, opacity 0.3s;
     font-family: Poppins;
+    z-index: 99999;
 }
 
 .modal-filtro.show {
@@ -1559,6 +1562,7 @@ h3 {
     text-align: center;
     font-family: Poppins;
     font-weight: bold;
+    z-index: 999999;
 }
 
 /* Estilo do cabeçalho */
@@ -1570,7 +1574,12 @@ h3 {
     font-family: Poppins;
     text-align: left;
 }
-
+#openModalFiltro {
+    cursor: pointer;
+}
+.modal-filtro.active {
+    display: block;
+}
 /* Estilo dos grupos de entrada */
 .input-group {
     margin-bottom: 15px;
@@ -1593,6 +1602,34 @@ h3 {
 
 .input-group input::placeholder{
     font-size: .7rem;
+}
+
+/* ✅ Inputs e selects */
+.input-group input,
+.input-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+/* 🟢 Estilizando selects para parecerem mais modernos */
+.input-group select {
+    appearance: none; /* Remove a aparência padrão do sistema */
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><polygon points="5,6 10,12 15,6" fill="%23000"/></svg>') no-repeat;
+    background-position: right 10px center;
+    background-size: 10px;
+    cursor: pointer;
+}
+
+/* ✅ Foco nos inputs e selects */
+.input-group input:focus,
+.input-group select:focus {
+    outline: none;
+    border-color: #007BFF;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
 }
 
 /* Estilo para o intervalo de valores */
@@ -1759,7 +1796,7 @@ h3 {
 
 /* ===================== MODAL DE FUNCIONÁRIO ===================== */
 #modal-add-funcionario {
-    position: fixed;
+    display: flex;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -1777,8 +1814,8 @@ h3 {
 }
 
 #modal-add-funcionario .modal-content {
-    margin-top: 200px;
-    margin-left: 700px;
+    margin-top: 150px;
+    margin-left: 400px;
     width: 600px;
 }
 
@@ -1787,6 +1824,53 @@ h3 {
     opacity: 0;
     visibility: hidden;
 }
+
+/* Estilização do alerta */
+#cliente-mensagem {
+    display: none; /* Oculta o alerta por padrão */
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 400px;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: 'Poppins', sans-serif;
+    text-align: center;
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: opacity 0.3s ease-in-out;
+    z-index: 9999;
+}
+
+/* Aparece quando necessário */
+#cliente-mensagem.show {
+    display: block;
+    opacity: 1;
+}
+
+/* Oculta suavemente */
+#cliente-mensagem.hide {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Estilos para mensagens de sucesso */
+.alert-success {
+    background-color: #4CAF50;
+    color: white;
+    border-left: 5px solid #2E7D32;
+}
+
+/* Estilos para mensagens de erro */
+.alert-danger {
+    background-color: #F44336;
+    color: white;
+    border-left: 5px solid #C62828;
+}
+
 
 #modal-add-funcionario .window-header {
     display: flex;
@@ -1996,117 +2080,331 @@ h3 {
     opacity: 1;
 }
 
-    .modal-footer {
-        padding: 10px;
-        text-align: center;
-        border-top: 1px solid #ddd;
-        background: #f9f9f9;
+.modal-footer {
+    padding: 10px;
+    text-align: center;
+    border-top: 1px solid #ddd;
+    background: #f9f9f9;
+}
+
+#clear-notifications {
+    background: red;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 6px
+}
+
+#clear-notifications:hover {
+    background: darkred;
+}
+
+.navegacao-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 15px;
+    border: 1px solid var(--lights);
+    border-radius: 8px;
+    background: var(--light);
+}
+
+.navegacao-container legend {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--dark);
+}
+
+.mes-navegacao, .ano-navegacao {
+    flex: 1;
+    min-width: 180px;
+}
+
+.navegacao-container label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--dark);
+    display: block;
+    margin-bottom: 5px;
+}
+
+.navegacao-container select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid var(--lights);
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.navegacao-container select:focus {
+    border-color: var(--blue);
+    outline: none;
+}
+
+#openModalFiltro {
+    font-size: 24px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+#openModalFiltro:hover {
+    transform: scale(1.1);
+}
+
+
+.modal-filtro {
+    /*display: none;  TIRA ESSE COMENTARIO PRO MODAL FICAR ESCONDIDO*/
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    font-family: Poppins;
+}
+
+.modal-filtro-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #333;
+}
+
+.modal-close:hover {
+    color: red;
+}
+
+
+#form-filtro {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#form-filtro label {
+    font-weight: bold;
+    font-size: 14px;
+    color: #333;
+}
+
+#form-filtro input,
+#form-filtro select,
+#btn-modal-filtro {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: calc(100% - 16px);
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+
+#btn-modal-filtro {
+    background: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s;
+    margin-top: 10px;
+    text-align: center;
+}
+
+#btn-modal-filtro:hover {
+    background: #0056b3;
+}
+.filtros-adicionais {
+    display: none;
+}
+
+/* Esconde o ícone do calendário padrão */
+.mes-ano::-webkit-inner-spin-button,
+.mes-ano::-webkit-calendar-picker-indicator {
+    display: none;
+    -webkit-appearance: none;
+}
+
+/* Define um estilo para parecer um seletor de mês */
+.mes-ano {
+    width: 140px;
+    font-size: 16px;
+    padding: 5px;
+    cursor: pointer;
+}
+
+.linha-atrasada {
+    background-color: #ffe5e5;
+}
+
+@media screen and (max-width: 1366px) {
+    /* Sidebar */
+    #sidebar {
+        width: 220px;
     }
 
-    #clear-notifications {
-        background: red;
-        color: white;
-        border: none;
-        padding: 10px 15px;
+    #sidebar.hide {
+        width: 60px;
+    }
+
+    /* Content */
+    #content {
+        width: calc(100% - 220px);
+        left: 220px;
+    }
+
+    #sidebar.hide ~ #content {
+        width: calc(100% - 60px);
+        left: 60px;
+    }
+
+    /* Navbar */
+    #content nav {
+        padding: 0 16px;
+        grid-gap: 16px;
+    }
+
+    #content nav form {
+        max-width: 300px;
+    }
+
+    /* Head Title */
+    #content main .head-title .left h1 {
+        font-size: 28px;
+    }
+
+    #content main .head-title .btn-download {
+        height: 32px;
+        padding: 0 12px;
         font-size: 14px;
-        cursor: pointer;
-        border-radius: 5px;
-        margin-top: 6px
     }
 
-    #clear-notifications:hover {
-        background: darkred;
+    /* Box Info */
+    #content main .box-info {
+        grid-gap: 16px;
+        margin-top: 24px;
     }
 
-    /* Responsividade */
-    @media (max-width: 768px) {
-        .todo {
-            margin: 10px;
-        }
-
-        table, thead, tbody, th, td, tr {
-            display: block;
-        }
-
-        th {
-            background-color: #f4f4f4;
-        }
-
-        td {
-            padding-left: 40%;
-        }
-
-        td:before {
-            content: attr(data-title);
-            font-weight: bold;
-            text-transform: uppercase;
-            position: absolute;
-            left: 0;
-        }
-
-
-
-    @media screen and (max-width: 768px) {
-        #sidebar {
-            width: 200px;
-        }
-
-        #content {
-            width: calc(100% - 60px);
-            left: 200px;
-        }
-
-        #content nav .nav-link {
-            display: none;
-        }
+    #content main .box-info li {
+        padding: 16px;
+        grid-gap: 16px;
     }
 
+    #content main .box-info li .bx {
+        width: 60px;
+        height: 60px;
+        font-size: 28px;
+    }
 
-    @media screen and (max-width: 576px) {
-        #content nav form .form-input input {
-            display: none;
-        }
+    #content main .box-info li .text h3 {
+        font-size: 20px;
+    }
 
-        #content nav form .form-input button {
-            width: auto;
-            height: auto;
-            background: transparent;
-            color: var(--dark);
-        }
+    #content main .table-data {
+        flex-wrap: wrap;
+        width: 100%;
+        grid-gap: 16px;
+        margin-bottom: 0;
+    }
 
-        #content nav form.show .form-input input {
-            display: block;
-            width: 100%;
-        }
+    #content main .table-data .order {
+        flex-basis: 100%;
+    }
 
-        #content nav form.show .form-input button {
-            width: 36px;
-            height: 100%;
-            border-radius: 0 36px 36px 0;
-            color: var(--light);
-            background: var(--red);
-        }
+    #content main .table-data .todo {
+        flex-basis: 100%;
+    }
 
-        #content nav form.show ~ .notification,
-        #content nav form.show ~ .profile {
-            display: none;
-        }
+    /* Tables */
+    #content main .table-data .order table th {
+        font-size: 12px;
+        padding-bottom: 8px;
+    }
 
-        #content main .box-info {
-            grid-template-columns: 1fr;
-        }
+    #content main .table-data .order table td {
+        padding: 12px 0;
+        font-size: 13px;
+    }
 
-        #content main .table-data .head {
-            min-width: 420px;
-        }
+    #content main .table-data .order table td img {
+        width: 30px;
+        height: 30px;
+    }
 
-        #content main .table-data .order table {
-            min-width: 420px;
-        }
+    #content main .table-data .order table tr td .status {
+        font-size: 9px;
+        padding: 4px 12px;
+    }
 
-        #content main .table-data .todo .todo-list {
-            min-width: 420px;
-        }
+    /* To-do List */
+    #content main .table-data .todo .todo-list li {
+        padding: 10px 14px;
+    }
 
+    /* Modal Ajustes */
+    #modal {
+        width: 380px;
+        max-height: 500px;
+    }
+
+    .modal .modal-content {
+        width: 500px;
+    }
+
+    .modal-body {
+        max-height: 350px;
+    }
+
+    .input-field {
+        width: calc(100% / 2 - 10px);
+    }
+
+    /* Submenu */
+    .sub-menu-wrap {
+        right: 10px;
+    }
+
+    /* Botões */
+    .table-data .add,
+    .table-data .addC,
+    .table-data .addF,
+    .addB {
+        padding: 8px;
+        font-size: 0.9rem;
+    }
+
+    #btn-add-emprestimo {
+        padding: 5px 10px;
+        font-size: 0.8rem;
+    }
+
+    /* Chart */
+    .todo canvas {
+        max-height: 250px;
     }
 }

@@ -1,289 +1,379 @@
 document.addEventListener("DOMContentLoaded", function () {
-
-    // ================= MODAL DE ADICIONAR EMPRÉSTIMO =================
-    const addButton = document.querySelector(".add");
-    const modalAdd = document.getElementById("modal-add-emprestimo");
-    const closeAddModalButton = document.querySelector("#modal-add-emprestimo .close-button");
-
-    if (addButton && modalAdd && closeAddModalButton) {
-        addButton.addEventListener("click", () => {
-            modalAdd.classList.add("show");
-            modalAdd.classList.remove("hide");
-        });
-
-        closeAddModalButton.addEventListener("click", () => {
-            modalAdd.classList.add("hide");
-            modalAdd.classList.remove("show");
-        });
-    } else {
-        console.error("❌ Verifique se os IDs e classes do modal de empréstimo estão corretos!");
-    }
-
-    // ================= MODAL DE NOTIFICAÇÕES =================
-    const openModalButton = document.querySelector("#open-modal .notification");
-    const modalNotification = document.getElementById("modal");
-    const fade = document.getElementById("fade");
-    const closeModalButton = document.getElementById("close-modal");
-
-    if (openModalButton && modalNotification && fade && closeModalButton) {
-        openModalButton.addEventListener("click", function () {
-            modalNotification.classList.add("show");
-            modalNotification.classList.remove("hide");
-            fade.classList.add("show");
-            fade.classList.remove("hide");
-        });
-
-        closeModalButton.addEventListener("click", function () {
-            modalNotification.classList.add("hide");
-            modalNotification.classList.remove("show");
-            fade.classList.add("hide");
-            fade.classList.remove("show");
-        });
-
-        fade.addEventListener("click", function () {
-            modalNotification.classList.add("hide");
-            modalNotification.classList.remove("show");
-            fade.classList.add("hide");
-            fade.classList.remove("show");
-        });
-    } else {
-        console.error("❌ Elementos do modal de notificações não encontrados!");
-    }
-
-    // ================= MODAL DE ADICIONAR CLIENTE =================
-    const addClienteButton = document.querySelector(".addC");
-    const modalCliente = document.getElementById("modal-add-cliente");
-    const closeClienteButton = modalCliente?.querySelector(".close");
-
-    if (addClienteButton && modalCliente && closeClienteButton) {
-        addClienteButton.addEventListener("click", () => {
-            modalCliente.classList.add("show");
-            modalCliente.classList.remove("hide");
-        });
-
-        closeClienteButton.addEventListener("click", () => {
-            modalCliente.classList.add("hide");
-            modalCliente.classList.remove("show");
-        });
-
-        modalCliente.addEventListener("click", (event) => {
-            if (event.target === modalCliente) {
-                modalCliente.classList.add("hide");
-                modalCliente.classList.remove("show");
-            }
-        });
-    }
-
-    // ================= TOGGLE DO MENU DO PERFIL =================
-    const profile = document.querySelector(".profile");
+    const profilePhoto = document.querySelector(".profile-photo");
     const subMenu = document.getElementById("subMenu");
 
-    if (profile && subMenu) {
-        profile.addEventListener("click", function (event) {
-            event.stopPropagation();
+    if (profilePhoto && subMenu) {
+        profilePhoto.addEventListener("click", (event) => {
+            event.stopPropagation(); // Evita conflito com clique fora
             subMenu.classList.toggle("show");
         });
 
-        document.addEventListener("click", function (event) {
-            if (!profile.contains(event.target) && !subMenu.contains(event.target)) {
+        // Fecha se clicar fora
+        window.addEventListener("click", (event) => {
+            if (!subMenu.contains(event.target) && !profilePhoto.contains(event.target)) {
                 subMenu.classList.remove("show");
             }
         });
     } else {
-        console.error("❌ Elemento 'profile' ou 'subMenu' não encontrado!");
-    }
-
-    // =================== PAGAMENTO DE PARCELA ===================
-    document.querySelectorAll(".pagar-parcela").forEach(button => {
-        button.addEventListener("click", function () {
-            const parcelaId = this.getAttribute("data-id");
-
-            fetch(`/pagar-parcela/${parcelaId}`, {
-                method: "POST"
-            })
-                .then(response => response.text())
-                .then(message => {
-                    alert(message);
-                    location.reload();
-                })
-                .catch(error => console.error("Erro ao pagar parcela:", error));
-        });
-    });
-
-    // =================== MODAL LISTA DE CLIENTES ===================
-    const clientsListWindow = document.getElementById('clientsListWindow');
-    const openClientsButton = document.getElementById('openClientsModal');
-    const closeClientsButton = document.getElementById('closeClientsList');
-
-    if (clientsListWindow && openClientsButton && closeClientsButton) {
-        openClientsButton.addEventListener('click', () => {
-            clientsListWindow.style.display = 'block';
-        });
-
-        closeClientsButton.addEventListener('click', () => {
-            clientsListWindow.style.display = 'none';
-        });
-
-        window.addEventListener('click', (e) => {
-            if (e.target === clientsListWindow) {
-                clientsListWindow.style.display = 'none';
-            }
-        });
-    }
-
-    // =================== MODAL LISTA DE SÓCIOS ===================
-    const sociosListWindow = document.getElementById('sociosListWindow');
-    const openSociosButton = document.getElementById('openEmployeesModal');
-    const closeSociosButton = document.getElementById('closeSociosList');
-
-    if (sociosListWindow && openSociosButton && closeSociosButton) {
-        openSociosButton.addEventListener('click', () => {
-            sociosListWindow.style.display = 'block';
-        });
-
-        closeSociosButton.addEventListener('click', () => {
-            sociosListWindow.style.display = 'none';
-        });
-
-        window.addEventListener('click', (e) => {
-            if (e.target === sociosListWindow) {
-                sociosListWindow.style.display = 'none';
-            }
-        });
-    }
-
-    // ================= MODAL DE ADICIONAR FUNCIONÁRIO =================
-    const openModalFuncionario = document.getElementById("openAddFuncionario");
-    const closeModalFuncionario = document.getElementById("closeAddFuncionario");
-    const modalFuncionario = document.getElementById("modal-add-funcionario");
-
-    if (openModalFuncionario && closeModalFuncionario && modalFuncionario) {
-        openModalFuncionario.addEventListener("click", function () {
-            modalFuncionario.classList.add("show");
-            modalFuncionario.classList.remove("hide");
-        });
-
-        closeModalFuncionario.addEventListener("click", function () {
-            modalFuncionario.classList.add("hide");
-            modalFuncionario.classList.remove("show");
-        });
-
-        window.addEventListener("click", function (event) {
-            if (event.target === modalFuncionario) {
-                modalFuncionario.classList.add("hide");
-                modalFuncionario.classList.remove("show");
-            }
-        });
-    } else {
-        console.error("❌ Elementos do modal de funcionário não foram encontrados!");
-    }
-
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    // ================= MODAL DE ADICIONAR EMPRÉSTIMO =================
-    const addButton = document.querySelector(".add");
-    const modalAdd = document.getElementById("modal-add-emprestimo");
-    const closeAddModalButton = modalAdd?.querySelector(".close-button");
-
-    if (addButton && modalAdd && closeAddModalButton) {
-        // Abrir Modal
-        addButton.addEventListener("click", () => {
-            modalAdd.classList.add("show");
-            modalAdd.classList.remove("hide");
-        });
-
-        // Fechar Modal ao clicar no botão X
-        closeAddModalButton.addEventListener("click", () => {
-            modalAdd.classList.add("hide");
-            modalAdd.classList.remove("show");
-        });
-
-        // Fechar Modal ao clicar fora do conteúdo
-        modalAdd.addEventListener("click", (event) => {
-            if (event.target === modalAdd) {
-                modalAdd.classList.add("hide");
-                modalAdd.classList.remove("show");
-            }
-        });
-    } else {
-        console.error("❌ Verifique se os elementos do modal de empréstimo estão corretos.");
+        console.warn("⚠️ Elementos do menu de perfil não encontrados.");
     }
 });
 
-document.addEventListener("DOMContentLoaded", function () {
-    const modal = document.getElementById("modal-add-banco");
-    const openButton = document.querySelector(".addB");
-    const closeButton = modal?.querySelector(".close-button");
-
-    if (modal && openButton && closeButton) {
-        // Abrir o modal ao clicar no botão "Add Banco"
-        openButton.addEventListener("click", function () {
-            modal.classList.add("show");
-            modal.classList.remove("hide");
-        });
-
-        // Fechar o modal ao clicar no botão de fechar (X)
-        closeButton.addEventListener("click", function () {
-            modal.classList.add("hide");
-            modal.classList.remove("show");
-        });
-
-        // Fechar o modal ao clicar fora dele
-        window.addEventListener("click", function (event) {
-            if (event.target === modal) {
-                modal.classList.add("hide");
-                modal.classList.remove("show");
-            }
-        });
-    } else {
-        console.error("❌ O modal de adicionar banco ou seus botões não foram encontrados!");
-    }
-});
 
 
 document.addEventListener("DOMContentLoaded", () => {
-    const modalBanco = document.getElementById("modal-add-banco");
-    const closeModalBanco = document.getElementById("close-modal-add-banco");
-    const formBanco = document.getElementById("form-add-banco");
+    console.log("🚀 Script carregado!");
 
-    // Fecha o modal ao clicar no botão de fechar
-    closeModalBanco.addEventListener("click", () => {
-        modalBanco.classList.add("hide");
-    });
-
-    // Intercepta o envio do formulário e faz uma requisição AJAX
-    formBanco.addEventListener("submit", async (event) => {
-        event.preventDefault(); // Impede o envio tradicional do formulário
-
-        const formData = new FormData(formBanco);
-        const jsonData = {
-            nome: formData.get("nome"),
-            descricao: formData.get("descricao")
-        };
-
-        try {
-            const response = await fetch("/bancos", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(jsonData)
+    // =================== MODAIS ===================
+    function configurarModal(openButton, modal, closeButton) {
+        if (openButton && modal && closeButton) {
+            openButton.addEventListener("click", () => {
+                modal.classList.add("show");
+                modal.classList.remove("hide");
             });
 
-            if (response.ok) {
-                alert("Banco cadastrado com sucesso!");
-                formBanco.reset(); // Limpa o formulário
-                modalBanco.classList.add("hide"); // Fecha o modal
-                window.location.reload(); // 🔄 Recarrega a página automaticamente
-            } else {
-                const errorText = await response.text();
-                alert(`Erro: ${errorText}`);
+            closeButton.addEventListener("click", () => {
+                modal.classList.add("hide");
+                modal.classList.remove("show");
+            });
+
+            modal.addEventListener("click", (event) => {
+                if (event.target === modal) {
+                    modal.classList.add("hide");
+                    modal.classList.remove("show");
+                }
+            });
+        } else {
+            console.error(`❌ Elementos do modal não encontrados para ${modal?.id || "desconhecido"}`);
+        }
+    }
+
+    configurarModal(document.getElementById("openModalFiltro"), document.getElementById("modalFiltro"), document.getElementById("btnFecharModal"));
+    configurarModal(document.getElementById("open-modal"), document.getElementById("modal"), document.getElementById("close-modal"));
+    configurarModal(document.querySelector(".add"), document.getElementById("modal-add-emprestimo"), document.querySelector("#modal-add-emprestimo .close-button"));
+    configurarModal(document.querySelector(".addC"), document.getElementById("modal-add-cliente"), document.querySelector("#modal-add-cliente .close"));
+    configurarModal(document.querySelector(".addB"), document.getElementById("modal-add-banco"), document.getElementById("close-modal-add-banco"));
+    configurarModal(document.getElementById("openAddFuncionario"), document.getElementById("modal-add-funcionario"), document.getElementById("closeAddFuncionario"));
+
+    /** =================== FILTRAR A TABELA =================== **/
+    const formFiltro = document.getElementById("form-filtro");
+    const tabela = document.querySelector("#example tbody");
+
+    if (!formFiltro || !tabela) {
+        console.error("❌ Formulário ou tabela não encontrados!");
+        return;
+    }
+
+    formFiltro.addEventListener("submit", (event) => {
+        event.preventDefault();
+        console.log("📌 Evento de filtragem acionado!");
+
+        const mesSelecionado = document.getElementById("filtro-mes").value; // Formato YYYY-MM
+        const funcionarioSelecionado = document.getElementById("funcionario").value.trim().toLowerCase();
+        const clienteSelecionado = document.getElementById("cliente").value.trim().toLowerCase();
+
+        let linhasVisiveis = 0;
+
+        tabela.querySelectorAll("tr").forEach((linha) => {
+            const celulas = linha.getElementsByTagName("td");
+
+            if (celulas.length < 9) return; // Evita erro caso a linha não tenha todas as células esperadas
+
+            const dataEmprestimoTexto = celulas[6]?.innerText.trim(); // 📌 Data do Empréstimo está na 7ª coluna (índice 6)
+            const funcionario = celulas[5]?.innerText.trim().toLowerCase();
+            const cliente = celulas[4]?.innerText.trim().toLowerCase();
+
+            let mesAnoEmprestimo = "";
+            if (dataEmprestimoTexto) {
+                const partesData = dataEmprestimoTexto.split("/");
+                if (partesData.length === 3) {
+                    const dia = partesData[0].padStart(2, "0");
+                    const mes = partesData[1].padStart(2, "0");
+                    const ano = partesData[2];
+                    mesAnoEmprestimo = `${ano}-${mes}`; // Transforma para formato YYYY-MM
+                }
             }
-        } catch (error) {
-            console.error("Erro ao salvar banco:", error);
-            alert("Erro ao cadastrar banco. Tente novamente.");
+
+            console.log(`📌 Comparando: ${mesAnoEmprestimo} com ${mesSelecionado}`);
+
+            // 🔹 Verifica se a linha corresponde aos filtros aplicados
+            const correspondeMes = !mesSelecionado || mesAnoEmprestimo === mesSelecionado;
+            const correspondeFuncionario = !funcionarioSelecionado || funcionario.includes(funcionarioSelecionado);
+            const correspondeCliente = !clienteSelecionado || cliente.includes(clienteSelecionado);
+
+            const mostrar = correspondeMes && correspondeFuncionario && correspondeCliente;
+
+            linha.style.display = mostrar ? "" : "none";
+            if (mostrar) linhasVisiveis++;
+        });
+
+        console.log(`📌 ${linhasVisiveis} linhas visíveis após filtragem.`);
+        if (linhasVisiveis === 0) console.warn("⚠ Nenhum resultado encontrado com os filtros aplicados!");
+
+        document.getElementById("modalFiltro").classList.remove("show"); // Fecha o modal
+    });
+
+    // =================== LISTA DE CLIENTES E SÓCIOS ===================
+    function configurarListaDeModal(janela, abrirBotao, fecharBotao) {
+        if (!janela || !abrirBotao || !fecharBotao) {
+            console.error(`❌ Elemento(s) do modal não encontrados para ${janela ? janela.id : "N/A"}`);
+            return;
+        }
+
+        abrirBotao.addEventListener("click", () => {
+            console.log(`📌 Tentando abrir modal: ${janela.id}`);
+            janela.style.display = 'block';
+            console.log(`📌 Estado do modal ${janela.id}: `, getComputedStyle(janela).display);
+        });
+
+        fecharBotao.addEventListener("click", () => {
+            console.log(`📌 Fechando modal: ${janela.id}`);
+            janela.style.display = 'none';
+        });
+
+        window.addEventListener("click", (e) => {
+            if (e.target === janela) {
+                console.log(`📌 Fechando modal ao clicar fora: ${janela.id}`);
+                janela.style.display = 'none';
+            }
+        });
+    }
+
+    // =================== LIMPAR NOTIFICAÇÕES ===================
+    const clearNotificationsButton = document.getElementById("clear-notifications");
+
+    if (clearNotificationsButton) {
+        clearNotificationsButton.addEventListener("click", function () {
+            if (confirm("Tem certeza que deseja apagar todas as notificações?")) {
+                fetch("/notifications/clear", { method: "DELETE", headers: { 'Content-Type': 'application/json' } })
+                    .then(() => {
+                        alert("Notificações apagadas com sucesso!");
+                        location.reload();
+                    })
+                    .catch(error => {
+                        console.error("Erro ao apagar notificações:", error);
+                        alert("Erro ao apagar notificações.");
+                    });
+            }
+        });
+    }
+
+    // =================== EXIBIR MENSAGEM DE SUCESSO/ERRO ===================
+    const alertBox = document.getElementById("cliente-mensagem");
+    const alertText = document.getElementById("cliente-alert-text");
+    const mensagemSucesso = "[[${success}]]";
+    const mensagemErro = "[[${error}]]";
+
+    if (alertBox && alertText) {
+        if (mensagemSucesso && mensagemSucesso !== "null") {
+            alertBox.classList.remove("hide");
+            alertBox.classList.add("alert-success");
+            alertText.textContent = mensagemSucesso;
+        } else if (mensagemErro && mensagemErro !== "null") {
+            alertBox.classList.remove("hide");
+            alertBox.classList.add("alert-danger");
+            alertText.textContent = mensagemErro;
+        }
+    }
+
+    // =================== FORMATAÇÃO DE DATA ===================
+    function formatarDataParaComparacao(data) {
+        if (!data) return null;
+        let partes = data.split("/");
+        if (partes.length === 3) {
+            return new Date(`${partes[2]}-${partes[1]}-${partes[0]}`);
+        }
+        return null;
+    }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("🚀 Script de modais e edição carregado!");
+
+    function configurarModal(janelaId, abrirId, fecharId) {
+        const janela = document.getElementById(janelaId);
+        const abrirBotao = document.getElementById(abrirId);
+        const fecharBotao = document.getElementById(fecharId);
+
+        if (!janela || !abrirBotao || !fecharBotao) {
+            console.error(`❌ Elementos do modal ${janelaId} não encontrados!`);
+            return;
+        }
+
+        abrirBotao.addEventListener("click", () => {
+            janela.style.display = 'block';
+        });
+
+        fecharBotao.addEventListener("click", () => {
+            janela.style.display = 'none';
+        });
+
+        window.addEventListener("click", (event) => {
+            if (event.target === janela) {
+                janela.style.display = 'none';
+            }
+        });
+    }
+
+    configurarModal("clientsListWindow", "openClientsModal", "closeClientsList");
+    configurarModal("sociosListWindow", "openEmployeesModal", "closeSociosList");
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("🚀 Script carregado!");
+
+    // Função para abrir o modal de edição e preencher os campos
+    window.abrirModalEdicao = function (botao) {
+        // Pega os dados do botão "Editar"
+        const id = botao.getAttribute("data-id");
+        const nome = botao.getAttribute("data-nome");
+        const cpf = botao.getAttribute("data-cpf");
+        const contato = botao.getAttribute("data-contato");
+        const endereco = botao.getAttribute("data-endereco");
+
+        // Preenche os campos do modal com os dados do cliente
+        document.getElementById("edit-id").value = id;
+        document.getElementById("edit-nome").value = nome;
+        document.getElementById("edit-cpf").value = cpf;
+        document.getElementById("edit-contato").value = contato;
+        document.getElementById("edit-endereco").value = endereco;
+
+        // Exibe o modal
+        document.getElementById("editModal").style.display = "block";
+    };
+
+    // Fecha o modal ao clicar no botão de fechar
+    document.getElementById("closeEditModal").addEventListener("click", () => {
+        document.getElementById("editModal").style.display = "none";
+    });
+
+    // Fecha o modal ao clicar fora dele
+    window.addEventListener("click", (event) => {
+        const modal = document.getElementById("editModal");
+        if (event.target === modal) {
+            modal.style.display = "none";
         }
     });
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("🚀 Script carregado!");
+
+    // Função para abrir o modal de edição de funcionários e preencher os campos
+    window.abrirModalEdicaoFuncionario = function (botao) {
+        // Pega os dados do botão "Editar"
+        const id = botao.getAttribute("data-id");
+        const nome = botao.getAttribute("data-nome");
+        const endereco = botao.getAttribute("data-endereco");
+        const idade = botao.getAttribute("data-idade");
+        const telefone = botao.getAttribute("data-telefone");
+
+        // Preenche os campos do modal com os dados do funcionário
+        document.getElementById("edit-funcionario-id").value = id;
+        document.getElementById("edit-funcionario-nome").value = nome;
+        document.getElementById("edit-funcionario-endereco").value = endereco;
+        document.getElementById("edit-funcionario-idade").value = idade;
+        document.getElementById("edit-funcionario-telefone").value = telefone;
+
+        // Exibe o modal
+        document.getElementById("editFuncionarioModal").style.display = "block";
+    };
+
+    // Fecha o modal ao clicar no botão de fechar
+    document.getElementById("closeEditFuncionarioModal").addEventListener("click", () => {
+        document.getElementById("editFuncionarioModal").style.display = "none";
+    });
+
+    // Fecha o modal ao clicar fora dele
+    window.addEventListener("click", (event) => {
+        const modal = document.getElementById("editFuncionarioModal");
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("🚀 Script carregado!");
+
+    // Função para abrir o modal de edição de bancos e preencher os campos
+    window.abrirModalEdicaoBanco = function (botao) {
+        console.log("📌 Clicou no botão Editar Banco!");
+
+        // Pega os dados do botão "Editar"
+        const id = botao.getAttribute("data-id");
+        const nome = botao.getAttribute("data-nome");
+        const descricao = botao.getAttribute("data-descricao");
+
+        console.log("📌 Banco ID:", id);
+        console.log("📌 Nome:", nome);
+        console.log("📌 Descrição:", descricao);
+
+        // Verifica se os elementos existem antes de tentar preenchê-los
+        const modal = document.getElementById("editBancoModal");
+        const campoId = document.getElementById("edit-banco-id");
+        const campoNome = document.getElementById("edit-banco-nome");
+        const campoDescricao = document.getElementById("edit-banco-descricao");
+
+        if (!modal || !campoId || !campoNome || !campoDescricao) {
+            console.error("❌ Elementos do modal não encontrados!");
+            return;
+        }
+
+        // Preenche os campos do modal com os dados do banco
+        campoId.value = id;
+        campoNome.value = nome;
+        campoDescricao.value = descricao;
+
+        // Exibe o modal
+        modal.style.display = "block";
+        console.log("✅ Modal de edição de banco aberto!");
+    };
+
+    // Fecha o modal ao clicar no botão de fechar
+    const closeModal = document.getElementById("closeEditBancoModal");
+    if (closeModal) {
+        closeModal.addEventListener("click", () => {
+            document.getElementById("editBancoModal").style.display = "none";
+            console.log("✅ Modal de edição de banco fechado!");
+        });
+    } else {
+        console.error("❌ Botão de fechar o modal não encontrado!");
+    }
+
+    // Fecha o modal ao clicar fora dele
+    window.addEventListener("click", (event) => {
+        const modal = document.getElementById("editBancoModal");
+        if (event.target === modal) {
+            modal.style.display = "none";
+            console.log("✅ Modal de edição de banco fechado ao clicar fora!");
+        }
+    });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const openModalButton = document.getElementById("openBanksModal");
+    const closeModalButton = document.getElementById("closeBanksList");
+    const modal = document.getElementById("banksListWindow");
+
+    if (openModalButton && closeModalButton && modal) {
+        openModalButton.addEventListener("click", function () {
+            modal.style.display = "block"; // Exibe o modal
+        });
+
+        closeModalButton.addEventListener("click", function () {
+            modal.style.display = "none"; // Fecha o modal
+        });
+
+        // Fecha o modal ao clicar fora dele
+        window.addEventListener("click", function (event) {
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        });
+    } else {
+        console.error("Elementos do modal não encontrados!");
+    }
+});
+
+

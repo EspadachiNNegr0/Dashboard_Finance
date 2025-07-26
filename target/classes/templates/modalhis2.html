@@ -1,12 +1,10 @@
-<!DOCTYPE html >
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/modalHis.css">
     <title>Histórico de Cliente</title>
-    <meta name="_csrf" th:content="${_csrf.token}" />
-    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
 </head>
 <body>
 <div class="container">
@@ -65,7 +63,6 @@
                 </table>
             </div>
         </div>
-
         <!-- Botão de fechar modal -->
         <button class="close-button" onclick="voltarPaginaAnterior()">X</button>
 
@@ -74,39 +71,30 @@
 <script>
     function deletarHistorico(id) {
         if (confirm("Tem certeza que deseja excluir este histórico e os relatórios associados?")) {
-            const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-            const header = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content') || 'X-CSRF-TOKEN';
-
             fetch(`/historico/delete/${id}`, {
-                method: "DELETE",
-                headers: {
-                    [header]: token,
-                    'Content-Type': 'application/json'
-                }
+                method: "DELETE"
             })
-                .then(async response => {
+                .then(response => {
                     if (!response.ok) {
-                        const errorText = await response.text();
-                        throw new Error(`Erro HTTP! Status: ${response.status}. Mensagem: ${errorText}`);
+                        throw new Error(`Erro HTTP! Status: ${response.status}`);
                     }
                     return response.text();
                 })
                 .then(message => {
-                    alert(message);
-                    window.location.href = "/Table";
+                    alert(message); // Exibe a mensagem do backend
                 })
                 .catch(error => {
                     console.error("Erro ao excluir histórico:", error);
-                    alert("Erro ao excluir histórico: " + error.message);
+                    alert("Erro ao excluir histórico.");
                 });
         }
     }
-    function voltarPaginaAnterior() {
+        function voltarPaginaAnterior() {
         if (document.referrer) {
-            window.history.back(); // Retorna para a página anterior
-        } else {
-            window.location.href = "/"; // Caso não haja página anterior, redireciona para a home
-        }
+        window.history.back(); // Retorna para a página anterior
+    } else {
+        window.location.href = "/"; // Caso não haja página anterior, redireciona para a home
+    }
     }
 
 </script>

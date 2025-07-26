@@ -94,6 +94,97 @@
     table th {
         background-color: #e0e0e0;
     }
+    /* 🔹 Layout Responsivo para 1366x768 */
+    @media screen and (max-width: 1366px) {
+        /* Sidebar */
+        #sidebar {
+            width: 240px;
+        }
+
+        #content {
+            width: calc(100% - 240px);
+            left: 240px;
+        }
+
+        #content main {
+            padding: 20px;
+        }
+
+        /* 🔹 Ajuste dos gráficos para não ultrapassarem a tela */
+        .charts-analytcs {
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .chart-analytcs {
+            width: 90%;
+            max-width: 600px;
+            height: auto;
+        }
+
+        .chart-analytcs canvas {
+            width: 100% !important;
+            height: auto !important;
+        }
+
+        /* 🔹 Ajuste das tabelas para evitar scroll horizontal */
+        table {
+            width: 100%;
+            font-size: 14px;
+        }
+
+        table th, table td {
+            padding: 10px;
+        }
+
+        /* 🔹 Modais - Centralizados */
+        .window {
+            width: 70%;
+            max-width: 600px;
+        }
+
+        /* 🔹 Botões Responsivos */
+        .btn-modais {
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        /* 🔹 Modal de Adicionar Funcionário */
+        #modal-add-funcionario {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        #modal-add-funcionario .modal-content {
+            background: white;
+            width: 50%;
+            max-width: 500px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+    }
+
+    .scrollable-table-container {
+        max-height: 400px; /* Você pode ajustar a altura como quiser */
+        overflow-y: auto;
+        margin-top: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+    }
+
 </style>
 
 <body>
@@ -114,13 +205,19 @@
         <li>
             <a href="/Table">
                 <i class='bx bxs-shopping-bag-alt' ></i>
-                <span class="text">My Table</span>
+                <span class="text">Tabela</span>
             </a>
         </li>
         <li class="active">
-            <a href="/Analytics">
+            <a href="/Analytics/Analytics">
                 <i class='bx bxs-doughnut-chart' ></i>
                 <span class="text">Analytics</span>
+            </a>
+        </li>
+        <li>
+            <a href="/Relatorio">
+                <i class='bx bxs-doughnut-chart' ></i>
+                <span class="text">Relatorios</span>
             </a>
         </li>
     </ul>
@@ -178,7 +275,9 @@
                 </div>
             </div>
 
-            <!-- Botão para limpar notificações -->
+            <!-- Criação do iframe invisível -->
+            <iframe name="hidden-frame" style="display: none;"></iframe>
+
             <div class="modal-footer">
                 <form action="/notifications/clear" method="post" target="hidden-frame">
                     <button type="submit">Limpar Notificações</button>
@@ -194,14 +293,16 @@
         <div class="sub-menu-wrap" id="subMenu">
             <div class="sub-menu">
                 <div class="user-info">
-                    <img src="img/Admin.jpg" alt="Perfil">
-                    <h2>Shadow</h2>
+                    <img src="/img/admin.jpg" alt="Perfil">
+                    <h2>Anderson</h2>
                 </div>
                 <hr>
-                <a href="/logout">
-                    <span class="material-symbols-sharp">logout</span>
-                    Sair
-                </a>
+                <form action="/logout" method="post">
+                    <button type="submit">
+                        <span class="material-symbols-sharp">logout</span>
+                        Sair
+                    </button>
+                </form>
             </div>
         </div>
     </nav>
@@ -224,21 +325,21 @@
             <li>
                 <i class='bx bxs-calendar-check'></i>
                 <span class="text">
-                    <h3>1020</h3>
-                    <p>New Order</p>
+                    <h3><span th:text="${quantidadeNaoPagos}"></span></h3>
+                    <p>Total de Empréstimos ativos</p>
                 </span>
             </li>
             <li>
                 <i class='bx bxs-group'></i>
                 <span class="text">
-                    <h3>2834</h3>
-                    <p>Visitors</p>
+                    <h3><span th:text="${totalClientes}"></span></h3>
+                    <p>Clientes Cadastrados</p>
                 </span>
             </li>
             <li>
                 <i class='bx bxs-dollar-circle'></i>
                 <span class="text">
-                    <h3>$<span th:text="${somaDeEmprestimo}"></span></h3>
+                    <h3>R$ <span th:text="${totalPriceDosHistoricos}"></span></h3>
                     <p>Total de Emprestimos (S/J)</p>
                 </span>
             </li>
@@ -271,14 +372,17 @@
 
         <!-- Botões para modais -->
         <div class="buttons">
+            <!-- Botão para abrir a lista de clientes -->
             <button id="openClientsModal" class="btn-modais">Clientes Cadastrados</button>
-            <!-- Modal Integrado ao Analytics -->
+
+            <!-- 🔹 Modal de Clientes -->
             <div id="clientsListWindow" class="window">
                 <div class="window-header">
                     <h2>Clientes Cadastrados</h2>
                     <button id="closeClientsList" class="close-button">&times;</button>
                 </div>
                 <div class="window-body">
+                    <div class="scrollable-table-container">
                     <table>
                         <thead>
                         <tr>
@@ -287,6 +391,7 @@
                             <th>CPF</th>
                             <th>Contato</th>
                             <th>Endereço</th>
+                            <th>Ações</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -296,18 +401,36 @@
                             <td th:text="${cliente.cpf}"></td>
                             <td th:text="${cliente.contato}"></td>
                             <td th:text="${cliente.endereco}"></td>
+                            <td>
+                                <!-- Botão Editar que chama a função abrirModalEdicao -->
+                                <button class="btn-edit"
+                                        th:data-id="${cliente.id}"
+                                        th:data-nome="${cliente.nome}"
+                                        th:data-cpf="${cliente.cpf}"
+                                        th:data-contato="${cliente.contato}"
+                                        th:data-endereco="${cliente.endereco}"
+                                        onclick="abrirModalEdicao(this)">
+                                    ✏️ Editar
+                                </button>
+                            </td>
                         </tr>
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
+
+            <!-- Botão para abrir a lista de funcionários -->
             <button id="openEmployeesModal" class="btn-modais">Funcionários Cadastrados</button>
+
+            <!-- 🔹 Modal de Funcionários -->
             <div id="sociosListWindow" class="window">
                 <div class="window-header">
                     <h2>Funcionários Cadastrados</h2>
                     <button id="closeSociosList" class="close-button">&times;</button>
                 </div>
                 <div class="window-body">
+                    <div class="scrollable-table-container">
                     <table>
                         <thead>
                         <tr>
@@ -316,6 +439,7 @@
                             <th>Endereço</th>
                             <th>Idade</th>
                             <th>Telefone</th>
+                            <th>Ações</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -325,12 +449,132 @@
                             <td th:text="${socio.address}"></td>
                             <td th:text="${socio.age}"></td>
                             <td th:text="${socio.phone}"></td>
+                            <td>
+                                <!-- Botão Editar que chama a função abrirModalEdicaoFuncionario -->
+                                <button class="btn-edit-funcionario"
+                                        th:data-id="${socio.id}"
+                                        th:data-nome="${socio.name}"
+                                        th:data-endereco="${socio.address}"
+                                        th:data-idade="${socio.age}"
+                                        th:data-telefone="${socio.phone}"
+                                        onclick="abrirModalEdicaoFuncionario(this)">
+                                    ✏️ Editar
+                                </button>
+                            </td>
                         </tr>
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
+
+            <!-- Botão para abrir a lista de bancos -->
+            <button id="openBanksModal" class="btn-modais">Bancos Cadastrados</button>
+
+            <!-- 🔹 Modal de Bancos -->
+            <div id="banksListWindow" class="window">
+                <div class="window-header">
+                    <h2>Bancos Cadastrados</h2>
+                    <button id="closeBanksList" class="close-button">&times;</button>
+                </div>
+                <div class="window-body">
+                    <div class="scrollable-table-container">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Descrição</th>
+                            <th>Ações</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="banco : ${bancos}">
+                            <td th:text="${banco.id}"></td>
+                            <td th:text="${banco.nome}"></td>
+                            <td th:text="${banco.descricao}"></td>
+                            <td>
+                                <!-- Botão Editar que chama a função abrirModalEdicaoBanco -->
+                                <button class="btn-edit-banco"
+                                        th:data-id="${banco.id}"
+                                        th:data-nome="${banco.nome}"
+                                        th:data-descricao="${banco.descricao}"
+                                        onclick="abrirModalEdicaoBanco(this)">
+                                    ✏️ Editar
+                                </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+            </div>
+
         </div>
+
+        <!-- 🔹 Modal de Edição -->
+        <div id="editModal" class="window">
+            <div class="window-header">
+                <h2>Editar Cliente</h2>
+                <button id="closeEditModal" class="close-button">&times;</button>
+            </div>
+            <div class="window-body">
+                <form id="editForm" th:action="@{/Analytics/clientes/editar}" method="post">
+                    <input type="hidden" id="edit-id" name="id">
+                    <label for="edit-nome">Nome:</label>
+                    <input type="text" id="edit-nome" name="nome" required>
+                    <label for="edit-cpf">CPF:</label>
+                    <input type="text" id="edit-cpf" name="cpf" required>
+                    <label for="edit-contato">Contato:</label>
+                    <input type="text" id="edit-contato" name="contato" required>
+                    <label for="edit-endereco">Endereço:</label>
+                    <input type="text" id="edit-endereco" name="endereco" required>
+                    <button type="submit" class="btn-save">Salvar</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 🔹 Modal de Edição de Funcionários -->
+        <div id="editFuncionarioModal" class="window">
+            <div class="window-header">
+                <h2>Editar Funcionário</h2>
+                <button id="closeEditFuncionarioModal" class="close-button">&times;</button>
+            </div>
+            <div class="window-body">
+                <form id="editFuncionarioForm" th:action="@{/Analytics/funcionarios/editar}" method="post">
+                    <input type="hidden" id="edit-funcionario-id" name="id">
+                    <label for="edit-funcionario-nome">Nome:</label>
+                    <input type="text" id="edit-funcionario-nome" name="name" required>
+                    <label for="edit-funcionario-endereco">Endereço:</label>
+                    <input type="text" id="edit-funcionario-endereco" name="address" required>
+                    <label for="edit-funcionario-idade">Idade:</label>
+                    <input type="number" id="edit-funcionario-idade" name="age" required>
+                    <label for="edit-funcionario-telefone">Telefone:</label>
+                    <input type="text" id="edit-funcionario-telefone" name="phone" required>
+                    <button type="submit" class="btn-save">Salvar</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 🔹 Modal de Edição de Bancos -->
+        <div id="editBancoModal" class="window">
+            <div class="window-header">
+                <h2>Editar Banco</h2>
+                <button id="closeEditBancoModal" class="close-button">&times;</button>
+            </div>
+            <div class="window-body">
+                <form id="editBancoForm" th:action="@{/Analytics/bancos/editar}" method="post">
+                    <input type="hidden" id="edit-banco-id" name="id">
+                    <label for="edit-banco-nome">Nome:</label>
+                    <input type="text" id="edit-banco-nome" name="nome" required>
+                    <label for="edit-banco-descricao">Descrição:</label>
+                    <input type="text" id="edit-banco-descricao" name="descricao">
+                    <button type="submit" class="btn-save">Salvar</button>
+                </form>
+            </div>
+        </div>
+
+
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -345,7 +589,7 @@
 
         const statusLabels = ["PAGO", "PENDENTE", "ATRASADO"];
         const statusValues = [totalPago, totalPendente, totalAtrasado];
-        const statusColors = ['#36A2EB', '#FFCE56', '#FF6384'];
+        const statusColors = ['#076209', '#FFCE56', '#FF6384'];
 
         // Gráfico de Pizza
         const pieChart = new Chart(document.getElementById('pieChart'), {
@@ -391,7 +635,7 @@
         });
         /*]]>*/
     </script>
-    
+
 
 </section>
 

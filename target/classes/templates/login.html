@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard: Login</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp" />
+    <link rel="stylesheet" href="/css/login.css">
+</head>
+<body>
+<div class="container">
+    <div class="curved-shape"></div>
+    <div class="curved-shape2"></div>
+    <div class="form-box Login">
+        <h2 class="animation">Login</h2>
+        <form action="/login" method="post" th:action="@{/login}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <div class="input-box animation">
+                <input type="text" name="username" id="username" required>
+                <label for="username">Username</label>
+                <span class="material-symbols-sharp">person</span>
+            </div>
+            <div class="input-box animation">
+                <input type="password" name="password" id="password" required>
+                <label for="password">Password</label>
+                <span class="material-symbols-sharp">lock</span>
+            </div>
+            <div class="input-box animation">
+                <button class="btn" type="submit">Login</button>
+            </div>
+
+            <div th:if="${error}" class="error-message">
+                <p th:text="${error}"></p>
+            </div>
+
+        </form>
+    </div>
+    <div class="info-content">
+        <h2 class="animation">welcome Anderson</h2>
+        <p class="animation">Sistema de Gerenciamento de Finanças</p>
+    </div>
+</div>
+<script src="js/index.js"></script>
+</body>
+</html>

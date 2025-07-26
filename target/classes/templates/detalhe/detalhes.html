@@ -24,11 +24,12 @@
     <div class="modal-content">
         <div class="modal-headers">
             <header>Detalhes do Empréstimo</header>
-            <button class="buy" onclick="openReceberModal()">
+            <button class="buy" onclick="openReceberModal()"
+                    th:disabled="${parcelaSelecionada == null}">
                 <a>Receber</a>
             </button>
-            <button class="back">
-                <a href="/Table">Voltar</a>
+            <button class="back" onclick="voltarPaginaAnterior()">
+                <a>Voltar</a>
             </button>
         </div>
         <div class="modal-body">
@@ -37,8 +38,12 @@
                 <div class="details-emprestimo">
                     <div class="fields-group">
                         <div class="field">
-                            <label>ID:</label>
-                            <input type="text" name="id" th:value="${histori.id}" readonly />
+                            <label>Código:</label>
+                            <input type="text" name="codigo"
+                                   th:value="${histori.codigo}"
+                                   readonly
+                                   onclick="window.location.href='/emprestimo/' + this.value"
+                                   style="cursor: pointer; text-decoration: none; color: black;" />
                         </div>
                         <div class="field">
                             <label>Nome do Cliente:</label>
@@ -59,15 +64,19 @@
                             <input type="text" name="percentage" th:value="${histori.percentage}" readonly />
                         </div>
                         <div class="field">
-                            <label>Parceiro:</label>
+                            <label>Parcelamento:</label>
+                            <input type="text" name="percentage" th:value="${histori.parcelamento}" readonly />
+                        </div>
+                        <div class="field">
+                            <label>Funcionario:</label>
                             <input type="text" name="socio" th:value="${histori.socios.name}" readonly />
                         </div>
-                    </div>
-                    <div class="fields-group">
                         <div class="field">
-                            <label>Banco:</label>
-                            <input type="text" name="banco" th:value="${histori.banco.nome}" readonly />
+                            <label>Banco Saída:</label>
+                            <input type="text" name="bancoSaida"
+                                   th:value="${histori.bancoSaida != null ? histori.bancoSaida.nome : 'Não disponível'}" readonly />
                         </div>
+
                         <div class="field">
                             <label>Descrição:</label>
                             <input type="text" name="description" th:value="${histori.description}" readonly />
@@ -86,10 +95,10 @@
                         </div>
                         <div class="field">
                             <label>Parcelas Pagas:</label>
-                            <span th:if="${parcelas != null and not #lists.isEmpty(parcelas)}">
-                            <span th:text="${#aggregates.sum(parcelas.![pagas == 1 ? 1 : 0])}"></span> /
+                            <span th:if="${(parcelas != null and not #lists.isEmpty(parcelas))}">
+                            <span th:text="${#aggregates.sum(parcelas.![pagas > 0 ? 1 : 0])}"></span> /
                             <span th:text="${#lists.size(parcelas)}"></span>
-                             </span>
+                        </span>
                             <span th:if="${parcelas == null or #lists.isEmpty(parcelas)}">Nenhuma parcela registrada</span>
                         </div>
                     </div>
@@ -103,17 +112,40 @@
 <div id="modal-receber" class="modal-receber hide">
     <div class="modal-content">
         <div class="modal-headers">
-            <header>Escolha uma Opção de Pagamento</header>
+            <header>Coloque o valor: </header>
             <button class="close" onclick="closeReceberModal()">&times;</button>
         </div>
+
         <div class="modal-body">
-            <form th:action="@{/histori/{id}/pagar-mensal(id=${histori.id})}" method="POST">
-                <input type="hidden" name="id" th:value="${histori.id}" />
-                <button class="option" type="submit">Pagar Mensal (Valor Completo)</button>
-            </form>
-            <form th:action="@{/histori/{id}/pagar-juros(id=${histori.id})}" method="POST">
-                <input type="hidden" name="id" th:value="${histori.id}" />
-                <button class="option" type="submit">Pagar Apenas os Juros</button>
+            <form id="pagamentoForm"
+                  th:action="${parcelaSelecionada != null ? '/pagar-parcela/' + parcelaSelecionada.id : '#'}"
+                  method="POST">
+
+                <input type="hidden" name="id" th:value="${parcelaSelecionada != null ? parcelaSelecionada.id : ''}" />
+
+                <!-- Campo para inserir o valor -->
+                <div class="field">
+                    <label for="valor">Valor a Receber:</label>
+                    <input type="number" id="valor" name="valorPago" step="0.01" placeholder="Digite o valor" required />
+                </div>
+
+                <!-- Campo para inserir a data do pagamento -->
+                <div class="field">
+                    <label for="dataPagamento">Data do Pagamento:</label>
+                    <input type="date" id="dataPagamento" name="dataPagamento" required />
+                </div>
+
+                <!-- Select para escolher o banco de entrada -->
+                <div class="field">
+                    <label for="bancoEntrada">Banco de Entrada:</label>
+                    <select id="bancoEntrada" name="bancoEntradaId" required>
+                        <option value="" disabled selected>Escolha um banco</option>
+                        <option th:each="banco : ${bancos}" th:value="${banco.id}" th:text="${banco.nome}"></option>
+                    </select>
+                </div>
+
+                <!-- Botão para confirmar o pagamento -->
+                <button class="option" type="submit">Confirmar Pagamento</button>
             </form>
         </div>
     </div>
@@ -142,6 +174,14 @@
 
     function closeReceberModal() {
         document.getElementById('modal-receber').classList.add('hide');
+    }
+
+    function voltarPaginaAnterior() {
+        if (document.referrer) {
+            window.history.back(); // Retorna para a página anterior
+        } else {
+            window.location.href = "/"; // Caso não haja página anterior, redireciona para a home
+        }
     }
 </script>
 
