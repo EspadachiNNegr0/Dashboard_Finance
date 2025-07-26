@@ -24,7 +24,7 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        Optional<User> existingUser = userRepository.findByLogin("admin");
+        Optional<User> existingUser = userRepository.findByLogin("admin"); // CORRIGIDO
 
         if (existingUser.isEmpty()) {
             User user = new User();
@@ -34,10 +34,10 @@ public class DataLoader implements CommandLineRunner {
 
             userRepository.save(user);
             System.out.println("Usuário admin criado com sucesso.");
+            System.out.println("Usuário autenticado: " + user.getUsername() + " com papel: " + user.getRole());
         } else {
             System.out.println("Usuário admin já existe.");
         }
-
     }
 
 

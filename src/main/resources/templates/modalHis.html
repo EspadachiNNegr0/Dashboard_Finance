@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/modalHis.css">
     <title>Histórico de Cliente</title>
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
 </head>
 <body>
 <div class="container">
@@ -72,21 +74,30 @@
 <script>
     function deletarHistorico(id) {
         if (confirm("Tem certeza que deseja excluir este histórico e os relatórios associados?")) {
+            const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+            const header = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content') || 'X-CSRF-TOKEN';
+
             fetch(`/historico/delete/${id}`, {
-                method: "DELETE"
+                method: "DELETE",
+                headers: {
+                    [header]: token,
+                    'Content-Type': 'application/json'
+                }
             })
-                .then(response => {
+                .then(async response => {
                     if (!response.ok) {
-                        throw new Error(`Erro HTTP! Status: ${response.status}`);
+                        const errorText = await response.text();
+                        throw new Error(`Erro HTTP! Status: ${response.status}. Mensagem: ${errorText}`);
                     }
                     return response.text();
                 })
                 .then(message => {
-                    alert(message); // Exibe a mensagem do backend
+                    alert(message);
+                    window.location.href = "/Table";
                 })
                 .catch(error => {
                     console.error("Erro ao excluir histórico:", error);
-                    alert("Erro ao excluir histórico.");
+                    alert("Erro ao excluir histórico: " + error.message);
                 });
         }
     }

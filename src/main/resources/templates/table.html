@@ -165,7 +165,8 @@
                                 <header>Registro de Banco</header>
                             </div>
                             <div class="modal-body">
-                                <form id="form-add-banco" action="/bancos" method="POST">
+                                <form id="form-add-banco" action="/bancos" method="POST" th:action="@{/bancos}">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                     <div class="details-banco">
                                         <div class="fields">
                                             <!-- Nome do Banco -->
@@ -202,7 +203,8 @@
                                     <h2>Adicionar Funcionário</h2>
                                 </div>
                                 <div class="modal-body">
-                                    <form action="/Table" method="POST">
+                                    <form action="/Table" method="POST" th:action="@{/Table}">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                         <div class="input-field">
                                             <label for="name">Nome</label>
                                             <input id="name" name="name" type="text" placeholder="Digite o nome" required>
@@ -236,7 +238,8 @@
                                 <header>Adicionar Cliente</header>
                             </div>
                             <div class="modal-body">
-                                <form id="form-cliente" method="post" action="/clientes/adicionar">
+                                <form id="form-cliente" method="post" th:action="@{/clientes/adicionar}">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                     <div id="cliente-mensagem" class="alert hide">
                                         <p id="cliente-alert-text"></p>
                                     </div>
@@ -270,7 +273,8 @@
                                 <header>Registro de Empréstimo</header>
                             </div>
                             <div class="modal-body">
-                                <form action="/save" method="POST">
+                                <form action="/save" method="POST" th:action="@{/save}">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                     <div class="details-emprestimo">
                                         <div class="fields">
                                             <!-- Nome do Cliente -->
@@ -340,7 +344,6 @@
                                         </div>
                                     </div>
                                 </form>
-
                             </div>
                         </div>
                     </div>

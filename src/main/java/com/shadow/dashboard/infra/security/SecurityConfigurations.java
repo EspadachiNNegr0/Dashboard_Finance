@@ -22,10 +22,9 @@ public class SecurityConfigurations {
 
                 // Remova isso:
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/logout"))
-
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login", "/css/**", "/js/**").permitAll() // Permite acesso à login e arquivos estáticos
-                        .anyRequest().authenticated()
+                        .requestMatchers("/login", "/css/**", "/js/**").permitAll()
+                        .anyRequest().hasRole("ADMIN")
                 )
                 .formLogin(form -> form
                         .loginPage("/login")               // adiciona '/' e usa lowercase (convencional)
