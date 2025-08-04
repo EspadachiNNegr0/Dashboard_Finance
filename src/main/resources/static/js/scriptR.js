@@ -12,24 +12,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-    /** =================== MODAIS =================== **/
+    // =================== MODAIS ===================
     function configurarModal(openButton, modal, closeButton) {
         if (openButton && modal && closeButton) {
-            openButton.addEventListener("click", () => modal.classList.toggle("show"));
-            closeButton.addEventListener("click", () => modal.classList.toggle("show"));
+            openButton.addEventListener("click", () => {
+                modal.classList.add("show");
+                modal.classList.remove("hide");
+            });
+
+            closeButton.addEventListener("click", () => {
+                modal.classList.add("hide");
+                modal.classList.remove("show");
+            });
+
             modal.addEventListener("click", (event) => {
-                if (event.target === modal) modal.classList.toggle("show");
+                if (event.target === modal) {
+                    modal.classList.add("hide");
+                    modal.classList.remove("show");
+                }
             });
         } else {
             console.error(`❌ Elementos do modal não encontrados para ${modal?.id || "desconhecido"}`);
         }
     }
 
-    configurarModal(
-        document.getElementById("openModalFiltro"),
-        document.getElementById("modalFiltro"),
-        document.getElementById("btnFecharModal")
-    );
+    configurarModal(document.getElementById("openModalFiltro"), document.getElementById("modalFiltro"), document.getElementById("btnFecharModal"));
+    configurarModal(document.getElementById("open-modal"), document.getElementById("modal"), document.getElementById("close-modal"));
+    configurarModal(document.querySelector(".add"), document.getElementById("modal-add-emprestimo"), document.querySelector("#modal-add-emprestimo .close-button"));
+    configurarModal(document.querySelector(".addC"), document.getElementById("modal-add-cliente"), document.querySelector("#modal-add-cliente .close"));
+    configurarModal(document.querySelector(".addB"), document.getElementById("modal-add-banco"), document.getElementById("close-modal-add-banco"));
+    configurarModal(document.getElementById("openAddFuncionario"), document.getElementById("modal-add-funcionario"), document.getElementById("closeAddFuncionario"));
 
     /** =================== TOGGLE DE COLUNAS =================== **/
     function alternarColuna(classeColuna, botao, textoAtivar, textoDesativar) {
