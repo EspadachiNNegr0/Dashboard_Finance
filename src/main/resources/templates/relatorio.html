@@ -104,9 +104,13 @@
                 </div>
             </div>
 
-            <!-- Botão para limpar notificações -->
+            <!-- Criação do iframe invisível -->
+            <iframe name="hidden-frame" style="display: none;"></iframe>
+
             <div class="modal-footer">
-                <button id="clear-notifications">Limpar Notificações</button>
+                <form action="/notifications/clear" method="post" target="hidden-frame">
+                    <button type="submit">Limpar Notificações</button>
+                </form>
             </div>
         </div>
 
@@ -201,10 +205,15 @@
                 <div class="head">
                     <h3>Relatorio</h3>
 
-                    <!-- Substitua seu botão atual por isso -->
-                    <a href="/Relatorio/gerar-pdf" target="_blank">
-                        <button class="addB" aria-label="Gerar PDF">Gerar PDF</button>
-                    </a>
+                    <form id="form-gerar-pdf" action="/Relatorio/gerar-pdf" method="get" target="_blank" style="display: none;">
+                        <input type="hidden" name="tipo" id="pdf-tipo">
+                        <input type="hidden" name="mes" id="pdf-mes">
+                        <input type="hidden" name="banco" id="pdf-banco">
+                        <input type="hidden" name="funcionario" id="pdf-funcionario">
+                        <input type="hidden" name="cliente" id="pdf-cliente">
+                    </form>
+
+                    <button class="addB" aria-label="Gerar PDF" onclick="gerarPDF()">Gerar PDF</button>
 
                     <i class='bx bx-filter' id="openModalFiltro"></i>
 

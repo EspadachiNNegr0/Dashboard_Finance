@@ -189,4 +189,5 @@ public class RelatorioService {
         relatorioFinanceiro.setRelatorioSaida(relatorioSaida);
         relatorioFinanceiroRepository.save(relatorioFinanceiro);
     }
+
 }

@@ -4,12 +4,16 @@ import com.shadow.dashboard.models.*;
 import com.shadow.dashboard.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Controller
@@ -66,11 +70,49 @@ public class RelatorioController {
     }
 
     @GetMapping("/gerar-pdf")
-    public String gerarPdfView(Model model) {
-        List<RelatorioFinanceiro> relatoriosFinanceiros = relatorioFinanceiroRepository.findAll();
+    public String gerarPdfView(
+            @RequestParam(required = false) String tipo,
+            @RequestParam(required = false) String mes,
+            @RequestParam(required = false) String banco,
+            @RequestParam(required = false) String funcionario,
+            @RequestParam(required = false) String cliente,
+            Model model
+    ) {
+        List<RelatorioFinanceiro> relatoriosFinanceiros = filtrarRelatorios(tipo, mes, banco, funcionario, cliente);
         model.addAttribute("relatoriosFinanceiros", relatoriosFinanceiros);
         return "relatorio-pdf";
     }
+
+    public List<RelatorioFinanceiro> filtrarRelatorios(String tipo, String mes, String banco, String funcionario, String cliente) {
+        List<RelatorioFinanceiro> todos = relatorioFinanceiroRepository.findAll();
+
+        return todos.stream()
+                .filter(r -> tipo == null || tipo.isBlank() ||
+                        (r.getStatus() != null && r.getStatus().name().equalsIgnoreCase(tipo)))
+
+                .filter(r -> {
+                    if (mes == null || mes.isEmpty()) return true;
+                    if (r.getData() == null) return false;
+                    String dataFormatada = new java.text.SimpleDateFormat("yyyy-MM").format(r.getData());
+                    return dataFormatada.equals(mes);
+                })
+
+                .filter(r -> banco == null || banco.isEmpty() ||
+                        (r.getBanco() != null && r.getBanco().equalsIgnoreCase(banco)))
+
+                .filter(r -> funcionario == null || funcionario.isEmpty() ||
+                        (r.getHistorico() != null && r.getHistorico().getSocios() != null &&
+                                r.getHistorico().getSocios().getName() != null &&
+                                funcionario.equalsIgnoreCase(r.getHistorico().getSocios().getName())))
+
+                .filter(r -> cliente == null || cliente.isEmpty() ||
+                        (r.getHistorico() != null && r.getHistorico().getCliente() != null &&
+                                r.getHistorico().getCliente().getNome() != null &&
+                                cliente.equalsIgnoreCase(r.getHistorico().getCliente().getNome())))
+
+                .collect(Collectors.toList());
+    }
+
 
 
 }

@@ -181,3 +181,57 @@ document.addEventListener("DOMContentLoaded", function () {
         console.warn("⚠️ Elementos do menu de perfil não encontrados.");
     }
 });
+
+    function gerarPDF() {
+    // Pegar os valores dos filtros
+    document.getElementById("pdf-tipo").value = document.getElementById("filtro-tipo").value;
+    document.getElementById("pdf-mes").value = document.getElementById("filtro-mes").value;
+    document.getElementById("pdf-banco").value = document.getElementById("filtro-banco").value;
+    document.getElementById("pdf-funcionario").value = document.getElementById("filtro-funcionario").value;
+    document.getElementById("pdf-cliente").value = document.getElementById("filtro-cliente").value;
+
+    // Enviar o formulário (abre em nova aba)
+    document.getElementById("form-gerar-pdf").submit();
+}
+
+const clearNotificationsButton = document.getElementById("clear-notifications");
+
+if (clearNotificationsButton) {
+    clearNotificationsButton.addEventListener("click", function () {
+        if (confirm("Tem certeza que deseja apagar todas as notificações?")) {
+            fetch("/notifications/clear", { method: "DELETE", headers: { 'Content-Type': 'application/json' } })
+                .then(() => {
+                    alert("Notificações apagadas com sucesso!");
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error("Erro ao apagar notificações:", error);
+                    alert("Erro ao apagar notificações.");
+                });
+        }
+    });
+}
+// Controle modal notificações
+const openNotifBtn = document.querySelector("#open-modal button.notification");
+const modalNotif = document.getElementById("modal");
+const closeNotifBtn = document.getElementById("close-modal");
+const fade = document.getElementById("fade");
+
+if (openNotifBtn && modalNotif && closeNotifBtn && fade) {
+    openNotifBtn.addEventListener("click", () => {
+        modalNotif.classList.remove("hide");
+        fade.classList.remove("hide");
+    });
+
+    closeNotifBtn.addEventListener("click", () => {
+        modalNotif.classList.add("hide");
+        fade.classList.add("hide");
+    });
+
+    fade.addEventListener("click", () => {
+        modalNotif.classList.add("hide");
+        fade.classList.add("hide");
+    });
+} else {
+    console.warn("Elementos do modal de notificações não encontrados.");
+}
