@@ -30,7 +30,7 @@
 
 | Backend | Frontend | Segurança | Build |
 |--------|----------|-----------|--------|
-| Java 17 | HTML5, CSS3, JS | Spring Security | Maven |
+| Java 23 | HTML5, CSS3, JS | Spring Security | Maven |
 | Spring Boot | Thymeleaf | JWT (se aplicável) | `mvnw` |
 
 ---
