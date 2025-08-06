@@ -14,18 +14,6 @@
 
 ---
 
-## ✨ Destaques do Projeto
-
-- 🔐 **Login Seguro** com Spring Security
-- 📁 **Cadastro e Edição de Clientes**
-- 📈 **Dashboard com Gráficos e KPIs**
-- 📃 **Geração de Relatórios e PDFs**
-- 🧾 **Histórico de movimentações**
-- 🌐 **Front-end responsivo**
-- 🔄 **API REST modular**
-
----
-
 ## 📦 Tecnologias Utilizadas
 
 | Backend | Frontend | Segurança | Build |
@@ -35,21 +23,10 @@
 
 ---
 
-## 🚀 Instalação Rápida
-
-```bash
-# Clone o repositório
-git clone https://github.com/seu-usuario/Dashboard_Finance-Dev.git
-cd Dashboard_Finance-Dev
-
-# Compile e rode
-./mvnw spring-boot:run
-````
----
-
-## ✨ Destaques do Projeto
+## ✨ funcionalidades
 
 - 🔐 **Login Seguro** com Spring Security
+- ![Login](docs/img/login.png)
 - 📁 **Cadastro e Edição de Clientes**
 - 📈 **Dashboard com Gráficos e KPIs**
 - 📃 **Geração de Relatórios e PDFs**
