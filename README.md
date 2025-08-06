@@ -44,3 +44,17 @@ cd Dashboard_Finance-Dev
 
 # Compile e rode
 ./mvnw spring-boot:run
+
+---
+
+## ✨ Destaques do Projeto
+
+- 🔐 **Login Seguro** com Spring Security
+- 📁 **Cadastro e Edição de Clientes**
+- 📈 **Dashboard com Gráficos e KPIs**
+- 📃 **Geração de Relatórios e PDFs**
+- 🧾 **Histórico de movimentações**
+- 🌐 **Front-end responsivo**
+- 🔄 **API REST modular**
+
+---
