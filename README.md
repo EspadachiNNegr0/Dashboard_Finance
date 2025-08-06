@@ -44,7 +44,7 @@ cd Dashboard_Finance-Dev
 
 # Compile e rode
 ./mvnw spring-boot:run
-
+````
 ---
 
 ## ✨ Destaques do Projeto
