@@ -2,13 +2,8 @@ package com.shadow.dashboard.models;
 
 import jakarta.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
-
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.Objects;
+import java.util.List;
 
 @Entity
 @Table(name = "Tb_History")
@@ -16,17 +11,19 @@ public class Historico {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = true)
     private Long id;
 
-    @Column(nullable = false)
-    private double price;
+    @Column(nullable = false, unique = true)
+    private int codigo;
 
     @Column(nullable = false)
-    private int percentage;
+    private Double price; // Valor do empréstimo atual
 
-    @Enumerated(EnumType.STRING)  // Para armazenar o status como uma string
     @Column(nullable = false)
+    private Integer percentage;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
     private Status status;
 
     @Column(length = 255)
@@ -36,19 +33,42 @@ public class Historico {
     private Socios socios;
 
     @ManyToOne
-    @JoinColumn(name = "cliente_id", nullable = false)  // A chave estrangeira
-    private Clientes cliente; // Cliente associado a esse History
+    @JoinColumn(name = "cliente_id", nullable = false)
+    private Clientes cliente;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Temporal(TemporalType.DATE)
     @Column(nullable = false)
     private Date created;
 
-    @ManyToOne
-    private Banco banco;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @Temporal(TemporalType.DATE)
+    @Column(nullable = true)
+    private Date creationF;
 
-    private int parcelamento;
-    // Getters e setters
+    // 🔹 Adicionando Banco de Entrada e Banco de Saída
+    @ManyToOne
+    @JoinColumn(name = "banco_saida", nullable = false)
+    private Banco bancoSaida;
+
+    @Column(nullable = false)
+    private Integer parcelamento;
+
+    private double montante;
+
+    @OneToMany(mappedBy = "historico", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Parcelas> parcelas;
+
+    @OneToMany(mappedBy = "historico", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RelatorioEntrada> relatorioEntradas;
+
+    @OneToMany(mappedBy = "historico", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RelatorioSaida> relatorioSaidas;
+
+    @OneToMany(mappedBy = "historico", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<RelatorioFinanceiro> relatoriosFinanceiros;
+
+
     public Long getId() {
         return id;
     }
@@ -57,19 +77,27 @@ public class Historico {
         this.id = id;
     }
 
-    public double getPrice() {
+    public int getCodigo() {
+        return codigo;
+    }
+
+    public void setCodigo(int codigo) {
+        this.codigo = codigo;
+    }
+
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(Double price) {
         this.price = price;
     }
 
-    public int getPercentage() {
+    public Integer getPercentage() {
         return percentage;
     }
 
-    public void setPercentage(int percentage) {
+    public void setPercentage(Integer percentage) {
         this.percentage = percentage;
     }
 
@@ -89,6 +117,14 @@ public class Historico {
         this.description = description;
     }
 
+    public Socios getSocios() {
+        return socios;
+    }
+
+    public void setSocios(Socios socios) {
+        this.socios = socios;
+    }
+
     public Clientes getCliente() {
         return cliente;
     }
@@ -105,31 +141,67 @@ public class Historico {
         this.created = created;
     }
 
-    public Socios getSocios() {
-        return socios;
+    public Date getCreationF() {
+        return creationF;
     }
 
-    public void setSocios(Socios socios) {
-        this.socios = socios;
+    public void setCreationF(Date creationF) {
+        this.creationF = creationF;
     }
 
-    public int getParcelamento() {
+    public Banco getBancoSaida() {
+        return bancoSaida;
+    }
+
+    public void setBancoSaida(Banco bancoSaida) {
+        this.bancoSaida = bancoSaida;
+    }
+
+    public Integer getParcelamento() {
         return parcelamento;
     }
 
-    public void setParcelamento(int parcelamento) {
+    public void setParcelamento(Integer parcelamento) {
         this.parcelamento = parcelamento;
     }
 
-    public Banco getBanco() {
-        return banco;
+    public double getMontante() {
+        return montante;
     }
 
-    public void setBanco(Banco banco) {
-        this.banco = banco;
+    public void setMontante(double montante) {
+        this.montante = montante;
     }
 
+    public List<Parcelas> getParcelas() {
+        return parcelas;
+    }
 
+    public void setParcelas(List<Parcelas> parcelas) {
+        this.parcelas = parcelas;
+    }
 
+    public List<RelatorioEntrada> getRelatorioEntradas() {
+        return relatorioEntradas;
+    }
 
+    public void setRelatorioEntradas(List<RelatorioEntrada> relatorioEntradas) {
+        this.relatorioEntradas = relatorioEntradas;
+    }
+
+    public List<RelatorioSaida> getRelatorioSaidas() {
+        return relatorioSaidas;
+    }
+
+    public void setRelatorioSaidas(List<RelatorioSaida> relatorioSaidas) {
+        this.relatorioSaidas = relatorioSaidas;
+    }
+
+    public List<RelatorioFinanceiro> getRelatoriosFinanceiros() {
+        return relatoriosFinanceiros;
+    }
+
+    public void setRelatoriosFinanceiros(List<RelatorioFinanceiro> relatoriosFinanceiros) {
+        this.relatoriosFinanceiros = relatoriosFinanceiros;
+    }
 }

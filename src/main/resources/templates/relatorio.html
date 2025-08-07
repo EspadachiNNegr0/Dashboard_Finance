@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Importação da fonte de ícones do Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp"/>
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+    <!-- My CSS -->
+    <link rel="stylesheet" href="/css/index.css">
+
+    <title>AdminHub</title>
+</head>
+<body>
+
+
+<!-- SIDEBAR -->
+<section id="sidebar">
+    <a href="/" class="brand">
+        <i class='bx bxs-smile'></i>
+        <span class="text">AdminHub</span>
+    </a>
+    <ul class="side-menu top">
+        <li >
+            <a href="/">
+                <i class='bx bxs-dashboard' ></i>
+                <span class="text">Dashboard</span>
+            </a>
+        </li>
+        <li>
+            <a href="/Table">
+                <i class='bx bxs-shopping-bag-alt' ></i>
+                <span class="text">Tabela</span>
+            </a>
+        </li>
+        <li>
+            <a href="/Analytics/Analytics">
+                <i class='bx bxs-doughnut-chart' ></i>
+                <span class="text">Analytics</span>
+            </a>
+        </li>
+        <li class="active">
+            <a href="/Relatorio">
+                <i class='bx bxs-doughnut-chart' ></i>
+                <span class="text">Relatorios</span>
+            </a>
+        </li>
+    </ul>
+</section>
+<!-- SIDEBAR -->
+
+
+
+<!-- CONTENT -->
+<section id="content">
+    <!-- NAVBAR -->
+    <nav>
+        <i class='bx bx-menu' ></i>
+        <div class="search">
+            <form th:action="@{/search}" method="get" >
+                <label for="keyword"></label>
+                <input type="text" id="keyword" name="keyword" placeholder="Digite o nome do cliente">
+                <button type="submit"><span class="material-symbols-sharp">
+                search
+            </span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Botão para abrir o modal de notificações -->
+        <div id="open-modal">
+            <button class="notification">
+                <span class="material-symbols-sharp">notifications</span>
+                <span class="num" th:text="${totalNotify}"></span>
+            </button>
+        </div>
+
+        <!-- Área de fundo (Fade) -->
+        <div id="fade" class="hide"></div>
+
+        <!-- Modal -->
+        <div id="modal" class="modal-container">
+            <div class="modal-header">
+                <h2>Notificações</h2>
+                <button id="close-modal">
+                    <span class="material-symbols-sharp">close</span>
+                </button>
+            </div>
+
+            <!-- Área que terá scroll -->
+            <div class="modal-body">
+                <div class="notify-item" th:each="notification : ${notifications}">
+                    <div class="notify_img">
+                        <img src="/img/Admin.jpg" alt="" style="width: 50px;">
+                    </div>
+                    <div class="notify-info">
+                        <p><span th:text="${notification.message}"></span></p>
+                        <p>
+                            <span class="notify-time" th:text="${#temporals.format(notification.createdAt, 'mm')}"></span> minutos atrás.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Criação do iframe invisível -->
+            <iframe name="hidden-frame" style="display: none;"></iframe>
+
+            <div class="modal-footer">
+                <form action="/notifications/clear" method="post" target="hidden-frame">
+                    <button type="submit">Limpar Notificações</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="profile" onclick="toggleSubMenu()">
+            <div class="profile-photo">
+                <img src="/img/Admin.jpg" alt="" />
+            </div>
+        </div>
+        <div class="sub-menu-wrap" id="subMenu">
+            <div class="sub-menu">
+                <div class="user-info">
+                    <img src="img/Admin.jpg" alt="Perfil">
+                    <h2>Anderson</h2>
+                </div>
+                <hr>
+                <form action="/logout" method="post">
+                    <button type="submit">
+                        <span class="material-symbols-sharp">logout</span>
+                        Sair
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+    <!-- NAVBAR -->
+
+    <!-- MAIN -->
+    <main>
+        <div class="head-title">
+            <div class="left">
+                <h1>Dashboard</h1>
+                <ul class="breadcrumb">
+                    <li>
+                        <a href="#">Dashboard</a>
+                    </li>
+                    <li><i class='bx bx-chevron-right' ></i></li>
+                    <li>
+                        <a class="active" href="#">Relatorio</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <ul class="box-info">
+            <li>
+                <i class='bx bxs-calendar-check'></i>
+                <span class="text">
+            <h3><span id="total-entradas">R$ 0,00</span></h3>
+            <p>💰 Total de Entradas:</p>
+        </span>
+            </li>
+            <li>
+                <i class='bx bxs-group'></i>
+                <span class="text">
+            <h3><span id="total-saidas">R$ 0,00</span></h3>
+            <p>📉 Total de Saídas:</p>
+        </span>
+            </li>
+            <li>
+                <i class='bx bxs-dollar-circle'></i>
+                <span class="text">
+            <h3><span id="saldo-final">R$ 0,00</span></h3>
+            <p>📊 Saldo Final:</p>
+        </span>
+            </li>
+            <li>
+                <i class='bx bxs-coin-stack'></i>
+                <span class="text">
+            <h3><span id="total-juros">R$ 0,00</span></h3>
+            <p>💲 Total de Juros:</p>
+        </span>
+            </li>
+            <li>
+                <i class='bx bxs-bank'></i>
+                <span class="text">
+            <h3><span id="total-amortizacao">R$ 0,00</span></h3>
+            <p>📈 Total de Amortização:</p>
+        </span>
+            </li>
+            <!-- 🔹 Novo bloco para Total Projetadas -->
+            <li>
+                <i class='bx bxs-bar-chart-alt-2'></i>
+                <span class="text">
+            <h3><span id="total-projetadas">R$ 0,00</span></h3>
+            <p>📅 Total Projetadas:</p>
+        </span>
+            </li>
+        </ul>
+
+        <div class="table-data">
+            <div class="order">
+                <div class="head">
+                    <h3>Relatorio</h3>
+
+                    <form id="form-gerar-pdf" action="/Relatorio/gerar-pdf" method="get" target="_blank" style="display: none;">
+                        <input type="hidden" name="tipo" id="pdf-tipo">
+                        <input type="hidden" name="mes" id="pdf-mes">
+                        <input type="hidden" name="banco" id="pdf-banco">
+                        <input type="hidden" name="funcionario" id="pdf-funcionario">
+                        <input type="hidden" name="cliente" id="pdf-cliente">
+                    </form>
+
+                    <button class="addB" aria-label="Gerar PDF" onclick="gerarPDF()">Gerar PDF</button>
+
+                    <i class='bx bx-filter' id="openModalFiltro"></i>
+
+                    <!-- MODAL DE FILTRO -->
+                    <div class="modal-filtro" id="modalFiltro">
+                        <div class="modal-filtro-content">
+                            <!-- Botão de fechar -->
+                            <div class="closeButton">
+                                <button class="modal-close" id="btnFecharModal">X</button>
+                            </div>
+
+                            <h2>Selecione os filtros desejados</h2>
+
+                            <form id="form-filtro">
+                                <label for="filtro-tipo">Tipo:</label>
+                                <select id="filtro-tipo" name="tipo">
+                                    <option value="">Todos</option>
+                                    <option value="entrada">Entrada</option>
+                                    <option value="saida">Saída</option>
+                                    <option value="projetada">Projetada</option> <!-- 🔹 Adicionada opção Projetada -->
+                                </select>
+
+                                <!-- Botões para mostrar/ocultar colunas -->
+                                <div class="filtros-adicionais">
+                                    <button id="toggle-juros" class="toggle-coluna">🔄 Alternar Juros</button>
+                                    <button id="toggle-amortizacao" class="toggle-coluna">🔄 Alternar Amortização</button>
+                                </div>
+
+                                <label for="filtro-mes">Mês:</label>
+                                <input type="month" id="filtro-mes" name="mes">
+
+                                <label for="filtro-banco">Banco:</label>
+                                <select id="filtro-banco" name="banco">
+                                    <option value="">Todos</option>
+                                    <th:block th:each="banco : ${bancos}">
+                                        <option th:value="${banco.nome}" th:text="${banco.nome}"></option>
+                                    </th:block>
+                                </select>
+
+                                <label for="filtro-funcionario">Funcionário:</label>
+                                <select id="filtro-funcionario" name="funcionario">
+                                    <option value="">Todos</option>
+                                    <th:block th:each="func : ${funcionarios}">
+                                        <option th:value="${func.name}" th:text="${func.name}"></option>
+                                    </th:block>
+                                </select>
+
+                                <label for="filtro-cliente">Cliente:</label>
+                                <select id="filtro-cliente" name="cliente">
+                                    <option value="">Todos</option>
+                                    <th:block th:each="cli : ${clientes}">
+                                        <option th:value="${cli.nome}" th:text="${cli.nome}"></option>
+                                    </th:block>
+                                </select>
+
+                                <button type="submit" style="background-color: #2a7bbd; padding: 10px; border-radius: 10px; color: white">
+                                    Filtrar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- TABELA -->
+                <table id="example" class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>Cod</th>
+                        <th>Banco</th>
+                        <th>Funcionario</th>
+                        <th>Cliente</th>
+                        <th>Data</th>
+                        <th>Valor</th>
+                        <th>Juros</th> <!-- ✅ Correção -->
+                        <th>Amortização</th>
+                        <th>Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="relatorio : ${relatoriosFinanceiros}">
+                        <td th:text="${relatorio.codigo}"></td>
+                        <td th:text="${relatorio.banco}"></td>
+                        <td th:if="${relatorio.historico != null and relatorio.historico.socios != null}"
+                            th:text="${relatorio.historico.socios.name}">
+                        </td>
+                        <td th:if="${relatorio.historico != null and relatorio.historico.cliente != null}">
+                            <a th:href="@{/cliente/{id}(id=${relatorio.historico.cliente.id})}"
+                               th:text="${relatorio.historico.cliente.nome}">
+                            </a>
+                        </td>
+                        <td th:if="${relatorio.historico == null or relatorio.historico.cliente == null}">-</td>
+                        <td th:if="${relatorio.historico == null or relatorio.historico.cliente == null}">-</td>
+                        <td th:text="${#dates.format(relatorio.data, 'dd/MM/yyyy')}"></td>
+                        <td th:text="${#numbers.formatDecimal(relatorio.valor, 1, 2)}"></td>
+                        <td th:text="${#numbers.formatDecimal(relatorio.juros, 1, 2)}"></td>
+                        <td th:text="${#numbers.formatDecimal(relatorio.amortizacao, 1, 2)}"></td>
+                        <td th:text="${relatorio.status}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </main>
+    <!-- MAIN -->
+</section>
+<!-- CONTENT -->
+
+<script src="/js/scriptR.js"></script>
+</body>
+</html>

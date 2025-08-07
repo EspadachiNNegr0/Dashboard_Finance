@@ -48,6 +48,7 @@ body {
     overflow-x: hidden;
     display: flex;
     padding-bottom: 342px;
+    overflow: hidden; /* trava o body de ter scroll geral */
 }
 
 
@@ -364,7 +365,6 @@ body {
 }
 
 
-/* Submenu */
 .sub-menu-wrap {
     position: absolute;
     top: 60px;
@@ -372,17 +372,18 @@ body {
     background: var(--light);
     border-radius: 8px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    opacity: 1;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+    visibility: hidden; /* 🔹 Esconde por padrão */
+    opacity: 0; /* 🔹 Torna invisível */
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
     z-index: 100;
 }
 
 .sub-menu-wrap.show {
-    opacity: 1;
     visibility: visible;
+    opacity: 1 ;
+    transform: translateY(0);
 }
-
 
 .sub-menu {
     padding: 15px;
@@ -472,8 +473,9 @@ body {
     width: 100%;
     padding: 36px 24px;
     font-family: var(--poppins);
-    max-height: calc(100vh - 56px);
-    overflow-y: auto;
+    max-height: calc(100vh - 56px); /* altura da tela menos navbar */
+    overflow-y: auto; /* scroll só se realmente precisar */
+    padding-bottom: 20px; /* garante espaçamento sem gerar scroll extra */
 }
 #content main .head-title {
     display: flex;
@@ -683,6 +685,7 @@ body {
 #modal .modal-header button {
     padding: 0px 0px 0px;
     background-color: #888;
+    margin-left: 10px;
     color: #fff;
     border: none;
     border-radius: 100px;
@@ -695,29 +698,72 @@ body {
     opacity: 1;
 }
 
-#fade{
+/* Ajusta o fundo escuro (fade) */
+#fade {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    z-index: 1;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6); /* Deixa escuro e translúcido */
+    z-index: 9999; /* Deve ser maior que os botões */
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
 }
 
-#modal{
-    position: fixed;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 500px;
-    padding: 1.2rem;
-    border-radius: 10px;
-    background-color: var(--light);
-    color: var(--dark);
-    z-index: 10;
-    max-width: 100%;
+/* Quando o fade estiver ativo */
+#fade.show {
+    display: block;
+    opacity: 1;
 }
+
+/* Ajusta os botões para ficarem abaixo do fade */
+.add, .addB {
+    position: relative;
+    z-index: 900; /* Deve ser menor que o fade */
+}
+
+
+.modal {
+    display: none;
+    opacity: 0;
+    z-index: 10000;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal.show {
+    display: flex;
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal.hide {
+    display: none;
+    opacity: 0;
+    visibility: hidden;
+}
+
+
+
+#modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 450px;
+    max-height: 600px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    display: none; /* Ocultar inicialmente */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 99999;
+}
+
 
 #fade,
 #modal {
@@ -732,6 +778,7 @@ body {
     margin: 140px;
     margin-top: -2px;
     justify-content: space-between;
+    background-color: #969595;
     align-items: center;
     border-bottom: 1px solid #ccc;
     margin-bottom: 1rem;
@@ -773,7 +820,7 @@ body {
     top: 0;
 }
 
-.table-data .add {
+.table-data  .add{
     padding: 10px;
     background-color: var(--blue);
     margin-right: 20px;
@@ -785,6 +832,15 @@ body {
     font-size: 1rem;
 }
 
+#btn-add-emprestimo{
+    color: white;
+    font-family: Poppins;
+    font-weight: bold;
+    font-size: .9rem;
+    padding: 7px 12px;
+}
+
+
 .table-data .add:hover{
     opacity: 1;
 }
@@ -792,6 +848,18 @@ body {
 .table-data .addC {
     padding: 10px;
     background-color: var(--light-yellow);
+    margin-right: 20px;
+    color: var(--dark);
+    border: none;
+    border-radius: 1000px;
+    cursor: pointer;
+    opacity: .9;
+    font-size: 1rem;
+}
+
+.table-data .addF {
+    padding: 10px;
+    background-color: #85ca85;
     margin-right: 20px;
     color: var(--dark);
     border: none;
@@ -859,7 +927,7 @@ body {
     border-radius: 5px;
     background-color: var(--blue);
     margin-top: 20px;
-    margin-left: 120px;
+    margin-left: 20px;
     margin-right: 70px}
 
 .modal {
@@ -883,7 +951,8 @@ body {
     color: var(--dark);
 }
 
-.modal.show {
+#modal.show {
+    display: block;
     opacity: 1;
     visibility: visible;
 }
@@ -893,7 +962,7 @@ body {
     max-width: 900px;
     padding: 20px;
     border-radius: 20px;
-    width: 100%;
+    width: 600px;
     padding: 30px;
     margin: 0 15px;
     background-color: var(--light);
@@ -1186,68 +1255,1156 @@ button {
     padding: 10px;
 }
 
+/* Estilo principal do contêiner todo */
+.todo {
+    margin: 20px auto;
+    max-width: 100%;
+    overflow-x: auto;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+}
 
-@media screen and (max-width: 768px) {
-    #sidebar {
-        width: 200px;
-    }
+/* Cabeçalho do contêiner */
+.head {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    background-color: #f4f4f4;
+    border-bottom: 1px solid #ccc;
+    align-items: center;
+}
 
-    #content {
-        width: calc(100% - 60px);
-        left: 200px;
-    }
+.mes-navegacao {
+    display: flex;
+    align-items: center;
+}
 
-    #content nav .nav-link {
-        display: none;
-    }
+/* Botões de navegação de meses */
+.navegar {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px;
+    margin: 0 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-family: Poppins;
+}
+
+.navegar:hover {
+    background-color: #0056b3;
+}
+
+/* Tabela de Histórico */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+}
+
+thead {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+
+/*ESTILO SELEÇÃO MESEs*/
+#label-selector{
+    font-size: 24px;
+    font-weight: bold;
+    font-family: Poppins;
+}
+
+#month-select{
+    padding: 4px 14px;
+    border-radius: 2rem;
+    margin-left: 1rem;
+}
+
+.table-data {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.order {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.tabelas-mes {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 20px;
+    padding: 10px 0;
+}
+
+.tabela-historico {
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+.tabela-historico th, .tabela-historico td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+.tabela-historico thead {
+    background-color: #007bff;
+    color: white;
+}
+
+.tabela-dia {
+    flex: 0 0 auto;
+    min-width: 300px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    background: #f9f9f9;
+}
+
+.mes-navegacao {
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.mes-navegacao select {
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+h3 {
+    text-align: center;
+}
+
+/* Estilos para o Modal de Adicionar Cliente */
+.modal-add-cliente {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 1000;
+}
+
+.modal-add-cliente.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-add-cliente .modal-content {
+    background: var(--light);
+    width: 90%;
+    max-width: 500px;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.modal-add-cliente .modal-headers {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 15px;
+    border-bottom: 2px solid var(--grey);
+    padding-bottom: 10px;
+}
+
+.modal-add-cliente .modal-headers button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--dark);
+}
+
+.modal-add-cliente .modal-body {
+    padding-top: 10px;
+}
+
+.modal-add-cliente .modal-body .details-cliente {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal-add-cliente .modal-body .fields {
+    display: flex;
+    margin-left: -200px;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.modal-add-cliente .modal-body .input-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.modal-add-cliente .modal-body .input-field label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--dark);
+}
+
+.modal-add-cliente .modal-body .input-field input {
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid var(--lights);
+    border-radius: 5px;
+    outline: none;
+    transition: 0.3s;
+}
+
+.modal-add-cliente .modal-body .input-field input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.modal-add-cliente .modal-body button {
+    width: 30%;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: bold;
+    background: var(--blue);
+    color: var(--light);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.modal-add-cliente .modal-body button:hover {
+    background: #0070d1;
+}
+
+.modal-historico {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    visibility: visible;
+    align-items: center;
+    z-index: 1000;
+    display: none;
+}
+
+.modal-historico .modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 600px;
+    max-width: 90%;
+}
+
+.modal-historico.show {
+    display: flex;
+}
+
+/* Estilo do Modal */
+.modal-filtro {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.3s;
+    font-family: Poppins;
+    z-index: 99999;
+}
+
+.modal-filtro.show {
+    visibility: visible;
+    opacity: 1;
+}
+
+.modal-filtro-content {
+    background: #fff;
+    padding: 20px 30px;
+    border-radius: 8px;
+    width: 400px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    font-family: Poppins;
+    font-weight: bold;
+    z-index: 999999;
+}
+
+/* Estilo do cabeçalho */
+.modal-filtro-content h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #333;
+    font-weight: bold;
+    font-family: Poppins;
+    text-align: left;
+}
+#openModalFiltro {
+    cursor: pointer;
+}
+.modal-filtro.active {
+    display: block;
+}
+/* Estilo dos grupos de entrada */
+.input-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.input-group input::placeholder{
+    font-size: .7rem;
+}
+
+/* ✅ Inputs e selects */
+.input-group input,
+.input-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+/* 🟢 Estilizando selects para parecerem mais modernos */
+.input-group select {
+    appearance: none; /* Remove a aparência padrão do sistema */
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><polygon points="5,6 10,12 15,6" fill="%23000"/></svg>') no-repeat;
+    background-position: right 10px center;
+    background-size: 10px;
+    cursor: pointer;
+}
+
+/* ✅ Foco nos inputs e selects */
+.input-group input:focus,
+.input-group select:focus {
+    outline: none;
+    border-color: #007BFF;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+/* Estilo para o intervalo de valores */
+.valor-range {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.valor-range input {
+    width: calc(50% - 5px);
+}
+
+/* Botão de envio */
+#btn-modal-filtro {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 55px;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#btn-modal-filtro:hover {
+    background: #0056b3;
+}
+
+
+/* Botão de fechar */
+#btnFecharModal {/* Alinhamento à direita */
+    background: none;
+    border: none;
+    font-size: .9rem;
+    color: #333;
+    cursor: pointer;
+    transition: color 0.3s;
+    font-family: Poppins;
+    font-weight: bold;
+}
+
+.closeButton{
+    text-align: end;
+}
+
+.modal-close:hover {
+    color: #007bff;
+}
+
+/* Estilização das tabelas */
+.tabela-historico {
+    border-collapse: separate; /* Permite bordas arredondadas */
+    border-spacing: 0; /* Remove espaçamento entre células */
+    width: 100%;
+    border-radius: 8px; /* Bordas arredondadas */
+    overflow: hidden; /* Garante que o arredondamento funcione */
+}
+
+/* Cabeçalhos da tabela */
+.tabela-historico th {
+    background-color: #bdbcbc; /* Cor de fundo original */
+    color: white; /* Texto branco */
+    padding: 12px 15px;
+    font-weight: bold;
+    text-align: left;
+    border: none; /* Remove as divisórias entre células */
+}
+
+/* Células da tabela */
+.tabela-historico td {
+    padding: 12px 15px;
+    background-color: white; /* Cor de fundo original */
+    border: none;
+    color: black;
+}
+
+/* Linhas alternadas para maior legibilidade */
+.tabela-historico tr:nth-child(even) td {
+    background-color: #f9f9f9; /* Fundo alternado */
+}
+
+/* Ajuste no título do dia */
+.tabelas-mes h3 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+    color: #333; /* Cor do texto */
+    font-weight: bold;
+}
+
+#label-selector{
+    font-size: 24px;
+    font-weight: bold;
+    font-family: Poppins;
+}
+
+#month-select{
+    padding: 4px 14px;
+    border-radius: 2rem;
+    margin-left: 1rem;
+}
+
+.table-data {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.order {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.tabelas-mes {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 20px;
+    padding: 10px 0;
+}
+
+.tabela-historico {
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+.tabela-historico th, .tabela-historico td {
+    border: none;
+    padding: 10px;
+    text-align: center;
 }
 
 
 
+.tabela-historico thead {
+    background-color: #007bff;
+    color: white;
+}
+
+.tabela-dia {
+    flex: 0 0 auto;
+    min-width: 300px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    background: #f9f9f9;
+}
+
+.mes-navegacao {
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.mes-navegacao select {
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+h3 {
+    text-align: center;
+}
+
+/* ===================== MODAL DE FUNCIONÁRIO ===================== */
+#modal-add-funcionario {
+    display: flex;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    display: none; /* 🔹 Agora começa oculto */
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    opacity: 0;
+    visibility: hidden;
+}
+
+#modal-add-funcionario.show {
+    display: block;
+    opacity: 1;
+    visibility: visible;
+}
+
+#modal-add-funcionario .modal-content {
+    margin-top: 150px;
+    margin-left: 400px;
+    width: 600px;
+}
+
+#modal-add-funcionario.hide {
+    display: none;
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Estilização do alerta */
+#cliente-mensagem {
+    display: none; /* Oculta o alerta por padrão */
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 400px;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: 'Poppins', sans-serif;
+    text-align: center;
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: opacity 0.3s ease-in-out;
+    z-index: 9999;
+}
+
+/* Aparece quando necessário */
+#cliente-mensagem.show {
+    display: block;
+    opacity: 1;
+}
+
+/* Oculta suavemente */
+#cliente-mensagem.hide {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Estilos para mensagens de sucesso */
+.alert-success {
+    background-color: #4CAF50;
+    color: white;
+    border-left: 5px solid #2E7D32;
+}
+
+/* Estilos para mensagens de erro */
+.alert-danger {
+    background-color: #F44336;
+    color: white;
+    border-left: 5px solid #C62828;
+}
+
+
+#modal-add-funcionario .window-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--lights);
+}
+
+#modal-add-funcionario .window-header h2 {
+    font-family: var(--poppins);
+    font-size: 15px;
+    color: var(--dark);
+}
+
+#modal-add-funcionario .modal-headers {
+    font-size: 15px;
+}
+
+#modal-add-funcionario .close-button {
+    font-size: 22px;
+    background: transparent;
+    border: none;
+    color: var(--dark);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+#modal-add-funcionario .close-button:hover {
+    color: var(--red);
+}
+
+.input-field-clientes label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--dark);
+    display: block;
+}
+
+.input-field-clientes input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid var(--lights);
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.input-field-clientes input:focus {
+    border-color: var(--blue);
+    outline: none;
+}
+
+#btnSaveFuncionario {
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: bold;
+    font-family: var(--poppins);
+    color: var(--light);
+    background-color: var(--blue);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+#btnSaveFuncionario:hover {
+    background-color: #2a7bbd;
+}
+
+#clear-notifications {
+    background: red;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 6px
+}
+
+.modal-container {
+    width: 350px;
+    max-height: 500px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #ccc;
+}
+
+.modal-header {
+    padding: 15px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-body {
+    max-height: 380px;
+    overflow-y: scroll;
+    padding: 10px;
+    background-color: #fafafa;
+}
+
+.modal-body button{
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    background: var(--blue);
+    color: var(--light);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: 0.3s;
+}
+
+/* Scroll Customizado */
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 10px;
+}
+
+.notify-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+}
+
+.notify-item:hover {
+    background-color: #f0f0f0;
+}
+
+.notify_img img {
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.modal-footer {
+    padding: 15px;
+    background-color: #f1f1f1;
+    border-top: 1px solid #ccc;
+    text-align: center;
+}
+
+.modal-footer button{
+    padding: 10px;
+    border-radius: 10px;
+    background-color: red;
+}
+
+
+/* ===================== ESTILOS DO BOTÃO DE ABRIR MODAL ===================== */
+
+.addB {
+    padding: 10px;
+    background-color: var(--blue); /* Cor azul, igual aos outros botões */
+    margin-right: 20px;
+    color: var(--light);
+    border: none;
+    border-radius: 1000px;
+    cursor: pointer;
+    opacity: .9;
+    font-size: 1rem;
+    font-weight: bold;
+    font-family: var(--poppins);
+    transition: background-color 0.3s ease, opacity 0.3s ease;
+}
+
+.addB:hover {
+    background-color: #2587cc; /* Cor azul escura no hover */
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+.addB:active {
+    transform: scale(0.95);
+}
 
 
 
-@media screen and (max-width: 576px) {
-    #content nav form .form-input input {
-        display: none;
+.addF {
+    padding: 10px;
+    background-color: #85ca85;
+    margin-right: 20px;
+    color: var(--dark);
+    border: none;
+    border-radius: 1000px;
+    cursor: pointer;
+    opacity: .9;
+    font-size: 1rem;
+}
+
+.addF:hover {
+    opacity: 1;
+}
+
+.modal-footer {
+    padding: 10px;
+    text-align: center;
+    border-top: 1px solid #ddd;
+    background: #f9f9f9;
+}
+
+#clear-notifications {
+    background: red;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 6px
+}
+
+#clear-notifications:hover {
+    background: darkred;
+}
+
+.navegacao-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 15px;
+    border: 1px solid var(--lights);
+    border-radius: 8px;
+    background: var(--light);
+}
+
+.navegacao-container legend {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--dark);
+}
+
+.mes-navegacao, .ano-navegacao {
+    flex: 1;
+    min-width: 180px;
+}
+
+.navegacao-container label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--dark);
+    display: block;
+    margin-bottom: 5px;
+}
+
+.navegacao-container select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid var(--lights);
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.navegacao-container select:focus {
+    border-color: var(--blue);
+    outline: none;
+}
+
+#openModalFiltro {
+    font-size: 24px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+#openModalFiltro:hover {
+    transform: scale(1.1);
+}
+
+
+.modal-filtro {
+    /*display: none;  TIRA ESSE COMENTARIO PRO MODAL FICAR ESCONDIDO*/
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    font-family: Poppins;
+}
+
+.modal-filtro-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #333;
+}
+
+.modal-close:hover {
+    color: red;
+}
+
+
+#form-filtro {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#form-filtro label {
+    font-weight: bold;
+    font-size: 14px;
+    color: #333;
+}
+
+#form-filtro input,
+#form-filtro select,
+#btn-modal-filtro {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: calc(100% - 16px);
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+
+#btn-modal-filtro {
+    background: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s;
+    margin-top: 10px;
+    text-align: center;
+}
+
+#btn-modal-filtro:hover {
+    background: #0056b3;
+}
+.filtros-adicionais {
+    display: none;
+}
+
+/* Esconde o ícone do calendário padrão */
+.mes-ano::-webkit-inner-spin-button,
+.mes-ano::-webkit-calendar-picker-indicator {
+    display: none;
+    -webkit-appearance: none;
+}
+
+/* Define um estilo para parecer um seletor de mês */
+.mes-ano {
+    width: 140px;
+    font-size: 16px;
+    padding: 5px;
+    cursor: pointer;
+}
+
+.linha-atrasada {
+    background-color: #ffe5e5;
+}
+
+@media screen and (max-width: 1366px) {
+    /* Sidebar */
+    #sidebar {
+        width: 220px;
     }
 
-    #content nav form .form-input button {
-        width: auto;
-        height: auto;
-        background: transparent;
-        color: var(--dark);
+    #sidebar.hide {
+        width: 60px;
     }
 
-    #content nav form.show .form-input input {
-        display: block;
-        width: 100%;
-    }
-    #content nav form.show .form-input button {
-        width: 36px;
-        height: 100%;
-        border-radius: 0 36px 36px 0;
-        color: var(--light);
-        background: var(--red);
+    /* Content */
+    #content {
+        width: calc(100% - 220px);
+        left: 220px;
     }
 
-    #content nav form.show ~ .notification,
-    #content nav form.show ~ .profile {
-        display: none;
+    #sidebar.hide ~ #content {
+        width: calc(100% - 60px);
+        left: 60px;
     }
 
+    /* Navbar */
+    #content nav {
+        padding: 0 16px;
+        grid-gap: 16px;
+    }
+
+    #content nav form {
+        max-width: 300px;
+    }
+
+    /* Head Title */
+    #content main .head-title .left h1 {
+        font-size: 28px;
+    }
+
+    #content main .head-title .btn-download {
+        height: 32px;
+        padding: 0 12px;
+        font-size: 14px;
+    }
+
+    /* Box Info */
     #content main .box-info {
-        grid-template-columns: 1fr;
+        grid-gap: 16px;
+        margin-top: 24px;
     }
 
-    #content main .table-data .head {
-        min-width: 420px;
-    }
-    #content main .table-data .order table {
-        min-width: 420px;
-    }
-    #content main .table-data .todo .todo-list {
-        min-width: 420px;
+    #content main .box-info li {
+        padding: 16px;
+        grid-gap: 16px;
     }
 
+    #content main .box-info li .bx {
+        width: 60px;
+        height: 60px;
+        font-size: 28px;
+    }
+
+    #content main .box-info li .text h3 {
+        font-size: 20px;
+    }
+
+    #content main .table-data {
+        flex-wrap: wrap;
+        width: 100%;
+        grid-gap: 16px;
+        margin-bottom: 0;
+    }
+
+    #content main .table-data .order {
+        flex-basis: 100%;
+    }
+
+    #content main .table-data .todo {
+        flex-basis: 100%;
+    }
+
+    /* Tables */
+    #content main .table-data .order table th {
+        font-size: 12px;
+        padding-bottom: 8px;
+    }
+
+    #content main .table-data .order table td {
+        padding: 12px 0;
+        font-size: 13px;
+    }
+
+    #content main .table-data .order table td img {
+        width: 30px;
+        height: 30px;
+    }
+
+    #content main .table-data .order table tr td .status {
+        font-size: 9px;
+        padding: 4px 12px;
+    }
+
+    /* To-do List */
+    #content main .table-data .todo .todo-list li {
+        padding: 10px 14px;
+    }
+
+    /* Modal Ajustes */
+    #modal {
+        width: 380px;
+        max-height: 500px;
+    }
+
+    .modal .modal-content {
+        width: 500px;
+    }
+
+    .modal-body {
+        max-height: 350px;
+    }
+
+    .input-field {
+        width: calc(100% / 2 - 10px);
+    }
+
+    /* Submenu */
+    .sub-menu-wrap {
+        right: 10px;
+    }
+
+    /* Botões */
+    .table-data .add,
+    .table-data .addC,
+    .table-data .addF,
+    .addB {
+        padding: 8px;
+        font-size: 0.9rem;
+    }
+
+    #btn-add-emprestimo {
+        padding: 5px 10px;
+        font-size: 0.8rem;
+    }
+
+    /* Chart */
+    .todo canvas {
+        max-height: 250px;
+    }
 }

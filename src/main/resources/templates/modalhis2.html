@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/modalHis.css">
+    <title>Histórico de Cliente</title>
+</head>
+<body>
+<div class="container">
+    <div class="modal-body">
+        <!-- Lado esquerdo com informações do cliente -->
+        <div class="modal-left-side">
+            <div class="perfil-image">
+                <img src="/img/Admin.jpg" alt="" class="img-placeholder">
+            </div>
+            <div class="data-clients">
+                <span class="span-modal"><strong>Nome:</strong> <span th:text="${cliente.nome}"></span></span>
+                <span class="span-modal"><strong>CPF:</strong> <span th:text="${cliente.cpf}"></span></span>
+                <span class="span-modal"><strong>Contato:</strong> <span th:text="${cliente.contato}"></span></span>
+                <span class="span-modal"><strong>Endereço:</strong> <span th:text="${cliente.endereco}"></span></span>
+            </div>
+        </div>
+
+        <!-- Lado direito com histórico -->
+        <div class="modal-right-side">
+            <h2 id="title-modal-historico">Histórico</h2>
+            <div class="table-container">
+                <table class="history-table">
+                    <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Valor</th>
+                        <th>Parcelas</th>
+                        <th>Data</th>
+                        <th>Porcentagem</th>
+                        <th>Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="historico : ${historicos}">
+                        <td><a th:href="@{/emprestimo/{codigo}(codigo=${historico.codigo})}" th:text="${historico.codigo}"></a></td>
+                        <td th:text="${historico.price}"></td>
+                        <td th:text="${historico.parcelamento} + 'x'"></td>
+                        <td th:text="${#dates.format(historico.created, 'dd/MM/yyyy')}"></td>
+                        <td th:text="${historico.percentage} + '%'"></td>
+                        <td>
+                            <span th:if="${historico.status.name() == 'ATRASADO'}" style="color: red;">ATRASADO</span>
+                            <span th:if="${historico.status.name() == 'PAGO'}" style="color: green;">PAGO</span>
+                            <span th:if="${historico.status.name() == 'PENDENTE'}" style="color: orange;">PENDENTE</span>
+                            <span th:if="${historico.status.name() == 'RATRASADO'}" style="color: yellow;">RATRASADO</span>
+                            <span th:if="${historico.status.name() == 'ATRASADOR'}" style="color: darkred;">ATRASADOR</span>
+                        </td>
+                        <td>
+                            <button class="delete-btn"
+                                    th:attr="onclick=|deletarHistorico('${historico.id}')|">
+                                🗑️
+                            </button>
+                        </td>
+                    </tr>
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+        <!-- Botão de fechar modal -->
+        <button class="close-button" onclick="voltarPaginaAnterior()">X</button>
+
+    </div>
+</div>
+<script>
+    function deletarHistorico(id) {
+        if (confirm("Tem certeza que deseja excluir este histórico e os relatórios associados?")) {
+            fetch(`/historico/delete/${id}`, {
+                method: "DELETE"
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Erro HTTP! Status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(message => {
+                    alert(message); // Exibe a mensagem do backend
+                })
+                .catch(error => {
+                    console.error("Erro ao excluir histórico:", error);
+                    alert("Erro ao excluir histórico.");
+                });
+        }
+    }
+        function voltarPaginaAnterior() {
+        if (document.referrer) {
+        window.history.back(); // Retorna para a página anterior
+    } else {
+        window.location.href = "/"; // Caso não haja página anterior, redireciona para a home
+    }
+    }
+
+</script>
+
+</body>
+</html>

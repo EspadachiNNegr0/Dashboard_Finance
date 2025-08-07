@@ -17,17 +17,15 @@ public class Clientes {
     @Column(nullable = true)
     private String nome;
 
-    @Column(nullable = true)
-    private Integer idade;
-
     @Column(nullable = true, unique = true)
     private String cpf;
 
     @Column(nullable = true)
-    private String telefone;
+    private String Contato;
 
     @Column(nullable = true)
     private String endereco;
+
 
     public Long getId() {
         return id;
@@ -45,15 +43,7 @@ public class Clientes {
         this.nome = nome;
     }
 
-    public Integer getIdade() {
-        return idade;
-    }
-
-    public void setIdade(Integer idade) {
-        this.idade = idade;
-    }
-
-    public String getCpf() {
+     public String getCpf() {
         return cpf;
     }
 
@@ -61,12 +51,12 @@ public class Clientes {
         this.cpf = cpf;
     }
 
-    public String getTelefone() {
-        return telefone;
+    public String getContato() {
+        return Contato;
     }
 
-    public void setTelefone(String telefone) {
-        this.telefone = telefone;
+    public void setContato(String contato) {
+        Contato = contato;
     }
 
     public String getEndereco() {

@@ -1,13 +1,23 @@
 package com.shadow.dashboard.service;
 
+import com.shadow.dashboard.models.Clientes;
 import com.shadow.dashboard.models.Historico;
+import com.shadow.dashboard.models.Notification;
 import com.shadow.dashboard.repository.ClientRepository;
+import com.shadow.dashboard.repository.NotificationRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 public class ClientService {
 
     private final ClientRepository clientRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     public ClientService(ClientRepository clientRepository) {
         this.clientRepository = clientRepository;
@@ -43,6 +53,7 @@ public class ClientService {
      * @param historia: objeto contendo o histórico do empréstimo
      */
     public double calcularPrecoTotalComJurosSemParcelar(Historico historia) {
+
         if (historia != null) {
             double valorJuros = calcularJurosSobreHistoria(historia);
             // Preço total: Preço base + juros, sem parcelamento
@@ -50,4 +61,43 @@ public class ClientService {
         }
         return 0.0;  // Caso o objeto história seja nulo
     }
+
+
+    public Clientes saveClienteAndCreateNotification(Clientes cliente) {
+        if (cliente.getNome() == null || cliente.getNome().trim().isEmpty()) {
+            throw new IllegalArgumentException("O campo 'nome' é obrigatório.");
+        }
+        if (cliente.getCpf() == null || cliente.getCpf().trim().isEmpty()) {
+            throw new IllegalArgumentException("O campo 'CPF' é obrigatório.");
+        }
+
+        // Verificar se o CPF já existe
+        Optional<Clientes> clienteExistente = clientRepository.findByCpf(cliente.getCpf());
+        if (clienteExistente.isPresent()) {
+            criarNotificacao(clienteExistente.get(), "❌ Cliente não foi cadastrado. O CPF digitado já está em uso.");
+            throw new RuntimeException("O CPF já está cadastrado no sistema.");
+        } else {
+            // Salvar cliente
+            cliente = clientRepository.save(cliente);
+
+            // Criar notificação
+            criarNotificacao(cliente, "✅ Cliente "+ cliente.getNome() +" cadastrado com sucesso!");
+        }
+
+
+        return cliente;
+    }
+
+    public void criarNotificacao(Clientes cliente, String mensagem) {
+        if (cliente == null || cliente.getId() == null) return;
+
+        Notification notification = new Notification();
+        notification.setMessage(mensagem);
+        notification.setCreatedAt(LocalDateTime.now());
+        notification.setRead(false);
+
+        notificationRepository.save(notification);
+    }
+
 }
+

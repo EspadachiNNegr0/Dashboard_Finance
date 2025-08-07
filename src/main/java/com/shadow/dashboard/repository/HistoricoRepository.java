@@ -1,11 +1,14 @@
 package com.shadow.dashboard.repository;
 
+import com.shadow.dashboard.models.Clientes;
 import com.shadow.dashboard.models.Historico;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface HistoricoRepository extends JpaRepository<Historico, Long> {
@@ -13,7 +16,45 @@ public interface HistoricoRepository extends JpaRepository<Historico, Long> {
     @Query("SELECT h FROM Historico h WHERE h.cliente.nome LIKE %?1%")
     public List<Historico> findAll(String keyword);
 
-    public List<Historico> findByStatus(String status);
+    boolean existsByCodigo(int codigo);
 
+    Optional<Historico> findByCodigo(int codigo);
+
+
+    List<Historico> findByCliente(Clientes cliente);
+
+    @Query("SELECT DISTINCT YEAR(h.created) FROM Historico h ORDER BY YEAR(h.created) DESC")
+    List<Integer> findDistinctYears();
+
+    @Query("SELECT h FROM Historico h WHERE YEAR(h.created) = :year")
+    List<Historico> findByYear(@Param("year") int year);
+
+    @Query("SELECT h FROM Historico h WHERE MONTH(h.created) = :month AND YEAR(h.created) = :year")
+    List<Historico> findByMonthAndYear(@Param("month") int month, @Param("year") int year);
+
+    @Query("SELECT h.socios.name, SUM(h.price) FROM Historico h GROUP BY h.socios.name")
+    List<Object[]> sumLoansBySocio();
+
+    @Query("""
+    SELECT COUNT(DISTINCT h.cliente.id) 
+    FROM Historico h
+    JOIN h.parcelas p
+    WHERE YEAR(p.dataPagamento) = :ano 
+      AND MONTH(p.dataPagamento) = :mes 
+      AND h.status <> 'COMPLETE'
+""")
+    long countClientesComHistoricoAtivoPorPagamento(@Param("ano") int ano, @Param("mes") int mes);
+
+
+    List<Historico> findByStatus(String status);
+
+    @Query("SELECT COUNT(h) FROM Historico h WHERE h.status <> 'PAGO'")
+    Long countEmprestimosNaoPagos();
+
+    @Query("SELECT COALESCE(SUM(h.price), 0) FROM Historico h")
+    Double sumTotalPrice();
+
+    @Query("SELECT h FROM Historico h LEFT JOIN FETCH h.parcelas WHERE h = :historico")
+    Optional<Historico> findWithParcelas(@Param("historico") Historico historico);
 
 }

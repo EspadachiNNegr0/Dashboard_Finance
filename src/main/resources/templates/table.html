@@ -32,19 +32,19 @@
         <li class="active">
             <a href="/Table">
                 <i class='bx bxs-shopping-bag-alt' ></i>
-                <span class="text">My Table</span>
+                <span class="text">Tabela</span>
             </a>
         </li>
         <li>
-            <a href="/Analytics">
+            <a href="/Analytics/Analytics">
                 <i class='bx bxs-doughnut-chart' ></i>
                 <span class="text">Analytics</span>
             </a>
         </li>
         <li>
-            <a href="#">
-                <i class='bx bxs-group' ></i>
-                <span class="text">Team</span>
+            <a href="/Relatorio">
+                <i class='bx bxs-doughnut-chart' ></i>
+                <span class="text">Relatorios</span>
             </a>
         </li>
     </ul>
@@ -79,29 +79,36 @@
 
         <!-- Área de fundo (Fade) -->
         <div id="fade" class="hide"></div>
+
         <!-- Modal -->
-        <div id="modal" class="hide">
+        <div id="modal" class="modal-container">
             <div class="modal-header">
-                <h2>Notifications</h2>
+                <h2>Notificações</h2>
                 <button id="close-modal">
                     <span class="material-symbols-sharp">close</span>
                 </button>
             </div>
 
-            <div class="notify-item" th:each="notification : ${notifications}">
-                <div class="notify_img">
-                    <img src="/img/Admin.jpg" alt="" style="width: 50px;">
-                </div>
-                <div class="notify-info">
-                    <p><span th:text="${notification.message}"></span></p>
-                    <p>
-                        <span class="notify-time" th:text="${#temporals.format(notification.createdAt, 'mm')}"></span> minutes ago.
-                    </p>
+            <!-- Área que terá scroll -->
+            <div class="modal-body">
+                <div class="notify-item" th:each="notification : ${notifications}">
+                    <div class="notify_img">
+                        <img src="/img/Admin.jpg" alt="" style="width: 50px;">
+                    </div>
+                    <div class="notify-info">
+                        <p><span th:text="${notification.message}"></span></p>
+                        <p>
+                            <span class="notify-time" th:text="${#temporals.format(notification.createdAt, 'mm')}"></span> minutos atrás.
+                        </p>
+                    </div>
                 </div>
             </div>
+
+            <!-- Botão para limpar notificações -->
+            <div class="modal-footer">
+                <button id="clear-notifications">Limpar Notificações</button>
+            </div>
         </div>
-
-
 
         <div class="profile" onclick="toggleSubMenu()">
             <div class="profile-photo">
@@ -112,13 +119,15 @@
             <div class="sub-menu">
                 <div class="user-info">
                     <img src="img/Admin.jpg" alt="Perfil">
-                    <h2>Shadow</h2>
+                    <h2>Anderson</h2>
                 </div>
                 <hr>
-                <a href="/logout">
-                    <span class="material-symbols-sharp">logout</span>
-                    Sair
-                </a>
+                <form action="/logout" method="post">
+                    <button type="submit">
+                        <span class="material-symbols-sharp">logout</span>
+                        Sair
+                    </button>
+                </form>
             </div>
         </div>
     </nav>
@@ -144,19 +153,129 @@
         <div class="table-data">
             <div class="order">
                 <div class="head">
-                    <h3>Recent Orders</h3>
+                    <h3>Tabela Emprestimos</h3>
 
-                    <button class="addC" aria-label="Adicionar Cliente">Add Cliente</button>
+                    <!-- Botão para abrir o modal -->
+                    <button class="addB" aria-label="Adicionar Banco">Add Banco</button>
+                    <!-- Modal de Adicionar Banco -->
+                    <div id="modal-add-banco" class="modal hide">
+                        <div class="modal-content">
+                            <button id="close-modal-add-banco" class="close-button" aria-label="Fechar">X</button>
+                            <div class="modal-headers">
+                                <header>Registro de Banco</header>
+                            </div>
+                            <div class="modal-body">
+                                <form id="form-add-banco" action="/bancos" method="POST" th:action="@{/bancos}">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <div class="details-banco">
+                                        <div class="fields">
+                                            <!-- Nome do Banco -->
+                                            <div class="input-field">
+                                                <label for="nome-banco">Nome do Banco</label>
+                                                <input type="text" id="nome-banco" name="nome" placeholder="Digite o nome do banco" required>
+                                            </div>
+
+                                            <!-- Descrição do Banco -->
+                                            <div class="input-field">
+                                                <label for="descricao-banco">Descrição</label>
+                                                <input type="text" id="descricao-banco" name="descricao" placeholder="Digite a Descrição" required>
+                                            </div>
+
+                                            <!-- Botão de Envio -->
+                                            <button type="submit">Salvar</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botão para abrir o modal de adicionar funcionário -->
+                    <button id="openAddFuncionario" class="addF" aria-label="Adicionar Funcionário">Add Funcionário</button>
+
+                    <!-- Formulário de Adicionar Funcionário Simplificado -->
+                    <div id="modal-overlay" class="modal-overlay hide">
+
+                        <div id="modal-add-funcionario" class="modal hide">
+                            <div class="modal-content">
+                                <div class="modal-headers">
+                                    <button id="closeAddFuncionario" class="close-button">&times;</button>
+                                    <h2>Adicionar Funcionário</h2>
+                                </div>
+                                <div class="modal-body">
+                                    <form action="/Table" method="POST" th:action="@{/Table}">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                        <div class="input-field">
+                                            <label for="name">Nome</label>
+                                            <input id="name" name="name" type="text" placeholder="Digite o nome" required>
+                                        </div>
+                                        <div class="input-field">
+                                            <label for="idade">Idade</label>
+                                            <input id="idade" name="idade" type="number" placeholder="Digite a idade" required>
+                                        </div>
+                                        <div class="input-field">
+                                            <label for="contact">Contato</label>
+                                            <input id="contact" name="contact" type="text" placeholder="Digite o contato" required>
+                                        </div>
+                                        <div class="input-field">
+                                            <label for="address">Endereço</label>
+                                            <input id="address" name="address" type="text" placeholder="Digite o endereço" required>
+                                        </div>
+                                        <button id="btnSaveFuncionario" type="submit">Salvar Funcionário</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botão para abrir o modal de adicionar cliente -->
+                    <button class="addC" id="openModalCliente" aria-label="Adicionar Cliente">Add Cliente</button>
+                    <!-- Modal de Adicionar Cliente -->
+                    <div id="modal-add-cliente" class="modal hide">
+                        <div class="modal-content">
+                            <div class="modal-headers">
+                                <button class="close" id="closeModalCliente">&times;</button>
+                                <header>Adicionar Cliente</header>
+                            </div>
+                            <div class="modal-body">
+                                <form id="form-cliente" method="post" th:action="@{/clientes/adicionar}">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <div id="cliente-mensagem" class="alert hide">
+                                        <p id="cliente-alert-text"></p>
+                                    </div>
+                                    <div class="input-field">
+                                        <label>Nome</label>
+                                        <input type="text" id="nome" name="nome" placeholder="Digite o nome do cliente" required>
+                                    </div>
+                                    <div class="input-field">
+                                        <label>CPF</label>
+                                        <input type="text" id="cpf" name="cpf" placeholder="Digite o CPF" required>
+                                    </div>
+                                    <div class="input-field">
+                                        <label>Contato</label>
+                                        <input type="text" id="contato" name="contato" placeholder="Digite o contato do cliente" required>
+                                    </div>
+                                    <div class="input-field">
+                                        <label>Endereço</label>
+                                        <input type="text" id="endereco" name="endereco" placeholder="Digite o endereço" required>
+                                    </div>
+                                    <button type="submit">Salvar Cliente</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
                     <button class="add" aria-label="Adicionar empréstimo">Add Emprestimo</button>
                     <div id="modal-add-emprestimo" class="modal hide">
                         <div class="modal-content">
+                            <button class="close-button" aria-label="Fechar">X</button>
                             <div class="modal-headers">
                                 <header>Registro de Empréstimo</header>
                             </div>
                             <div class="modal-body">
-                                <form action="/" method="POST">
+                                <form action="/save" method="POST" th:action="@{/save}">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                     <div class="details-emprestimo">
-                                        <span class="title">Detalhes do Empréstimo</span>
                                         <div class="fields">
                                             <!-- Nome do Cliente -->
                                             <div class="input-field">
@@ -188,20 +307,18 @@
                                                 <input type="number" name="parcelamento" placeholder="Digite o número de parcelas" required>
                                             </div>
 
-                                            <!-- Banco -->
+                                            <!-- Banco Saída -->
                                             <div class="input-field">
-                                                <label>Banco</label>
-                                                <select name="banco.id" required>
+                                                <label>Banco Saída</label>
+                                                <select name="bancoSaida" required>
                                                     <option value="" disabled selected>Escolha um Banco</option>
-                                                    <option th:each="banco : ${bancos}"
-                                                            th:value="${banco.id}"
-                                                            th:text="${banco.nome}"></option>
+                                                    <option th:each="banco : ${bancos}" th:value="${banco.id}" th:text="${banco.nome}"></option>
                                                 </select>
                                             </div>
 
                                             <!-- Socio -->
                                             <div class="input-field">
-                                                <label>Socio</label>
+                                                <label>Funcionario</label>
                                                 <select name="socios.id" required> <!-- Alterado de banco.id para socios.id -->
                                                     <option value="" disabled selected>Escolha quem emprestou</option>
                                                     <option th:each="socio : ${socios}"
@@ -227,49 +344,84 @@
                                         </div>
                                     </div>
                                 </form>
-
                             </div>
                         </div>
                     </div>
 
-                    <i class='bx bx-filter' ></i>
+                    <i class='bx bx-filter' id="openModalFiltro"></i>
+
+                    <!-- MODAL DE FILTRO -->
+                    <div class="modal-filtro" id="modalFiltro">
+                        <div class="modal-filtro-content">
+                            <!-- Botão de fechar -->
+                            <div class="closeButton">
+                                <button class="modal-close" id="btnFecharModal">X</button>
+                            </div>
+
+                            <h2>Selecione os filtros desejados</h2>
+
+                            <form id="form-filtro">
+
+                                <!-- Filtro: Mês -->
+                                <label for="filtro-mes">Mês:</label>
+                                <input type="month" id="filtro-mes" name="mes">
+
+                                <!-- Filtro: Funcionário -->
+                                <div class="input-group">
+                                    <label for="funcionario">Funcionário:</label>
+                                    <select id="funcionario">
+                                        <option value="" selected>Todos</option>
+                                        <option th:each="socio : ${socios}" th:value="${socio.name}" th:text="${socio.name}"></option>
+                                    </select>
+                                </div>
+
+                                <!-- Filtro: Cliente -->
+                                <div class="input-group">
+                                    <label for="cliente">Cliente:</label>
+                                    <select id="cliente">
+                                        <option value="" selected>Todos</option>
+                                        <option th:each="cliente : ${clientes}" th:value="${cliente.nome}" th:text="${cliente.nome}"></option>
+                                    </select>
+                                </div>
+
+                                <!-- Botão de envio -->
+                                <button id="btn-modal-filtro" type="submit">Filtrar</button>
+                            </form>
+                        </div>
+                    </div>
+
+
                 </div>
-                <table id="example" class="table table-striped" style="width:100%">
+
+                <!-- TABELA -->
+                <table id="example" class="table table-striped">
                     <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Price</th>
-                        <th>Porcent</th>
-                        <th>PriceTotal</th>
+                        <th>Cod</th>
+                        <th>Valor</th>
+                        <th>Porcentagem</th>
                         <th>Parcelamento</th>
-                        <th>Start date</th>
-                        <th>End date</th>
+                        <th>Cliente</th>
+                        <th>Funcionario</th>
+                        <th>Data do Emp.</th>
+                        <th>Data final</th>
                         <th>Status</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="historico: ${historias}">
-                        <td th:text="${historico.cliente.nome}"></td>
+                        <td><a th:href="@{/emprestimo/{codigo}(codigo=${historico.codigo})}" th:text="${historico.codigo}"></a></td>
+                        <td th:text="${historico.price}"></td>
+                        <td th:text="${historico.percentage} + '%'"></td>
+                        <td th:text="${historico.parcelamento}"></td>
+                        <td><a th:href="@{/cliente/{id}(id=${historico.cliente.id})}" th:text="${historico.cliente.nome}"></a></td>
+                        <td th:text="${historico.socios.name}"></td>
+                        <td th:text="${#dates.format(historico.created, 'dd/MM/yyyy')}"></td>
+                        <td th:text="${#dates.format(historico.creationF, 'dd/MM/yyyy')}"></td>
                         <td>
-                            <span th:text="${historico.price} + ' '"></span>
-                        </td>
-                        <td>
-                            <span th:text="${historico.percentage} + ' '"></span>%
-                        </td>
-                        <td>
-                            $<span th:text="${priceTotals[historico.id]}"></span>
-                        </td>
-                        <td>
-                            <span th:text="${historico.parcelamento} + ' '"></span>
-                        </td>
-                        <td>
-                            <span th:text="${dataFormatada[historico.id]} + ' '"></span>
-                        </td>
-                        <td>
-                            <span th:text="${dataDePagamentoMap[historico.id]}"></span>
-                        </td>
-                        <td>
-                            <span th:text="${historico.status} + ' '"></span>
+                            <span th:if="${historico.status.name() == 'ATRASADO'}" style="color: red;">ATRASADO</span>
+                            <span th:if="${historico.status.name() == 'PAGO'}" style="color: green;">PAGO</span>
+                            <span th:if="${historico.status.name() == 'PENDENTE'}" style="color: orange;">PENDENTE</span>
                         </td>
                         <td>
                             <a th:href="@{/histori/{id}(id=${historico.id})}" class="btn btn-info">
@@ -277,20 +429,7 @@
                             </a>
                         </td>
                     </tr>
-
                     </tbody>
-                    <tfoot>
-                    <tr>
-                        <th>Name</th>
-                        <th>Price</th>
-                        <th>Porcent</th>
-                        <th>PriceTotal</th>
-                        <th>Parcelamento</th>
-                        <th>Start date</th>
-                        <th>End date</th>
-                        <th>Status</th>
-                    </tr>
-                    </tfoot>
                 </table>
             </div>
         </div>

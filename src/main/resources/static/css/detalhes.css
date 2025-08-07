@@ -40,6 +40,7 @@ body {
     width: 100%;
     height: 100%;
     background: var(--modal-overlay);
+    background-color: white;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -47,19 +48,116 @@ body {
     z-index: 1000;
 }
 
-.modal.show {
-    visibility: visible;
-    opacity: 1;
+/* Estilos específicos para modal-receber */
+.modal-receber {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.7);
+    transition: opacity var(--transition-speed), visibility var(--transition-speed);
+    z-index: 1000;
 }
 
+.modal-receber.hide {
+    display: none;
+}
+
+.modal-receber .modal-content {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.modal-receber .modal-headers {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-receber .modal-headers header {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: black;
+}
+
+.modal-receber .modal-headers .close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: black;
+}
+
+.modal-receber .modal-body .option {
+    background-color: var(--primary-blue);
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    color: var(--text-color-light);
+    text-align: center;
+    cursor: pointer;
+    transition: background-color var(--transition-speed), transform var(--transition-speed);
+}
+
+.modal-receber .modal-body .option:hover {
+    background-color: var(--primary-hover-blue);
+    transform: scale(1.05);
+}
+
+
+.modal.show {
+    display: flex;
+}
+
+.modal-body .option {
+    background-color: var(--primary-blue);
+    border: none;
+    color: var(--text-color-light);
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px 0;
+    text-align: center;
+    transition: background-color var(--transition-speed), transform var(--transition-speed);
+}
+
+.modal-body .option:hover {
+    background-color: var(--primary-hover-blue);
+    transform: scale(1.05);
+}
+
+.modal-body .option:active {
+    transform: scale(0.98);
+}
+
+.modal-headers .close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: black;
+}
+
+
 .modal-content {
-    background-color: var(--dark-bg);
+    background-color: white;
     border-radius: 10px;
     padding: 20px;
     max-width: 800px;
     width: 90%;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    color: var(--text-color-light);
+    color: black;
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -82,10 +180,36 @@ body {
     transition: color var(--transition-speed);
 }
 
-.modal-headers button p {
+.modal-headers .back a {
     text-decoration: none;
+    color: white;
+    font-size: 17px;
+    background-color: #c6c1c1;
+    padding: 7px;
+    border-radius: 10px;
 
 }
+.modal-headers .buy a{
+    text-decoration: none;
+    margin-left: 300px;
+    color: white;
+    font-size: 17px;
+    background-color: green;
+    padding: 7px;
+    border-radius: 10px;
+
+}
+.modal-headers .edit a{
+    text-decoration: none;
+    margin: 10px;
+    color: white;
+    font-size: 17px;
+    background-color: #cdb223;
+    padding: 7px;
+    border-radius: 10px;
+
+}
+
 
 .modal-headers button:hover {
     color: var(--primary-blue);
@@ -113,12 +237,12 @@ body {
 
 .field label {
     font-size: 0.9rem;
-    color: var(--text-color-light);
+    color: black;
 }
 
 .field input,
 .field select {
-    background-color: var(--input-bg);
+    background-color: #c6c1c1;
     border: 1px solid var(--light-border);
     border-radius: 5px;
     padding: 10px;

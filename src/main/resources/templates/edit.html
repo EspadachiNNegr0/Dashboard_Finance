@@ -15,19 +15,21 @@
         </div>
         <div class="modal-body">
             <!-- Iniciar o formulário com método POST -->
-            <form action="/editHistorico" method="POST">
+            <form th:action="@{/emprestimo/{codigo}/salvar(codigo=${historico.codigo})}" method="POST">
                 <input type="hidden" name="_method" value="PUT" />
+
                 <div class="details-emprestimo">
                     <div class="fields">
                         <p><strong>ID:</strong>
-                            <input type="text" name="id" th:value="${histori.id}" readonly />
+                            <input type="text" name="codigo" th:value="${histori.codigo}" readonly />
                         </p>
                         <p><strong>Nome do Cliente:</strong>
                             <select name="cliente" required>
                                 <option th:each="cliente : ${clientes}"
                                         th:value="${cliente.id}"
                                         th:text="${cliente.nome}"
-                                        th:selected="${cliente.id == histori.cliente.id}">Cliente</option>
+                                        th:selected="${cliente.id == histori.cliente.id}">
+                                </option>
                             </select>
                         </p>
                         <p><strong>Status:</strong>
@@ -37,24 +39,33 @@
                             <input type="text" name="price" th:value="${histori.price}" />
                         </p>
                         <p><strong>Porcentagem:</strong>
-                            <input type="text" name="status" th:value="${histori.percentage}" readonly />
+                            <input type="text" name="percentage" th:value="${histori.percentage}" />
+                        </p>
+                        <p><strong>Parcelamento:</strong>
+                            <input type="text" name="parcelamento" th:value="${histori.parcelamento}" />
                         </p>
                         <p><strong>Parceiro:</strong>
-                            <input type="text" name="status" th:value="${histori.socios.name}" readonly />
+                            <input type="text" name="socio" th:value="${histori.socios.name}" />
                         </p>
-                        <p><strong>Banco:</strong>
-                            <input type="text" name="status" th:value="${histori.banco.nome}" readonly />
+                        <p><strong>Banco de Saída:</strong>
+                            <input type="text" name="bancoSaida" th:value="${histori.bancoSaida.nome}" />
                         </p>
-                        <p><strong>description:</strong>
-                            <input type="text" name="status" th:value="${histori.description}" readonly />
+                        <p><strong>Descrição:</strong>
+                            <input type="text" name="description" th:value="${histori.description}" />
                         </p>
-                        <p><strong>Data:</strong>
-                            <input type="text" name="status" th:value="${histori.created}" readonly />
+                        <p><strong>Data de Criação:</strong>
+                            <input type="date" name="created"
+                                   th:value="${#dates.format(histori.created, 'yyyy-MM-dd')}" />
+                        </p>
+                        <p><strong>Data Final:</strong>
+                            <input type="date" name="finalDate"
+                                   th:value="${#dates.format(histori.creationF, 'yyyy-MM-dd')}" />
                         </p>
                         <button type="submit">Salvar</button>
                     </div>
                 </div>
             </form>
+
 
         </div>
     </div>
