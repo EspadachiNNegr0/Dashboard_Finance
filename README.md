@@ -25,10 +25,7 @@
 
 ## ✨ funcionalidades
 
-- 🔐 **Login Seguro** com Spring Security
-  
- ![Login](docs/img/login.jpg)
- 
+- 🔐 **Login Seguro** com Spring Security 
 - 📁 **Cadastro e Edição de Clientes**
 - 📈 **Dashboard com Gráficos e KPIs**
 - 📃 **Geração de Relatórios e PDFs**
