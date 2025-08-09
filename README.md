@@ -34,3 +34,41 @@
 - 🔄 **API REST modular**
 
 ---
+
+## 📖 Como Usar o Sistema
+
+1. **Acesse o Login**
+   - Abra o navegador e acesse o endereço do sistema(localhost:8080).
+   - Informe seu **usuário** e **senha** cadastrados. base(admin e admin).
+   - Clique em **Entrar**.
+
+![Tela de Login](docs/img/login.jpg)
+
+
+2. **Navegação no Dashboard**
+   - Após o login, você verá o **painel principal** com gráficos e indicadores financeiros.
+   - Use o **menu lateral** para acessar clientes, relatórios, histórico e configurações.
+
+![tela do dashboard](docs/img/Dashboard.png)
+
+3. **Cadastro de Clientes**
+   - No menu, clique em **Clientes** > **Adicionar Cliente**.
+   - Preencha os campos obrigatórios e clique em **Salvar**.
+  
+![tela do tabela](docs/img/Tabela.png)
+
+4. **Geração de Relatórios**
+   - Acesse **Relatórios** no menu.
+   - Escolha o período e tipo de relatório.
+   - Clique em **Gerar PDF** para exportar.
+
+![tela do relatorios](docs/img/Relatorios.png)
+
+5. **Histórico de Ações**
+   - Veja todos os registros de alterações no módulo **Histórico**.
+   - Filtre por data, usuário ou tipo de operação.
+  
+![tela do Grafico](docs/img/Graficos.png)
+
+💡 *Dica:* Mantenha seu navegador atualizado para melhor desempenho e segurança.
+
